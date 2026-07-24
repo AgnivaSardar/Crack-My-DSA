@@ -37,6 +37,8 @@ chroma_manager = None
 retriever = None
 generator = None
 
+import threading
+
 @app.on_event("startup")
 def startup_event():
     global embedding_manager, chroma_manager, retriever, generator
@@ -47,6 +49,12 @@ def startup_event():
         retriever = LeetCodeRetriever(embedding_manager, chroma_manager)
         generator = LeetCodeGenerator()
         print("All RAG components initialized successfully.")
+        
+        # Check if vector DB is empty; if so, trigger background ingestion
+        if chroma_manager and chroma_manager.get_stats().get("total_problems", 0) == 0:
+            print("ChromaDB vector collection is empty. Starting background ingestion thread...")
+            ingest_thread = threading.Thread(target=run_ingestion, daemon=True)
+            ingest_thread.start()
     except Exception as e:
         print(f"Error initializing RAG components on startup: {e}")
         print("Startup warning: Some endpoints will fail if configuration/API keys are missing.")
