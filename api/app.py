@@ -69,6 +69,7 @@ class IngestStatus(BaseModel):
     status: str
     message: str
 
+@app.post("/query", response_model=QueryResponse)
 @app.post("/api/query", response_model=QueryResponse)
 async def query_rag(request: QueryRequest):
     """Submits a query to the RAG pipeline and returns the generated answer and references."""
@@ -102,6 +103,7 @@ async def query_rag(request: QueryRequest):
         print(f"Error during query processing: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/stats")
 @app.get("/api/stats")
 async def get_db_stats():
     """Returns database statistics including total questions ingested."""
@@ -109,6 +111,7 @@ async def get_db_stats():
         raise HTTPException(status_code=503, detail="Chroma DB is not connected.")
     return chroma_manager.get_stats()
 
+@app.get("/metadata")
 @app.get("/api/metadata")
 async def get_filter_metadata():
     """Returns lists of all unique companies and topics available in the cleaned dataset."""
@@ -140,6 +143,7 @@ async def get_filter_metadata():
         print(f"Error building filter metadata: {e}")
         raise HTTPException(status_code=500, detail="Failed to load metadata file.")
 
+@app.post("/ingest", response_model=IngestStatus)
 @app.post("/api/ingest", response_model=IngestStatus)
 async def trigger_ingest(background_tasks: BackgroundTasks):
     """Triggers background data ingestion (clean, embed, and store in database)."""
@@ -164,6 +168,7 @@ class SaveSessionRequest(BaseModel):
     messages: List[Dict[str, Any]]
     last_references: List[Dict[str, Any]]
 
+@app.post("/users")
 @app.post("/api/users")
 async def get_or_create_user(request: UserRequest):
     try:
@@ -178,6 +183,7 @@ async def get_or_create_user(request: UserRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/users/{email}/sessions")
 @app.get("/api/users/{email}/sessions")
 async def get_user_sessions(email: str):
     try:
@@ -188,6 +194,7 @@ async def get_user_sessions(email: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/sessions")
 @app.post("/api/sessions")
 async def save_session(request: SaveSessionRequest):
     try:
@@ -204,6 +211,7 @@ async def save_session(request: SaveSessionRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.delete("/sessions/{session_id}")
 @app.delete("/api/sessions/{session_id}")
 async def delete_session(session_id: str):
     try:
