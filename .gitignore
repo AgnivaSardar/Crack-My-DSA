@@ -1,0 +1,10 @@
+node_modules
+frontend_react/node_modules
+__pycache__
+grep.exe.stackdump
+.env
+data/chroma_db
+*.sqlite3
+*.db
+dist
+.DS_Store
