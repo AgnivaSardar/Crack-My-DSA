@@ -107,8 +107,9 @@ def main():
         
     if args.api:
         import uvicorn
-        print("Starting FastAPI backend...")
-        uvicorn.run("api.app:app", host="0.0.0.0", port=8000, reload=True)
+        port = int(os.environ.get("PORT", 8000))
+        print(f"Starting FastAPI backend on port {port}...")
+        uvicorn.run("api.app:app", host="0.0.0.0", port=port, reload=False)
         
     if args.frontend:
         import subprocess
