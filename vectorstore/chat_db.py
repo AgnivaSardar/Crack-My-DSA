@@ -347,6 +347,25 @@ class ChatDatabaseManager:
             self.conn.commit()
         return True
 
+    def get_leetcode_username(self, email: str) -> Optional[str]:
+        email = email.strip().lower()
+        if self.is_postgres:
+            with self.conn.cursor() as cursor:
+                try:
+                    cursor.execute("SELECT leetcode_username FROM users WHERE email = %s", (email,))
+                    row = cursor.fetchone()
+                    return row[0] if row and row[0] else None
+                except Exception:
+                    return None
+        else:
+            cursor = self.conn.cursor()
+            try:
+                cursor.execute("SELECT leetcode_username FROM users WHERE email = ?", (email,))
+                row = cursor.fetchone()
+                return row[0] if row and row[0] else None
+            except Exception:
+                return None
+
     def sync_leetcode_solved_by_email(self, email: str) -> int:
         import urllib.request
         import json

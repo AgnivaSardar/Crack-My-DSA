@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { autoSyncUserLeetCodeByEmail } from '../api/client'
+import { syncLeetCodeUser, autoSyncUserLeetCodeByEmail, getUserProfile } from '../api/client'
 
 export default function LeetCodeDashboard({
   isOpen,
@@ -17,12 +17,21 @@ export default function LeetCodeDashboard({
   const [searchTerm, setSearchTerm] = useState('')
   const [diffFilter, setDiffFilter] = useState('All')
   const [companyFilter, setCompanyFilter] = useState('All')
+  const [lcUsernameInput, setLcUsernameInput] = useState('')
+  const [linkedUsername, setLinkedUsername] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
   const [officialStats, setOfficialStats] = useState(null)
 
   useEffect(() => {
     if (isOpen && userEmail && !guestUser) {
+      getUserProfile(userEmail).then(prof => {
+        if (prof && prof.leetcode_username) {
+          setLinkedUsername(prof.leetcode_username)
+          setLcUsernameInput(prof.leetcode_username)
+        }
+      })
       handleRefreshSync()
     }
   }, [isOpen, userEmail, guestUser])
@@ -44,16 +53,40 @@ export default function LeetCodeDashboard({
     try {
       const res = await autoSyncUserLeetCodeByEmail(userEmail)
       if (res) {
-        if (res.stats) {
-          setOfficialStats(res.stats)
-        }
+        if (res.username) setLinkedUsername(res.username)
+        if (res.stats) setOfficialStats(res.stats)
         if (res.solved_problems) {
-          setSyncMsg(`Synced with registered email! Total Solved: ${res.stats?.total || res.solved_problems.length}`)
+          setSyncMsg(`Synced with LeetCode! Total Solved: ${res.stats?.total || res.solved_problems.length}`)
           if (onSyncSuccess) onSyncSuccess(res.solved_problems)
         }
       }
     } catch {
       setSyncMsg('Failed to sync. Please try again.')
+    } finally {
+      setIsSyncing(false)
+    }
+  }
+
+  async function handleManualSyncSubmit(e) {
+    e.preventDefault()
+    if (!lcUsernameInput.trim() || !userEmail) return
+    setIsSyncing(true)
+    setSyncMsg('Connecting to LeetCode account...')
+    try {
+      const res = await syncLeetCodeUser(userEmail, lcUsernameInput.trim())
+      if (res) {
+        setLinkedUsername(lcUsernameInput.trim())
+        setIsEditing(false)
+        if (res.stats) setOfficialStats(res.stats)
+        if (res.solved_problems) {
+          setSyncMsg(`Successfully linked @${lcUsernameInput.trim()}! Total Solved: ${res.stats?.total || res.synced_count}`)
+          if (onSyncSuccess) onSyncSuccess(res.solved_problems)
+        }
+      } else {
+        setSyncMsg('Profile synced.')
+      }
+    } catch {
+      setSyncMsg('Failed to sync profile. Please check LeetCode username.')
     } finally {
       setIsSyncing(false)
     }
@@ -150,28 +183,82 @@ export default function LeetCodeDashboard({
           /* Full Dashboard View for Signed-In Users */
           <div className="dashboard-body">
             {/* LeetCode Sync Bar */}
-            <div className="dash-company-section" style={{ background: 'rgba(56, 189, 248, 0.05)', borderColor: 'rgba(56, 189, 248, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
-              <div>
-                <div className="dash-section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#38bdf8', margin: 0 }}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                  Automatic LeetCode Sync (Connected: {userEmail})
-                </div>
-                {syncMsg && (
-                  <div style={{ fontSize: '0.76rem', color: syncMsg.includes('Failed') ? '#fca5a5' : '#34d399', marginTop: '0.25rem' }}>
-                    {syncMsg}
+            <div className="dash-company-section" style={{ background: 'rgba(56, 189, 248, 0.05)', borderColor: 'rgba(56, 189, 248, 0.2)' }}>
+              {linkedUsername && !isEditing ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                  <div>
+                    <div className="dash-section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#38bdf8', margin: 0 }}>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                      Connected LeetCode Account: <strong style={{ color: '#fff', marginLeft: '4px' }}>@{linkedUsername}</strong>
+                    </div>
+                    {syncMsg && (
+                      <div style={{ fontSize: '0.76rem', color: syncMsg.includes('Failed') ? '#fca5a5' : '#34d399', marginTop: '0.25rem' }}>
+                        {syncMsg}
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <button
-                type="button"
-                className="btn btn-sm btn-primary"
-                onClick={handleRefreshSync}
-                disabled={isSyncing}
-                style={{ padding: '0.4rem 1.1rem', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }}><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                {isSyncing ? 'Syncing...' : 'Refresh Sync'}
-              </button>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-primary"
+                      onClick={handleRefreshSync}
+                      disabled={isSyncing}
+                      style={{ padding: '0.4rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }}><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                      {isSyncing ? 'Syncing...' : 'Refresh Sync'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-secondary"
+                      onClick={() => setIsEditing(true)}
+                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.76rem' }}
+                    >
+                      ✏️ Change LeetCode ID
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <form onSubmit={handleManualSyncSubmit}>
+                  <div className="dash-section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#38bdf8' }}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    {linkedUsername ? 'Change LeetCode Username' : 'Link Your LeetCode Account'}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <input
+                      type="text"
+                      className="dash-search-input"
+                      placeholder="Enter LeetCode Username (e.g. AgnivaSardar)"
+                      value={lcUsernameInput}
+                      onChange={e => setLcUsernameInput(e.target.value)}
+                      style={{ flex: 1, minWidth: '220px' }}
+                    />
+                    <button
+                      type="submit"
+                      className="btn btn-sm btn-primary"
+                      disabled={isSyncing || !lcUsernameInput.trim()}
+                      style={{ padding: '0.38rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      {isSyncing ? 'Syncing...' : 'Connect & Import Solved Questions'}
+                    </button>
+                    {isEditing && (
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-secondary"
+                        onClick={() => setIsEditing(false)}
+                        style={{ padding: '0.38rem 0.75rem' }}
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                  {syncMsg && (
+                    <div style={{ fontSize: '0.76rem', color: syncMsg.includes('Failed') ? '#fca5a5' : '#34d399', marginTop: '0.4rem' }}>
+                      {syncMsg}
+                    </div>
+                  )}
+                </form>
+              )}
             </div>
 
             {/* Top Stat Cards Grid */}

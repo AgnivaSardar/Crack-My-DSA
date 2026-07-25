@@ -108,3 +108,7 @@ export async function autoSyncUserLeetCodeByEmail(email) {
   })
 }
 
+export async function getUserProfile(email) {
+  return safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/profile`)
+}
+

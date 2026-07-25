@@ -294,14 +294,26 @@ class SolvedProblemRequest(BaseModel):
 class LeetCodeSyncRequest(BaseModel):
     username: str
 
+@app.get("/users/{email}/profile")
+@app.get("/api/users/{email}/profile")
+async def get_user_profile(email: str):
+    try:
+        from vectorstore.chat_db import ChatDatabaseManager
+        db = ChatDatabaseManager()
+        username = db.get_leetcode_username(email)
+        return {"email": email, "leetcode_username": username}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/users/{email}/solved")
 @app.get("/api/users/{email}/solved")
 async def get_user_solved_problems(email: str):
     try:
         from vectorstore.chat_db import ChatDatabaseManager
         db = ChatDatabaseManager()
-        # Automatically sync LeetCode solved problems using candidate handles from email
-        db.sync_leetcode_solved_by_email(email)
+        username = db.get_leetcode_username(email)
+        if username:
+            db.sync_leetcode_solved(email, username)
         return db.get_user_solved_problems(email)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -312,9 +324,18 @@ async def auto_sync_user_leetcode_by_email(email: str):
     try:
         from vectorstore.chat_db import ChatDatabaseManager
         db = ChatDatabaseManager()
-        count = db.sync_leetcode_solved_by_email(email)
-        solved = db.get_user_solved_problems(email)
-        return {"status": "success", "synced_count": count, "solved_problems": solved}
+        username = db.get_leetcode_username(email)
+        if not username:
+            db.sync_leetcode_solved_by_email(email)
+            username = db.get_leetcode_username(email)
+
+        if username:
+            result = db.sync_leetcode_solved(email, username)
+            solved = db.get_user_solved_problems(email)
+            return {"status": "success", "username": username, "synced_count": result.get("synced_count", 0), "stats": result.get("stats"), "solved_problems": solved}
+        else:
+            solved = db.get_user_solved_problems(email)
+            return {"status": "no_username", "username": None, "synced_count": 0, "solved_problems": solved}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -339,6 +360,7 @@ async def sync_user_leetcode(email: str, request: LeetCodeSyncRequest):
         solved = db.get_user_solved_problems(email)
         return {
             "status": "success",
+            "username": request.username,
             "synced_count": result.get("synced_count", 0),
             "stats": result.get("stats"),
             "solved_problems": solved
