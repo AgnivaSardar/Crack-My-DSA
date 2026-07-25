@@ -377,16 +377,21 @@ export default function DSALessonChat({
                       <div className="dsa-text-content" style={{ marginTop: '3px' }}>
                         {renderFormattedMarkdown(b.detail)}
                       </div>
+                      {b.code && (
+                        <div style={{ marginTop: '6px' }}>
+                          <SyntaxCodeBlock code={b.code} />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Elaborate Patterns & Mechanics */}
+            {/* Elaborate Patterns & Mechanics with Code Snippets */}
             <div className="dsa-theory-section">
               <h4 className="dsa-theory-section-title">
-                <IconApproach /> Core Patterns, Step-by-Step Approaches & Trade-offs
+                <IconApproach /> Core Patterns, Code Snippets & Trade-offs
               </h4>
 
               <div className="dsa-patterns-list">
@@ -396,10 +401,32 @@ export default function DSALessonChat({
                     
                     <div className="dsa-pattern-subblock">
                       <span className="dsa-pattern-subhead">
-                        <IconLightbulb /> Explanation & Core Mechanics:
+                        <IconLightbulb /> Detailed Explanation & Mechanics:
                       </span>
                       <p className="dsa-pattern-text">{pat.explanation}</p>
                     </div>
+
+                    {pat.code && (
+                      <div className="dsa-pattern-subblock">
+                        <span className="dsa-pattern-subhead">
+                          <IconProblems /> Code Implementation Snippet:
+                        </span>
+                        <div style={{ marginTop: '4px' }}>
+                          <SyntaxCodeBlock code={pat.code} />
+                        </div>
+                      </div>
+                    )}
+
+                    {pat.codeWalkthrough && (
+                      <div className="dsa-pattern-subblock">
+                        <span className="dsa-pattern-subhead">
+                          <IconAI /> Line-by-Line Code Walkthrough:
+                        </span>
+                        <div className="dsa-text-content" style={{ marginTop: '4px', background: '#09090c', padding: '0.6rem 0.75rem', borderRadius: '5px' }}>
+                          {renderFormattedMarkdown(pat.codeWalkthrough)}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="dsa-pattern-subblock">
                       <span className="dsa-pattern-subhead">
