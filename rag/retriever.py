@@ -202,10 +202,18 @@ class LeetCodeRetriever:
         q_lower = query.lower()
         wants_non_dsa = any(w in q_lower for w in ["sql", "database", "pandas", "dataframe", "javascript", "js", "db", "shell", "concurrency"])
         
-        # If offline flag is set, run the direct JSON search
-        if is_offline:
+        # Check if vector DB collection is empty or unreachable
+        db_count = 0
+        try:
+            if self.db and self.db.collection:
+                db_count = self.db.collection.count()
+        except Exception:
+            db_count = 0
+
+        # If offline flag is set or vector DB has 0 items, run the direct JSON search
+        if is_offline or db_count == 0:
             return self.retrieve_offline(parsed_params, search_limit, wants_non_dsa=wants_non_dsa)
-            
+
         print(f"\n[Retriever] Parsed Query: {parsed_params}")
         
         # Step 2: Extract filters

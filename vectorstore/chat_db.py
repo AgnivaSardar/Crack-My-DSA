@@ -153,7 +153,13 @@ class ChatDatabaseManager:
 
     def save_session(self, session_id: str, user_email: Optional[str], title: str, messages: List[Dict[str, Any]], last_references: List[Dict[str, Any]]):
         ref_json = json.dumps(last_references, ensure_ascii=False)
-        user_email_clean = user_email.strip().lower() if user_email else None
+        user_email_clean = user_email.strip().lower() if user_email and user_email.strip() else None
+
+        if user_email_clean:
+            try:
+                self.get_or_create_user(user_email_clean)
+            except Exception as e:
+                print(f"ChatDatabaseManager get_or_create_user warning: {e}")
 
         if self.is_postgres:
             with self.conn.cursor() as cursor:
