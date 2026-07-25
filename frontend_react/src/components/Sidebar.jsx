@@ -10,6 +10,7 @@ export default function Sidebar({
   onDeleteSession,
   onSignOut,
   onOpenAuth,
+  onToggleSidebar,
   onToast
 }) {
   // { id, x, y } — fixed-positioned popup coords
