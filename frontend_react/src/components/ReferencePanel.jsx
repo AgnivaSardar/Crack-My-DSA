@@ -1,4 +1,4 @@
-export default function ReferencePanel({ references }) {
+export default function ReferencePanel({ references, refDrawerOpen, onCloseRefDrawer }) {
   const getDiffClass = (diff) => {
     if (!diff) return ''
     return diff.toLowerCase()
@@ -23,9 +23,28 @@ export default function ReferencePanel({ references }) {
   })
 
   return (
-    <aside className="ref-column">
-      <h3>Retrieved Reference Problems</h3>
-      <div className="ref-subtitle">Direct matches pulled from the vector database</div>
+    <>
+      {refDrawerOpen && (
+        <div className="ref-backdrop" onClick={onCloseRefDrawer} />
+      )}
+
+      <aside className={`ref-column ${refDrawerOpen ? 'drawer-open' : ''}`}>
+        <div className="ref-header-row">
+          <div>
+            <h3 style={{ margin: 0 }}>Retrieved Reference Problems</h3>
+            <div className="ref-subtitle">Direct matches pulled from database</div>
+          </div>
+          {onCloseRefDrawer && (
+            <button
+              type="button"
+              className="ref-close-btn"
+              onClick={onCloseRefDrawer}
+              title="Close Panel"
+            >
+              ✕
+            </button>
+          )}
+        </div>
 
       <div className="ref-list">
         {references.length === 0 ? (
@@ -113,5 +132,6 @@ export default function ReferencePanel({ references }) {
         </div>
       )}
     </aside>
+  </>
   )
 }

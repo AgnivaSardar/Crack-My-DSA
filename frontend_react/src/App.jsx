@@ -296,6 +296,7 @@ export default function App() {
   }
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [refDrawerOpen, setRefDrawerOpen] = useState(false)
 
   if (!authenticated) {
     return <AuthPortal onAuth={handleAuth} />
@@ -331,8 +332,14 @@ export default function App() {
             isLoading={isLoading}
             sidebarCollapsed={sidebarCollapsed}
             onToggleSidebar={() => setSidebarCollapsed(prev => !prev)}
+            onToggleRefDrawer={() => setRefDrawerOpen(prev => !prev)}
+            referenceCount={lastReferences ? lastReferences.length : 0}
           />
-          <ReferencePanel references={lastReferences} />
+          <ReferencePanel
+            references={lastReferences}
+            refDrawerOpen={refDrawerOpen}
+            onCloseRefDrawer={() => setRefDrawerOpen(false)}
+          />
         </div>
       </div>
 
