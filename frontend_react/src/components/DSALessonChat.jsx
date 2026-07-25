@@ -3,7 +3,7 @@ import { askDSADoubt } from '../api/client'
 import { dsaTheoryData } from '../data/dsaTheoryData'
 import { DSADiagram } from './DSADiagrams'
 
-// Minimalist Monochrome SVG Icons (No Emojis!)
+// Minimalist Monochrome SVG Icons
 const IconBack = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -223,7 +223,7 @@ export default function DSALessonChat({
   onBackToRoadmap,
   onToast
 }) {
-  // CRITICAL DIRECTIVE: Always open Theory & Concepts first!
+  // Always default to Theory view first when opening topic!
   const [viewTab, setViewTab] = useState('theory')
   const [openDoubts, setOpenDoubts] = useState({})
   const [doubtInputs, setDoubtInputs] = useState({})
@@ -231,10 +231,15 @@ export default function DSALessonChat({
   const [localProblems, setLocalProblems] = useState(problems)
   const [copiedId, setCopiedId] = useState(null)
 
+  // Dedicated AI Theory Concept Assistant state
+  const [theoryDoubts, setTheoryDoubts] = useState([])
+  const [theoryInput, setTheoryInput] = useState('')
+  const [isAskingTheory, setIsAskingTheory] = useState(false)
+
   useEffect(() => {
     setLocalProblems(problems)
-    // Whenever topic changes, force default to Theory sub-tab first!
     setViewTab('theory')
+    setTheoryDoubts([])
   }, [topic, problems])
 
   const topicId = topic?.topic_id || 1
@@ -281,6 +286,30 @@ export default function DSALessonChat({
     }
   }
 
+  // Handle AI Theory Concept Assistant Questions
+  async function handleSendTheoryDoubt(customQuery) {
+    const queryText = (customQuery || theoryInput).trim()
+    if (!queryText) return
+
+    setIsAskingTheory(true)
+
+    try {
+      const email = guestUser ? 'guest@local' : userEmail
+      const topicTitle = `Theory: ${topic?.title || 'DSA Concepts'}`
+      const res = await askDSADoubt(email, -topicId, topicTitle, theoryData.summary, queryText)
+      
+      if (res && res.doubt) {
+        setTheoryDoubts(prev => [...prev, res.doubt])
+        setTheoryInput('')
+        if (onToast) onToast('AI Concept Answer generated!')
+      }
+    } catch (err) {
+      if (onToast) onToast('Failed to generate theory answer.')
+    } finally {
+      setIsAskingTheory(false)
+    }
+  }
+
   function copyCode(pId, codeText) {
     navigator.clipboard.writeText(codeText)
     setCopiedId(pId)
@@ -290,7 +319,7 @@ export default function DSALessonChat({
 
   return (
     <div className="dsa-lesson-chat-container">
-      {/* Prominent Header with Increased Title Font Size */}
+      {/* Prominent Header with Enlarged Title Font Size */}
       <div className="dsa-lesson-header">
         <div className="dsa-header-left">
           <button className="dsa-back-btn" onClick={onBackToRoadmap} title="Back to Topics List">
@@ -361,8 +390,74 @@ export default function DSALessonChat({
               </div>
             </div>
 
-            {/* Visual Diagram Representation */}
+            {/* Rich Visual SVG Diagram Representation */}
             <DSADiagram topicId={topicId} />
+
+            {/* AI Theory Concept Chat Assistant (Directly embedded in Theory Tab) */}
+            <div className="dsa-theory-ai-chat-box">
+              <div className="dsa-theory-chat-header">
+                <div className="dsa-ai-badge">
+                  <IconAI /> AI Concept Tutor
+                </div>
+                <h4 className="dsa-theory-chat-title">Ask AI Anything About {topic?.title} Theory</h4>
+              </div>
+
+              {/* Suggested Questions Pills */}
+              <div className="dsa-suggested-pills">
+                <button className="dsa-pill-btn" onClick={() => handleSendTheoryDoubt(`Explain core principles and optimal approach of ${topic?.title}`)}>
+                  💡 Explain core principles of {topic?.title}
+                </button>
+                <button className="dsa-pill-btn" onClick={() => handleSendTheoryDoubt(`How to optimize time and space complexity in ${topic?.title}?`)}>
+                  ⏱️ How to optimize time & space complexity?
+                </button>
+                <button className="dsa-pill-btn" onClick={() => handleSendTheoryDoubt(`What are common pitfalls and edge cases in ${topic?.title}?`)}>
+                  ⚠️ Common pitfalls & edge cases?
+                </button>
+              </div>
+
+              {/* Theory Doubts Q&A Stream */}
+              {theoryDoubts.length > 0 && (
+                <div className="dsa-doubts-list" style={{ marginTop: '0.5rem' }}>
+                  {theoryDoubts.map((td, tdIdx) => (
+                    <div key={tdIdx} className="dsa-doubt-item">
+                      <div className="dsa-user-doubt-bubble">
+                        <span className="dsa-doubt-role">You:</span> {td.doubt_text}
+                      </div>
+                      <div className="dsa-ai-doubt-response">
+                        <span className="dsa-doubt-role ai">
+                          <IconAI /> AI Concept Explanation:
+                        </span>
+                        <div style={{ marginTop: '4px' }}>
+                          {renderFormattedMarkdown(td.ai_response)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Theory Doubt Input */}
+              <div className="dsa-doubt-input-row" style={{ marginTop: '0.5rem' }}>
+                <input
+                  type="text"
+                  className="dsa-doubt-input"
+                  placeholder={`Ask AI a concept question about ${topic?.title}...`}
+                  value={theoryInput}
+                  onChange={(e) => setTheoryInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSendTheoryDoubt()
+                  }}
+                  disabled={isAskingTheory}
+                />
+                <button
+                  className="dsa-btn-action solid"
+                  onClick={() => handleSendTheoryDoubt()}
+                  disabled={isAskingTheory || !theoryInput.trim()}
+                >
+                  {isAskingTheory ? 'Asking AI...' : 'Ask AI Tutor'}
+                </button>
+              </div>
+            </div>
 
             {/* Data Structure Basics & Fundamentals (Access, Insertion, Deletion, Traversal) */}
             {theoryData.basics && theoryData.basics.length > 0 && (
