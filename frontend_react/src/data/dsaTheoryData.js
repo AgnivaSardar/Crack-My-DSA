@@ -14,14 +14,9 @@ export const dsaTheoryData = {
         code: "// Sequential Traversal\nfor (int i = 0; i < n; i++) {\n    cout << arr[i] << \" \";\n}\n// Time: O(N) | Space: O(1)"
       },
       {
-        op: "3. Insertion (Start, End, & Arbitrary Position k)",
-        detail: "Inserting at the end is O(1) amortized. Inserting at index k requires shifting all subsequent elements right by 1 position.",
-        code: "// Insert element 'val' at index 'k'\nfor (int i = n; i > k; i--) {\n    arr[i] = arr[i - 1]; // Shift elements right\n}\narr[k] = val;\nn++;\n// Time: O(N) due to shifting"
-      },
-      {
-        op: "4. Deletion (Start, End, & Arbitrary Position k)",
-        detail: "Deleting from index k requires shifting all subsequent elements left by 1 position to fill the gap.",
-        code: "// Delete element at index 'k'\nfor (int i = k; i < n - 1; i++) {\n    arr[i] = arr[i + 1]; // Shift elements left\n}\nn--;\n// Time: O(N) due to shifting"
+        op: "3. Insertion & Deletion Mechanics",
+        detail: "Inserting or deleting from index k requires shifting all subsequent elements, causing O(N) worst-case time.",
+        code: "// Shift elements right for insertion at index k\nfor (int i = n; i > k; i--) arr[i] = arr[i - 1];\narr[k] = val;"
       }
     ],
     patterns: [
@@ -29,7 +24,7 @@ export const dsaTheoryData = {
         name: "1. Two Pointers Pattern",
         video: {
           id: "On03HWe2tZM",
-          title: "Visual introduction Two Pointer Algorithm | Coding Interviews",
+          title: "Visual introduction Two Pointer Algorithm",
           channel: "Josh's DevBox",
           duration: "15 mins"
         },
@@ -46,7 +41,7 @@ export const dsaTheoryData = {
         name: "2. Kadane's Algorithm (Maximum Subarray Sum)",
         video: {
           id: "AHZpyENo7k4",
-          title: "Kadane's Algorithm | Maximum Subarray Sum | Finding and Printing",
+          title: "Kadane's Algorithm | Maximum Subarray Sum",
           channel: "take U forward",
           duration: "20 mins"
         },
@@ -82,7 +77,7 @@ export const dsaTheoryData = {
         name: "1. Classic Binary Search Pattern",
         video: {
           id: "s4DPM8ct1pI",
-          title: "Binary Search - Leetcode 704 Explanation",
+          title: "Binary Search - LeetCode 704 Explanation",
           channel: "NeetCode",
           duration: "12 mins"
         },
@@ -216,7 +211,19 @@ export const dsaTheoryData = {
       duration: "40 mins"
     },
     basics: [],
-    patterns: [],
+    patterns: [
+      {
+        name: "1. Subsequences Pick / Non-Pick Pattern",
+        explanation: "Explores inclusion vs exclusion choice branches for every element generating 2^N total subsets.",
+        code: "void solve(int idx, vector<int>& ds, vector<int>& nums) {\n    if (idx == nums.size()) { print(ds); return; }\n    ds.push_back(nums[idx]); solve(idx + 1, ds, nums);\n    ds.pop_back(); solve(idx + 1, ds, nums);\n}",
+        codeWalkthrough: "• Recurse with element included, backtrack to explore exclusion.",
+        approach: "1. Base case when idx == n.\n2. Recurse pick and non-pick branches.",
+        timeComplexity: "O(2^N)",
+        spaceComplexity: "O(N)",
+        whenToApply: "Generating all subsets, combinations, permutation trees.",
+        whenNotToApply: "Large N where 2^N exceeds limits."
+      }
+    ],
     complexities: [
       { operation: "Subsequence Generation", time: "O(2^N)", space: "O(N)" }
     ],
@@ -232,43 +239,67 @@ export const dsaTheoryData = {
       channel: "HackerRank",
       duration: "25 mins"
     },
-    basics: [],
+    basics: [
+      {
+        op: "1. Bitwise Masking Operations",
+        detail: "Check k-th bit (`n & (1 << k)`), Set k-th bit (`n | (1 << k)`), Clear k-th bit (`n & ~(1 << k)`), Power of 2 (`(n & (n-1)) == 0`).",
+        code: "bool isSet(int n, int k) { return (n & (1 << k)) != 0; }\nint setBit(int n, int k) { return n | (1 << k); }"
+      }
+    ],
     patterns: [
       {
-        name: "1. Bitwise Operations & Tricks",
+        name: "1. Fundamental Bitwise Operations & Tricks",
         video: {
           id: "ZwU6wSkepBI",
           title: "L2 | Bit Manipulations | Problem Solving on Bit Manipulations",
           channel: "take U forward",
           duration: "20 mins"
         },
-        explanation: "Direct bitwise operations: Check bit, Set bit, Clear bit, Toggle bit, Power of 2.",
-        code: "bool isKthBitSet(int n, int k) { return (n & (1 << k)) != 0; }\nint setKthBit(int n, int k) { return n | (1 << k); }\nbool isPowerOfTwo(int n) { return n > 0 && (n & (n - 1)) == 0; }",
-        codeWalkthrough: "• Apply bitwise masks in O(1) constant time.",
-        approach: "1. Bitwise mask pass.",
+        explanation: "Direct bitwise operations in O(1) time.",
+        code: "bool isPowerOfTwo(int n) { return n > 0 && (n & (n - 1)) == 0; }",
+        codeWalkthrough: "• n & (n - 1) removes the lowest set bit in constant time.",
+        approach: "1. Apply bitwise masks.",
         timeComplexity: "O(1)",
         spaceComplexity: "O(1)",
-        whenToApply: "Bit parity, fast subset masks.",
-        whenNotToApply: "Continuous floating point numbers."
+        whenToApply: "Parity checks, bit masks, subset representations.",
+        whenNotToApply: "Floating point numbers."
       }
     ],
     complexities: [
-      { operation: "Bitwise Operations", time: "O(1)", space: "O(1)" }
+      { operation: "Bitwise Masking", time: "O(1)", space: "O(1)" }
     ],
-    strategy: "Use n & (n - 1) to remove lowest set bit in O(1)."
+    strategy: "Use n & (n - 1) to clear lowest set bit in O(1)."
   },
 
   7: {
     title: "07. Stack and Queues",
-    summary: "Stack (LIFO) and Queue (FIFO) linear data structures.",
+    summary: "Stack (LIFO - Last In First Out) and Queue (FIFO - First In First Out) linear data structures.",
     topicVideo: {
       id: "GYptUgnIM_I",
       title: "Implementation of Stack using Arrays",
       channel: "take U forward",
       duration: "25 mins"
     },
-    basics: [],
-    patterns: [],
+    basics: [
+      {
+        op: "1. Stack LIFO vs Queue FIFO Operations",
+        detail: "Stack push/pop occurs at top (O(1)). Queue enqueue occurs at rear and dequeue at front (O(1)).",
+        code: "// Stack Push & Pop\nstack<int> st;\nst.push(10); st.pop();"
+      }
+    ],
+    patterns: [
+      {
+        name: "1. Monotonic Stack Pattern",
+        explanation: "Maintains stack elements in strictly increasing or decreasing order for Next Greater Element queries.",
+        code: "stack<int> st;\nfor (int i = 0; i < n; i++) {\n    while (!st.empty() && arr[i] > arr[st.top()]) {\n        ans[st.top()] = arr[i]; st.pop();\n    }\n    st.push(i);\n}",
+        codeWalkthrough: "• Pop elements smaller than current element to maintain monotonic order.",
+        approach: "1. Maintain stack of indices.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(N)",
+        whenToApply: "Next Greater / Next Smaller Element, Stock Span.",
+        whenNotToApply: "Random array access."
+      }
+    ],
     complexities: [
       { operation: "Push / Pop", time: "O(1)", space: "O(N)" }
     ],
@@ -278,10 +309,16 @@ export const dsaTheoryData = {
   8: {
     title: "08. Sliding Window & Two Pointers",
     summary: "Subarray window optimization over sequential data structures avoiding nested O(N^2) loops.",
-    basics: [],
+    basics: [
+      {
+        op: "1. Window Expansion & Contraction Mechanics",
+        detail: "Expand right boundary to include new elements, contract left boundary when window constraint is violated.",
+        code: "int left = 0;\nfor (int right = 0; right < n; right++) {\n    windowSum += arr[right];\n    while (windowSum > target) windowSum -= arr[left++];\n}"
+      }
+    ],
     patterns: [
       {
-        name: "1. Longest Substring Without Repeating Characters",
+        name: "1. Variable Size Sliding Window",
         video: {
           id: "3IETreEybaA",
           title: "LeetCode Longest Substring Without Repeating Characters Solution Explained",
@@ -348,8 +385,26 @@ export const dsaTheoryData = {
       channel: "Abdul Bari",
       duration: "30 mins"
     },
-    basics: [],
-    patterns: [],
+    basics: [
+      {
+        op: "1. Optimal Substructure & Choice Property",
+        detail: "Greedy choice property guarantees that choosing local optimal choice yields global optimal solution.",
+        code: "// Sort intervals by finish time\nsort(intervals.begin(), intervals.end(), cmp);"
+      }
+    ],
+    patterns: [
+      {
+        name: "1. Activity Selection / Interval Scheduling",
+        explanation: "Sorts activities by finish time to greedily select maximum non-overlapping intervals.",
+        code: "sort(meetings.begin(), meetings.end(), [](auto& a, auto& b) { return a.end < b.end; });\nint count = 1, limit = meetings[0].end;\nfor (int i = 1; i < n; i++) {\n    if (meetings[i].start > limit) { count++; limit = meetings[i].end; }\n}",
+        codeWalkthrough: "• Sort by end time, pick meeting if start time > previous limit.",
+        approach: "1. Sort by end time.\n2. Greedily pick valid next interval.",
+        timeComplexity: "O(N log N)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Non-overlapping interval selection, scheduling.",
+        whenNotToApply: "When local choice breaks global optimum (use DP instead)."
+      }
+    ],
     complexities: [
       { operation: "Greedy Sort & Pass", time: "O(N log N)", space: "O(1)" }
     ],
@@ -457,5 +512,40 @@ export const dsaTheoryData = {
       { operation: "Trie Search", time: "O(L)", space: "O(N * L * 26)" }
     ],
     strategy: "Use Tries for prefix-based string lookups."
+  },
+
+  16: {
+    title: "16. Strings (Hard)",
+    summary: "Advanced string pattern matching and string transformation algorithms.",
+    topicVideo: {
+      id: "V5-7GzOfADQ",
+      title: "9.1 Knuth-Morris-Pratt KMP String Matching Algorithm",
+      channel: "Abdul Bari",
+      duration: "24 mins"
+    },
+    basics: [],
+    patterns: [
+      {
+        name: "1. KMP Pattern Search (LPS Array)",
+        video: {
+          id: "V5-7GzOfADQ",
+          title: "9.1 Knuth-Morris-Pratt KMP String Matching Algorithm",
+          channel: "Abdul Bari",
+          duration: "24 mins"
+        },
+        explanation: "Uses Longest Prefix Suffix (LPS) array to avoid text pointer backtracking.",
+        code: "vector<int> computeLPS(string p) {\n    int m = p.length(), len = 0;\n    vector<int> lps(m, 0);\n    for (int i = 1; i < m;) {\n        if (p[i] == p[len]) lps[i++] = ++len;\n        else if (len != 0) len = lps[len - 1];\n        else lps[i++] = 0;\n    }\n    return lps;\n}",
+        codeWalkthrough: "• Precomputes proper prefix that is also suffix.",
+        approach: "1. Build LPS array in O(M).",
+        timeComplexity: "O(N + M)",
+        spaceComplexity: "O(M)",
+        whenToApply: "Linear time exact pattern matching.",
+        whenNotToApply: "Simple short string lookups."
+      }
+    ],
+    complexities: [
+      { operation: "KMP Search", time: "O(N + M)", space: "O(M)" }
+    ],
+    strategy: "Use KMP or Z-algorithm for linear pattern matching."
   }
 }

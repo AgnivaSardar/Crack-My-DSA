@@ -2975,6 +2975,93 @@ code, pre, .mono {
   border-color: #dc2626;
 }
 
+/* AI Theory Concept Tutor Chat Box & Pills */
+.dsa-theory-ai-chat-box {
+  background: #0b0b0f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.dsa-theory-chat-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dsa-theory-chat-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.dsa-suggested-pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.dsa-pill-btn {
+  background: #141418;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem 0.85rem;
+  border-radius: 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: normal;
+  line-height: 1.35;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.dsa-pill-btn:hover {
+  background: #1e1e24;
+  color: #ffffff;
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+}
+
+.dsa-doubt-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 0.4rem;
+}
+
+.dsa-doubt-input {
+  flex: 1;
+  min-width: 0;
+  background: #050507;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 0.55rem 0.85rem;
+  color: #ffffff;
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.dsa-doubt-input:focus {
+  border-color: #38bdf8;
+  background: #08080c;
+}
+
+
 /* Rich YouTube Video Card Component */
 .dsa-yt-video-card {
   display: flex;

@@ -271,8 +271,17 @@ export default function DSALessonChat({
     setTheoryDoubts([])
   }, [topic, problems])
 
-  const topicId = topic?.topic_id || 1
-  const theoryData = dsaTheoryData[topicId] || dsaTheoryData[1]
+  const topicId = topic?.topic_id || topic?.id || 1
+  const theoryData = dsaTheoryData[topicId] || {
+    title: topic?.title || 'DSA Concepts',
+    summary: `${topic?.title || 'This topic'} covers fundamental data structures, optimal algorithmic patterns, memory trade-offs, and competitive programming solutions.`,
+    basics: [],
+    patterns: [],
+    complexities: [
+      { operation: "Core Traversal & Operations", time: "O(N)", space: "O(1)" }
+    ],
+    strategy: `Master the core properties, edge cases, and pattern implementations of ${topic?.title || 'this topic'}.`
+  }
 
   const totalProblems = localProblems.length
   const completedCount = localProblems.filter(p => p.is_completed).length
