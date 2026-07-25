@@ -78,23 +78,13 @@ class EmbeddingManager:
             )
             
             try:
-                with urllib.request.urlopen(req, timeout=10) as response:
+                with urllib.request.urlopen(req, timeout=3) as response:
                     res_data = json.loads(response.read().decode("utf-8"))
                     return res_data["embeddings"]
             except Exception as e:
-                print(f"[EmbeddingManager] Connection to embedding microservice failed: {e}.")
-                print("Falling back to local in-process model loading for this batch...")
-                try:
-                    if not self.local_model:
-                        from sentence_transformers import SentenceTransformer
-                        print("Loading local SentenceTransformer model 'all-MiniLM-L6-v2' in-process...")
-                        self.local_model = SentenceTransformer("all-MiniLM-L6-v2")
-                        print("Local model loaded successfully.")
-                    embeddings = self.local_model.encode(texts, batch_size=64, show_progress_bar=False)
-                    return embeddings.tolist()
-                except Exception as ex:
-                    print(f"Local in-process encode failed: {ex}. Returning dummy embeddings.")
-                    return [[0.0] * self.embedding_dim for _ in texts]
+                # Do not load heavy PyTorch model in-process on cloud to avoid 512MB RAM OOM crash
+                print(f"[EmbeddingManager] Local embedding microservice unreachable. Using lightweight fallback retrieval.")
+                return [[0.0] * self.embedding_dim for _ in texts]
             
         elif self.provider == "gemini":
             embeddings = []
