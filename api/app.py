@@ -128,20 +128,24 @@ async def query_rag(request: QueryRequest):
             except Exception as e:
                 print(f"[Query Solved Fetch Error] {e}")
 
-        # Check if user query asks to remove/exclude solved questions or if solved titles exist
+        # Check if user query EXPLICITLY asks to remove/exclude solved questions
         query_lower = request.query.lower()
-        is_exclude_explicit = any(k in query_lower for k in ["already done", "unsolved", "todo", "not done", "not solved", "exclude", "remove"])
+        is_exclude_explicit = any(k in query_lower for k in [
+            "already done", "unsolved", "todo", "not done", "not solved", 
+            "exclude", "remove", "don't include", "dont include", "fresh", "new question"
+        ])
 
-        # Fetch candidate pool (oversampled if filtering solved) so retrieved_questions contains full target_limit UNSOLVED problems
         target_limit = request.limit or 10
-        fetch_limit = target_limit * 5 if (is_exclude_explicit or user_solved_titles) else target_limit
-        candidates = retriever.retrieve(request.query, limit=fetch_limit)
-        
-        if (is_exclude_explicit or user_solved_titles) and user_solved_titles:
+
+        if is_exclude_explicit and user_solved_titles:
+            # ONLY when user explicitly asks to exclude/remove solved questions:
+            # Oversample candidate pool so retrieved_questions contains full target_limit UNSOLVED problems
+            candidates = retriever.retrieve(request.query, limit=target_limit * 5)
             solved_set = set(t.strip().lower() for t in user_solved_titles)
             retrieved_questions = [q for q in candidates if (q.get("title") or q.get("problem_title") or "").strip().lower() not in solved_set][:target_limit]
         else:
-            retrieved_questions = candidates[:target_limit]
+            # Default behavior (normal queries): return top retrieved questions (both solved and unsolved)
+            retrieved_questions = retriever.retrieve(request.query, limit=target_limit)
 
         # Format history
         history_dicts = []
@@ -153,7 +157,7 @@ async def query_rag(request: QueryRequest):
             query=request.query, 
             retrieved_questions=retrieved_questions, 
             chat_history=history_dicts,
-            solved_titles=user_solved_titles if (is_exclude_explicit or user_solved_titles) else None
+            solved_titles=user_solved_titles if is_exclude_explicit else None
         )
         
         return QueryResponse(
