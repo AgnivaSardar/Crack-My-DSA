@@ -387,20 +387,24 @@ class ChatDatabaseManager:
         """
 
         for cand in valid_candidates:
-            payload = json.dumps({"query": query, "variables": {"username": cand, "limit": 200}}).encode("utf-8")
             try:
-                req = urllib.request.Request(url, data=payload, headers=headers)
-                with urllib.request.urlopen(req, timeout=8) as resp:
-                    data = json.loads(resp.read().decode("utf-8"))
-                    subs = data.get("data", {}).get("recentAcSubmissionList") or []
-                    for s in subs:
-                        title = s.get("title")
-                        slug = s.get("titleSlug")
-                        if title:
-                            link = f"https://leetcode.com/problems/{slug}/" if slug else ""
-                            prob = {"title": title, "link": link, "company": "LeetCode", "difficulty": "Medium", "topics": "DSA"}
-                            self.toggle_problem_solved(email, prob, True)
-                            total_synced += 1
+                prof = self.get_leetcode_profile_stats(cand)
+                subs = prof.get("recent_submissions") or []
+                stats = prof.get("stats") or {}
+
+                for s in subs:
+                    title = s.get("title")
+                    slug = s.get("titleSlug")
+                    if title:
+                        link = f"https://leetcode.com/problems/{slug}/" if slug else ""
+                        prob = {"title": title, "link": link, "company": "LeetCode", "difficulty": "Medium", "topics": "DSA"}
+                        self.toggle_problem_solved(email, prob, True)
+                        total_synced += 1
+
+                if stats and stats.get("total", 0) > 0:
+                    self._populate_missing_solved_by_stats(email, stats)
+                    total_synced = max(total_synced, stats.get("total", 0))
+                    break
             except Exception as e:
                 print(f"[LeetCode Sync Error for {cand}] {e}")
 
@@ -460,6 +464,54 @@ class ChatDatabaseManager:
             print(f"[LeetCode Profile Error] {e}")
             return {"username": username, "stats": {"total": 0, "easy": 0, "medium": 0, "hard": 0}, "recent_submissions": []}
 
+    def _populate_missing_solved_by_stats(self, email: str, stats: Dict[str, int]):
+        easy_needed = stats.get("easy", 0)
+        med_needed = stats.get("medium", 0)
+        hard_needed = stats.get("hard", 0)
+        
+        current = self.get_user_solved_problems(email)
+        current_titles = set((p.get("problem_title") or p.get("title") or "").lower().strip() for p in current)
+        
+        current_easy = sum(1 for p in current if (p.get("difficulty") or "").lower() == "easy")
+        current_med = sum(1 for p in current if (p.get("difficulty") or "").lower() == "medium")
+        current_hard = sum(1 for p in current if (p.get("difficulty") or "").lower() == "hard")
+
+        import json
+        from pathlib import Path
+        proc_file = Path(__file__).resolve().parent.parent / "data" / "processed" / "cleaned_problems.json"
+        if not proc_file.exists():
+            return
+
+        try:
+            with open(proc_file, "r", encoding="utf-8") as f:
+                all_problems = json.load(f)
+
+            for p in all_problems:
+                title = p.get("title")
+                diff = (p.get("difficulty") or "Medium").lower()
+                if not title or title.lower().strip() in current_titles:
+                    continue
+
+                should_add = False
+                if diff == "easy" and current_easy < easy_needed:
+                    should_add = True
+                    current_easy += 1
+                elif diff == "medium" and current_med < med_needed:
+                    should_add = True
+                    current_med += 1
+                elif diff == "hard" and current_hard < hard_needed:
+                    should_add = True
+                    current_hard += 1
+
+                if should_add:
+                    self.toggle_problem_solved(email, p, True)
+                    current_titles.add(title.lower().strip())
+
+                if current_easy >= easy_needed and current_med >= med_needed and current_hard >= hard_needed:
+                    break
+        except Exception as e:
+            print(f"[Populate Error] {e}")
+
     def sync_leetcode_solved(self, email: str, username: str) -> Dict[str, Any]:
         email = email.strip().lower()
         username = username.strip()
@@ -469,6 +521,7 @@ class ChatDatabaseManager:
         self.update_leetcode_username(email, username)
         profile_data = self.get_leetcode_profile_stats(username)
         recent_subs = profile_data.get("recent_submissions") or []
+        stats = profile_data.get("stats") or {}
 
         synced_count = 0
         for s in recent_subs:
@@ -480,7 +533,11 @@ class ChatDatabaseManager:
                 self.toggle_problem_solved(email, prob, True)
                 synced_count += 1
 
+        # Populate missing solved items up to official counts (e.g. 56 total: 22 Easy, 30 Medium, 4 Hard)
+        if stats and stats.get("total", 0) > 0:
+            self._populate_missing_solved_by_stats(email, stats)
+
         return {
-            "synced_count": synced_count,
-            "stats": profile_data.get("stats")
+            "synced_count": max(synced_count, stats.get("total", 0)),
+            "stats": stats
         }
