@@ -306,9 +306,14 @@ async def sync_user_leetcode(email: str, request: LeetCodeSyncRequest):
     try:
         from vectorstore.chat_db import ChatDatabaseManager
         db = ChatDatabaseManager()
-        count = db.sync_leetcode_solved(email, request.username)
+        result = db.sync_leetcode_solved(email, request.username)
         solved = db.get_user_solved_problems(email)
-        return {"status": "success", "synced_count": count, "solved_problems": solved}
+        return {
+            "status": "success",
+            "synced_count": result.get("synced_count", 0),
+            "stats": result.get("stats"),
+            "solved_problems": solved
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

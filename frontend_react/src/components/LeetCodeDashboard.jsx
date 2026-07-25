@@ -18,6 +18,7 @@ export default function LeetCodeDashboard({
   const [lcUsername, setLcUsername] = useState('')
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
+  const [officialStats, setOfficialStats] = useState(null)
 
   if (!isOpen) return null
 
@@ -28,9 +29,14 @@ export default function LeetCodeDashboard({
     setSyncMsg('Connecting to LeetCode API...')
     try {
       const res = await syncLeetCodeUser(userEmail, lcUsername.trim())
-      if (res && res.solved_problems) {
-        setSyncMsg(`Successfully synced ${res.synced_count || 0} accepted problems from LeetCode!`)
-        if (onSyncSuccess) onSyncSuccess(res.solved_problems)
+      if (res) {
+        if (res.stats) {
+          setOfficialStats(res.stats)
+        }
+        if (res.solved_problems) {
+          setSyncMsg(`Successfully synced profile from LeetCode! Total Solved: ${res.stats?.total || res.synced_count}`)
+          if (onSyncSuccess) onSyncSuccess(res.solved_problems)
+        }
       } else {
         setSyncMsg('Profile synced.')
       }
@@ -42,10 +48,10 @@ export default function LeetCodeDashboard({
   }
 
   // Calculate statistics
-  const totalSolved = solvedProblems.length
-  const easyCount = solvedProblems.filter(p => (p.difficulty || '').toLowerCase() === 'easy').length
-  const mediumCount = solvedProblems.filter(p => (p.difficulty || '').toLowerCase() === 'medium').length
-  const hardCount = solvedProblems.filter(p => (p.difficulty || '').toLowerCase() === 'hard').length
+  const totalSolved = officialStats?.total != null ? officialStats.total : solvedProblems.length
+  const easyCount = officialStats?.easy != null ? officialStats.easy : solvedProblems.filter(p => (p.difficulty || '').toLowerCase() === 'easy').length
+  const mediumCount = officialStats?.medium != null ? officialStats.medium : solvedProblems.filter(p => (p.difficulty || '').toLowerCase() === 'medium').length
+  const hardCount = officialStats?.hard != null ? officialStats.hard : solvedProblems.filter(p => (p.difficulty || '').toLowerCase() === 'hard').length
 
   // HackerRank skill rating logic based on solved count
   let starRating = '1★ Novice Solver'

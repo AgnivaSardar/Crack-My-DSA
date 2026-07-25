@@ -406,48 +406,81 @@ class ChatDatabaseManager:
 
         return total_synced
 
-    def sync_leetcode_solved(self, email: str, username: str) -> int:
+    def get_leetcode_profile_stats(self, username: str) -> Dict[str, Any]:
         import urllib.request
         import json
 
-        email = email.strip().lower()
-        username = username.strip()
-        if not username:
-            return 0
-
-        self.update_leetcode_username(email, username)
-
         url = "https://leetcode.com/graphql"
-        query = """
-        query getACSubmissions($username: String!) {
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Referer": "https://leetcode.com"
+        }
+        q = """
+        query getUserProfile($username: String!) {
+          matchedUser(username: $username) {
+            username
+            submitStats {
+              acSubmissionNum {
+                difficulty
+                count
+              }
+            }
+          }
           recentAcSubmissionList(username: $username, limit: 100) {
             title
             titleSlug
           }
         }
         """
-        payload = json.dumps({"query": query, "variables": {"username": username}}).encode("utf-8")
-        headers = {
-            "Content-Type": "application/json",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            "Referer": "https://leetcode.com"
-        }
-
-        synced_count = 0
+        payload = json.dumps({"query": q, "variables": {"username": username}}).encode("utf-8")
         try:
             req = urllib.request.Request(url, data=payload, headers=headers)
             with urllib.request.urlopen(req, timeout=10) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
-                subs = data.get("data", {}).get("recentAcSubmissionList") or []
-                for s in subs:
-                    title = s.get("title")
-                    slug = s.get("titleSlug")
-                    if title:
-                        link = f"https://leetcode.com/problems/{slug}/" if slug else ""
-                        prob = {"title": title, "link": link, "company": "LeetCode", "difficulty": "Medium", "topics": "DSA"}
-                        self.toggle_problem_solved(email, prob, True)
-                        synced_count += 1
+                matched = data.get("data", {}).get("matchedUser") or {}
+                stats = matched.get("submitStats", {}).get("acSubmissionNum") or []
+                recent_subs = data.get("data", {}).get("recentAcSubmissionList") or []
+                
+                counts = {"total": 0, "easy": 0, "medium": 0, "hard": 0}
+                for item in stats:
+                    diff = item.get("difficulty", "").lower()
+                    cnt = item.get("count", 0)
+                    if diff == "all": counts["total"] = cnt
+                    elif diff == "easy": counts["easy"] = cnt
+                    elif diff == "medium": counts["medium"] = cnt
+                    elif diff == "hard": counts["hard"] = cnt
+                
+                return {
+                    "username": username,
+                    "stats": counts,
+                    "recent_submissions": recent_subs
+                }
         except Exception as e:
-            print(f"[LeetCode Sync Error] {e}")
+            print(f"[LeetCode Profile Error] {e}")
+            return {"username": username, "stats": {"total": 0, "easy": 0, "medium": 0, "hard": 0}, "recent_submissions": []}
 
-        return synced_count
+    def sync_leetcode_solved(self, email: str, username: str) -> Dict[str, Any]:
+        email = email.strip().lower()
+        username = username.strip()
+        if not username:
+            return {"synced_count": 0, "stats": {"total": 0, "easy": 0, "medium": 0, "hard": 0}}
+
+        self.update_leetcode_username(email, username)
+        profile_data = self.get_leetcode_profile_stats(username)
+        recent_subs = profile_data.get("recent_submissions") or []
+
+        synced_count = 0
+        for s in recent_subs:
+            title = s.get("title")
+            slug = s.get("titleSlug")
+            if title:
+                link = f"https://leetcode.com/problems/{slug}/" if slug else ""
+                prob = {"title": title, "link": link, "company": "LeetCode", "difficulty": "Medium", "topics": "DSA"}
+                self.toggle_problem_solved(email, prob, True)
+                synced_count += 1
+
+        return {
+            "synced_count": synced_count,
+            "stats": profile_data.get("stats")
+        }
