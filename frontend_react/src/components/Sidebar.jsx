@@ -62,6 +62,14 @@ export default function Sidebar({
         {/* Fixed header */}
         <div className="sidebar-header">
           <span className="sidebar-logo">Crack My DSA</span>
+          <button
+            type="button"
+            className="sidebar-collapse-btn"
+            onClick={onToggleSidebar}
+            title="Collapse Sidebar"
+          >
+            ◀
+          </button>
         </div>
 
         <div className="sidebar-section-label">Saved Conversations</div>

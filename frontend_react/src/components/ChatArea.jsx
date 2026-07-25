@@ -58,7 +58,15 @@ function CodeBlock({ code, language }) {
   )
 }
 
-export default function ChatArea({ messages, onNewMessage, onRegenerate, metadata, isLoading }) {
+export default function ChatArea({ 
+  messages, 
+  onNewMessage, 
+  onRegenerate, 
+  metadata, 
+  isLoading,
+  sidebarCollapsed,
+  onToggleSidebar
+}) {
   const [input, setInput] = useState('')
   const [company, setCompany] = useState('All Companies')
   const [topic, setTopic] = useState('All Topics')
@@ -136,6 +144,14 @@ export default function ChatArea({ messages, onNewMessage, onRegenerate, metadat
       {/* Filter Panel — FIXED AT TOP, compact single row */}
       <form className="filter-panel-top" onSubmit={handleSearch}>
         <div className="filter-top-row">
+          <button
+            type="button"
+            className="sidebar-toggle-btn"
+            onClick={onToggleSidebar}
+            title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {sidebarCollapsed ? "☰" : "◀"}
+          </button>
           {/* Selects */}
           <select className="filter-select-sm" value={company} onChange={e => setCompany(e.target.value)} title="Target Company">
             <option>All Companies</option>

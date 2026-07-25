@@ -295,12 +295,18 @@ export default function App() {
     }
   }
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
   if (!authenticated) {
     return <AuthPortal onAuth={handleAuth} />
   }
 
   return (
-    <div className="app-layout">
+    <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      {sidebarCollapsed && (
+        <div className="sidebar-backdrop" onClick={() => setSidebarCollapsed(false)} />
+      )}
+
       <Sidebar
         sessions={sessions}
         currentSessionId={currentSessionId}
@@ -311,6 +317,7 @@ export default function App() {
         onDeleteSession={handleDeleteSession}
         onSignOut={handleSignOut}
         onOpenAuth={handleOpenAuth}
+        onToggleSidebar={() => setSidebarCollapsed(prev => !prev)}
         onToast={addToast}
       />
 
@@ -322,6 +329,8 @@ export default function App() {
             onRegenerate={handleRegenerate}
             metadata={metadata}
             isLoading={isLoading}
+            sidebarCollapsed={sidebarCollapsed}
+            onToggleSidebar={() => setSidebarCollapsed(prev => !prev)}
           />
           <ReferencePanel references={lastReferences} />
         </div>
