@@ -50,20 +50,7 @@ export default function ReferencePanel({
     return (
       <div key={idx} className={`ref-card ${isDone ? 'ref-card-done' : ''}`}>
         <div className="ref-card-header">
-          <div className="ref-card-title-wrap">
-            <span className="ref-card-title">{title}</span>
-            <a
-              className="yt-card-btn"
-              href={ytUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              title={`Watch YouTube solution for ${title}`}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="#FF0000">
-                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-              </svg>
-            </a>
-          </div>
+          <span className="ref-card-title">{title}</span>
           <span className={`diff-badge ${getDiffClass(diff)}`}>{diff}</span>
         </div>
 
@@ -74,31 +61,37 @@ export default function ReferencePanel({
         </div>
 
         <div className="ref-card-actions">
-          {link && link !== '#' && (
+          {link && link !== '#' ? (
             <a
-              className="ref-card-link"
+              className="ref-action-btn"
               href={link}
               target="_blank"
               rel="noopener noreferrer"
             >
-              Open on LeetCode ↗
+              LeetCode
             </a>
+          ) : (
+            <button type="button" className="ref-action-btn disabled" disabled>
+              LeetCode
+            </button>
           )}
+
           <a
             href={ytUrl}
-            className="yt-card-btn"
+            className="ref-action-btn"
             target="_blank"
             rel="noopener noreferrer"
           >
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '4px' }}><polygon points="5 3 19 12 5 21 5 3"/></svg> Solution
+            Solution
           </a>
+
           <button
             type="button"
-            className={`ref-card-solve-btn ${isDone ? 'done' : ''}`}
+            className={`ref-action-btn ${isDone ? 'solved' : ''}`}
             onClick={() => onToggleSolved && onToggleSolved(q, !isDone)}
             title={isDone ? 'Mark as Unsolved' : 'Mark as Solved'}
           >
-            {isDone ? 'Solved' : '+ Mark Solved'}
+            {isDone ? 'Solved' : 'Mark'}
           </button>
         </div>
       </div>
@@ -178,9 +171,6 @@ export default function ReferencePanel({
         {ytLinks.length > 0 && (
           <div className="yt-section">
             <div className="yt-section-title">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="#FF0000" style={{ marginRight: '6px' }}>
-                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-              </svg>
               Topic Learning Tutorials
             </div>
             <div className="yt-links-wrap">
@@ -191,10 +181,8 @@ export default function ReferencePanel({
                   href={searchUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#FF0000"><path d="M8 5v14l11-7z"/></svg>
-                  Learn {topic} on YouTube
+                  Learn {topic}
                 </a>
               ))}
             </div>

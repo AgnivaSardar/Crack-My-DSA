@@ -825,51 +825,58 @@ code, pre, .mono {
 .ref-card-meta strong { color: #9ca3af; }
 
 .ref-card-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
   margin-top: 0.6rem;
   padding-top: 0.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.ref-card-link {
+.ref-action-btn {
   display: inline-flex;
   align-items: center;
-  font-size: 0.73rem;
+  justify-content: center;
+  height: 28px;
+  padding: 0 0.2rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  color: #d1d5db;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 5px;
-  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
   text-decoration: none;
-  transition: background 0.15s, color 0.15s;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e5e7eb;
+  transition: all 0.15s ease;
 }
 
-.ref-card-link:hover {
-  background: rgba(255, 255, 255, 0.12);
+.ref-action-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
   color: #ffffff;
 }
 
-.ref-card-yt-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.73rem;
-  font-weight: 600;
-  color: #ff6b6b;
-  background: rgba(255, 0, 0, 0.08);
-  border: 1px solid rgba(255, 0, 0, 0.22);
-  border-radius: 5px;
-  padding: 0.25rem 0.55rem;
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s;
+.ref-action-btn:disabled, .ref-action-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
+  color: #6b7280;
 }
 
-.ref-card-yt-link:hover {
-  background: rgba(255, 0, 0, 0.18);
-  color: #ff8888;
+.ref-action-btn.solved {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.35);
+  color: #34d399;
+}
+
+.ref-action-btn.solved:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #fca5a5;
 }
 
 .ref-empty {
