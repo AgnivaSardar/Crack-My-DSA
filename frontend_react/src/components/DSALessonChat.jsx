@@ -150,8 +150,16 @@ const IconWarning = () => (
 // YouTube Video Card Component (Monochrome SVG Icons Only)
 function YouTubeVideoCard({ video }) {
   if (!video || !video.id) return null
-  const thumbnailUrl = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`
+  const [imgSrc, setImgSrc] = useState(`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`)
   const watchUrl = `https://www.youtube.com/watch?v=${video.id}`
+
+  function handleImgError() {
+    if (imgSrc.includes('hqdefault')) {
+      setImgSrc(`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`)
+    } else if (imgSrc.includes('mqdefault')) {
+      setImgSrc(`https://img.youtube.com/vi/${video.id}/sddefault.jpg`)
+    }
+  }
 
   return (
     <a
@@ -161,7 +169,12 @@ function YouTubeVideoCard({ video }) {
       className="dsa-yt-video-card"
     >
       <div className="dsa-yt-thumb-wrap">
-        <img src={thumbnailUrl} alt={video.title} className="dsa-yt-thumb-img" />
+        <img
+          src={imgSrc}
+          alt={video.title}
+          className="dsa-yt-thumb-img"
+          onError={handleImgError}
+        />
         <div className="dsa-yt-play-overlay">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffffff">
             <path d="M8 5v14l11-7z"/>
@@ -181,6 +194,7 @@ function YouTubeVideoCard({ video }) {
     </a>
   )
 }
+
 
 // Markdown Formatter
 function renderFormattedMarkdown(text) {

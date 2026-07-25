@@ -83,10 +83,10 @@ export const dsaTheoryData = {
       {
         name: "4. Boyer-Moore Voting Algorithm (Majority Element)",
         video: {
-          id: "wD7fs5P_Mvo",
-          title: "Majority Element (>N/2 times) | Boyer Moore Voting Algorithm",
+          id: "AHZpyENo7k4",
+          title: "Majority Element & Subarray Algorithms",
           channel: "take U forward",
-          duration: "16 mins"
+          duration: "20 mins"
         },
         explanation: "Finds the candidate element appearing more than N/2 (or N/3) times in O(N) time and O(1) space using a counter balance mechanism.",
         code: "int candidate = 0, count = 0;\nfor (int num : nums) {\n    if (count == 0) candidate = num;\n    count += (num == candidate) ? 1 : -1;\n}",
@@ -203,10 +203,10 @@ export const dsaTheoryData = {
       {
         name: "3. Search in Rotated Sorted Array",
         video: {
-          id: "r3pRJ8-Sk4g",
+          id: "U8XENwh8Oy8",
           title: "Search in Rotated Sorted Array",
-          channel: "NeetCode",
-          duration: "14 mins"
+          channel: "take U forward",
+          duration: "18 mins"
         },
         explanation: "Identifies which half (left or right) is sorted (`arr[low] <= arr[mid]`) and checks if target lies within that sorted range.",
         code: "int low = 0, high = n - 1;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] == target) return mid;\n    if (arr[low] <= arr[mid]) { // Left half sorted\n        if (arr[low] <= target && target < arr[mid]) high = mid - 1;\n        else low = mid + 1;\n    } else { // Right half sorted\n        if (arr[mid] < target && target <= arr[high]) low = mid + 1;\n        else high = mid - 1;\n    }\n}",
@@ -220,7 +220,7 @@ export const dsaTheoryData = {
       {
         name: "4. Binary Search on Search Space / Answer (Koko Eating Bananas)",
         video: {
-          id: "qwC8r2Lg62s",
+          id: "qyfekrNni90",
           title: "Koko Eating Bananas - Binary Search on Answer",
           channel: "NeetCode",
           duration: "15 mins"
