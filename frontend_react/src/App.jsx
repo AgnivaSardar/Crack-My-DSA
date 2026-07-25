@@ -5,6 +5,7 @@ import ChatArea from './components/ChatArea'
 import ReferencePanel from './components/ReferencePanel'
 import LeetCodeDashboard from './components/LeetCodeDashboard'
 import OnboardingTourModal from './components/OnboardingTourModal'
+import DSALessonChat from './components/DSALessonChat'
 import {
   getMetadata,
   runQuery,
@@ -12,12 +13,16 @@ import {
   deleteSession,
   getUserSessions,
   getUserSolvedProblems,
-  toggleProblemSolved
+  toggleProblemSolved,
+  getDSATopics,
+  getDSATopicProblems,
+  toggleDSAProgress
 } from './api/client'
 
 const LS_GUEST = 'dsa_cracker_guest_sessions'
 const LS_GUEST_SOLVED = 'dsa_cracker_guest_solved'
 const LS_AUTH = 'dsa_cracker_auth'
+const LS_LANG = 'dsa_cracker_language'
 
 function makeId() {
   return String(Date.now())
@@ -81,6 +86,13 @@ export default function App() {
   const [dashboardOpen, setDashboardOpen] = useState(false)
   const [tourOpen, setTourOpen] = useState(false)
 
+  // DSA Roadmap States
+  const [sidebarTab, setSidebarTab] = useState('past_chats') // 'past_chats' | 'dsa_roadmap'
+  const [language, setLanguage] = useState(() => localStorage.getItem(LS_LANG) || 'cpp') // 'cpp' | 'java'
+  const [dsaTopics, setDsaTopics] = useState([])
+  const [selectedTopicId, setSelectedTopicId] = useState(null)
+  const [topicProblems, setTopicProblems] = useState([])
+
   const { toasts, addToast } = useToasts()
 
   // Derive quick title Set for solved questions lookup
@@ -134,6 +146,50 @@ export default function App() {
     }
   }, [])
 
+  // Load DSA Roadmap topics when tab changes or email changes
+  useEffect(() => {
+    if (sidebarTab === 'dsa_roadmap') {
+      const email = guestUser ? null : userEmail
+      getDSATopics(email).then(topics => {
+        setDsaTopics(topics || [])
+        if (!selectedTopicId && topics && topics.length > 0) {
+          setSelectedTopicId(topics[0].topic_id)
+        }
+      })
+    }
+  }, [sidebarTab, userEmail, guestUser])
+
+  // Load DSA Roadmap problems for selected topic
+  useEffect(() => {
+    if (selectedTopicId !== null && sidebarTab === 'dsa_roadmap') {
+      const email = guestUser ? null : userEmail
+      getDSATopicProblems(selectedTopicId, email).then(probs => {
+        setTopicProblems(probs || [])
+      })
+    }
+  }, [selectedTopicId, sidebarTab, userEmail, guestUser])
+
+  function handleToggleLanguage(lang) {
+    setLanguage(lang)
+    try { localStorage.setItem(LS_LANG, lang) } catch {}
+  }
+
+  function handleSelectTopic(tId) {
+    setSelectedTopicId(tId)
+    setSidebarTab('dsa_roadmap')
+    const email = guestUser ? null : userEmail
+    getDSATopicProblems(tId, email).then(probs => {
+      setTopicProblems(probs || [])
+    })
+  }
+
+  async function handleToggleDSAProgress(problemId, isCompleted) {
+    const email = guestUser ? null : userEmail
+    await toggleDSAProgress(email, problemId, isCompleted)
+    // Refresh topics list to update completed counts in sidebar
+    getDSATopics(email).then(topics => setDsaTopics(topics || []))
+  }
+
   function createNewSession(existingSessions, isGuest = guestUser) {
     const id = makeId()
     const newSession = { title: 'New Conversation', messages: [], lastReferences: [] }
@@ -184,7 +240,6 @@ export default function App() {
       }
       localStorage.removeItem(LS_GUEST_SOLVED)
 
-      // Load user account sessions & solved problems from server database
       const userSessions = (await getUserSessions(userEmail)) || {}
       setSessions(userSessions)
       if (Object.keys(userSessions).length === 0) {
@@ -200,7 +255,6 @@ export default function App() {
       setSolvedProblems(solvedList)
     }
 
-    // Trigger onboarding spotlight tour for new users / signups
     if (isNewUser) {
       setTimeout(() => setTourOpen(true), 600)
     }
@@ -226,10 +280,12 @@ export default function App() {
   }
 
   function handleNewSession() {
+    setSidebarTab('past_chats')
     createNewSession(sessions, guestUser)
   }
 
   function handleSelectSession(id) {
+    setSidebarTab('past_chats')
     const sess = sessions[id]
     setCurrentSessionId(id)
     setMessages(sess?.messages || [])
@@ -386,6 +442,8 @@ export default function App() {
     return <AuthPortal onAuth={handleAuth} />
   }
 
+  const currentTopic = dsaTopics.find(t => t.topic_id === selectedTopicId) || dsaTopics[0]
+
   return (
     <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       {!sidebarCollapsed && (
@@ -406,30 +464,51 @@ export default function App() {
         onToast={addToast}
         onOpenDashboard={() => setDashboardOpen(true)}
         onOpenTour={() => setTourOpen(true)}
+        activeTab={sidebarTab}
+        onTabChange={setSidebarTab}
+        dsaTopics={dsaTopics}
+        selectedTopicId={selectedTopicId}
+        onSelectTopic={handleSelectTopic}
+        language={language}
+        onToggleLanguage={handleToggleLanguage}
       />
 
       <div className="main-content">
-        <div className="main-inner">
-          <ChatArea
-            messages={messages}
-            onNewMessage={handleNewMessage}
-            onRegenerate={handleRegenerate}
-            metadata={metadata}
-            isLoading={isLoading}
-            sidebarCollapsed={sidebarCollapsed}
-            onToggleSidebar={() => setSidebarCollapsed(prev => !prev)}
-            onToggleRefDrawer={() => setRefDrawerOpen(prev => !prev)}
-            onOpenDashboard={() => setDashboardOpen(true)}
-            referenceCount={lastReferences ? lastReferences.length : 0}
+        {sidebarTab === 'dsa_roadmap' && selectedTopicId !== null ? (
+          <DSALessonChat
+            topic={currentTopic}
+            problems={topicProblems}
+            language={language}
+            onToggleLanguage={handleToggleLanguage}
+            userEmail={userEmail}
+            guestUser={guestUser}
+            onToggleProblemProgress={handleToggleDSAProgress}
+            onBackToRoadmap={() => setSidebarTab('past_chats')}
+            onToast={addToast}
           />
-          <ReferencePanel
-            references={lastReferences}
-            refDrawerOpen={refDrawerOpen}
-            onCloseRefDrawer={() => setRefDrawerOpen(false)}
-            solvedTitles={solvedTitles}
-            onToggleSolved={handleToggleSolved}
-          />
-        </div>
+        ) : (
+          <div className="main-inner">
+            <ChatArea
+              messages={messages}
+              onNewMessage={handleNewMessage}
+              onRegenerate={handleRegenerate}
+              metadata={metadata}
+              isLoading={isLoading}
+              sidebarCollapsed={sidebarCollapsed}
+              onToggleSidebar={() => setSidebarCollapsed(prev => !prev)}
+              onToggleRefDrawer={() => setRefDrawerOpen(prev => !prev)}
+              onOpenDashboard={() => setDashboardOpen(true)}
+              referenceCount={lastReferences ? lastReferences.length : 0}
+            />
+            <ReferencePanel
+              references={lastReferences}
+              refDrawerOpen={refDrawerOpen}
+              onCloseRefDrawer={() => setRefDrawerOpen(false)}
+              solvedTitles={solvedTitles}
+              onToggleSolved={handleToggleSolved}
+            />
+          </div>
+        )}
       </div>
 
       {/* LeetCode & DSA Dashboard Modal */}
@@ -445,7 +524,7 @@ export default function App() {
         onSyncSuccess={(newList) => setSolvedProblems(newList)}
       />
 
-      {/* Non-centered Onboarding Tour Modal */}
+      {/* Onboarding Tour Modal */}
       <OnboardingTourModal
         isOpen={tourOpen}
         onClose={() => setTourOpen(false)}

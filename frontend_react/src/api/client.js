@@ -112,3 +112,44 @@ export async function getUserProfile(email) {
   return safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/profile`)
 }
 
+export async function getDSATopics(userEmail = null) {
+  const url = userEmail
+    ? `${API_BASE}/dsa/topics?user_email=${encodeURIComponent(userEmail)}`
+    : `${API_BASE}/dsa/topics`
+  return (await safeFetch(url)) || []
+}
+
+export async function getDSATopicProblems(topicId, userEmail = null) {
+  const url = userEmail
+    ? `${API_BASE}/dsa/topics/${topicId}?user_email=${encodeURIComponent(userEmail)}`
+    : `${API_BASE}/dsa/topics/${topicId}`
+  return (await safeFetch(url)) || []
+}
+
+export async function toggleDSAProgress(userEmail, problemId, isCompleted) {
+  return safeFetch(`${API_BASE}/dsa/progress`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user_email: userEmail,
+      problem_id: problemId,
+      is_completed: isCompleted
+    })
+  })
+}
+
+export async function askDSADoubt(userEmail, problemId, problemTitle, codeContext, doubtText) {
+  return safeFetch(`${API_BASE}/dsa/doubt`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      user_email: userEmail,
+      problem_id: problemId,
+      problem_title: problemTitle,
+      code_context: codeContext,
+      doubt_text: doubtText
+    })
+  })
+}
+
+

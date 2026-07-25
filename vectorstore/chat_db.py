@@ -86,6 +86,52 @@ class ChatDatabaseManager:
                     UNIQUE(user_email, problem_title)
                 );
                 """)
+                cursor.execute("""
+                CREATE TABLE IF NOT EXISTS dsa_roadmap_topics (
+                    topic_id INT PRIMARY KEY,
+                    title VARCHAR(255) NOT NULL,
+                    total_problems INT DEFAULT 0,
+                    order_index INT DEFAULT 0
+                );
+                """)
+                cursor.execute("""
+                CREATE TABLE IF NOT EXISTS dsa_roadmap_problems (
+                    problem_id VARCHAR(255) PRIMARY KEY,
+                    topic_id INT REFERENCES dsa_roadmap_topics(topic_id) ON DELETE CASCADE,
+                    subfolder VARCHAR(255),
+                    title VARCHAR(255) NOT NULL,
+                    filename VARCHAR(255),
+                    question_text TEXT,
+                    approach_text TEXT,
+                    cpp_code TEXT,
+                    java_code TEXT,
+                    time_complexity VARCHAR(255),
+                    space_complexity VARCHAR(255),
+                    leetcode_number VARCHAR(100),
+                    leetcode_title VARCHAR(255),
+                    leetcode_link TEXT,
+                    order_index INT DEFAULT 0
+                );
+                """)
+                cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_dsa_progress (
+                    user_email VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE,
+                    problem_id VARCHAR(255) REFERENCES dsa_roadmap_problems(problem_id) ON DELETE CASCADE,
+                    is_completed BOOLEAN DEFAULT TRUE,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (user_email, problem_id)
+                );
+                """)
+                cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_dsa_doubts (
+                    id SERIAL PRIMARY KEY,
+                    user_email VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE,
+                    problem_id VARCHAR(255) REFERENCES dsa_roadmap_problems(problem_id) ON DELETE CASCADE,
+                    doubt_text TEXT NOT NULL,
+                    ai_response TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                """)
                 self.conn.commit()
         else:
             cursor = self.conn.cursor()
@@ -133,6 +179,57 @@ class ChatDatabaseManager:
                 solved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE(user_email, problem_title),
                 FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE
+            )
+            """)
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS dsa_roadmap_topics (
+                topic_id INTEGER PRIMARY KEY,
+                title TEXT NOT NULL,
+                total_problems INTEGER DEFAULT 0,
+                order_index INTEGER DEFAULT 0
+            )
+            """)
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS dsa_roadmap_problems (
+                problem_id TEXT PRIMARY KEY,
+                topic_id INTEGER NOT NULL,
+                subfolder TEXT,
+                title TEXT NOT NULL,
+                filename TEXT,
+                question_text TEXT,
+                approach_text TEXT,
+                cpp_code TEXT,
+                java_code TEXT,
+                time_complexity TEXT,
+                space_complexity TEXT,
+                leetcode_number TEXT,
+                leetcode_title TEXT,
+                leetcode_link TEXT,
+                order_index INTEGER DEFAULT 0,
+                FOREIGN KEY (topic_id) REFERENCES dsa_roadmap_topics(topic_id) ON DELETE CASCADE
+            )
+            """)
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_dsa_progress (
+                user_email TEXT NOT NULL,
+                problem_id TEXT NOT NULL,
+                is_completed INTEGER DEFAULT 1,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (user_email, problem_id),
+                FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE,
+                FOREIGN KEY (problem_id) REFERENCES dsa_roadmap_problems(problem_id) ON DELETE CASCADE
+            )
+            """)
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_dsa_doubts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_email TEXT NOT NULL,
+                problem_id TEXT NOT NULL,
+                doubt_text TEXT NOT NULL,
+                ai_response TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE,
+                FOREIGN KEY (problem_id) REFERENCES dsa_roadmap_problems(problem_id) ON DELETE CASCADE
             )
             """)
             self.conn.commit()
@@ -576,3 +673,293 @@ class ChatDatabaseManager:
             "synced_count": max(synced_count, stats.get("total", 0)),
             "stats": stats
         }
+
+    # --- DSA Roadmap & Lessons Methods ---
+
+    def seed_dsa_roadmap(self, topics_list: List[Dict[str, Any]], problems_list: List[Dict[str, Any]]):
+        """Seeds or updates DSA Roadmap topics and problems in database."""
+        if self.is_postgres:
+            import psycopg2.extras
+            with self.conn.cursor() as cursor:
+                for t in topics_list:
+                    cursor.execute("""
+                    INSERT INTO dsa_roadmap_topics (topic_id, title, total_problems, order_index)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (topic_id) DO UPDATE SET
+                        title = EXCLUDED.title,
+                        total_problems = EXCLUDED.total_problems,
+                        order_index = EXCLUDED.order_index;
+                    """, (t["topic_id"], t["title"], t["total_problems"], t["order_index"]))
+                
+                for p in problems_list:
+                    cursor.execute("""
+                    INSERT INTO dsa_roadmap_problems 
+                    (problem_id, topic_id, subfolder, title, filename, question_text, approach_text, cpp_code, java_code, time_complexity, space_complexity, leetcode_number, leetcode_title, leetcode_link, order_index)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (problem_id) DO UPDATE SET
+                        topic_id = EXCLUDED.topic_id,
+                        subfolder = EXCLUDED.subfolder,
+                        title = EXCLUDED.title,
+                        filename = EXCLUDED.filename,
+                        question_text = EXCLUDED.question_text,
+                        approach_text = EXCLUDED.approach_text,
+                        cpp_code = EXCLUDED.cpp_code,
+                        java_code = EXCLUDED.java_code,
+                        time_complexity = EXCLUDED.time_complexity,
+                        space_complexity = EXCLUDED.space_complexity,
+                        leetcode_number = EXCLUDED.leetcode_number,
+                        leetcode_title = EXCLUDED.leetcode_title,
+                        leetcode_link = EXCLUDED.leetcode_link,
+                        order_index = EXCLUDED.order_index;
+                    """, (
+                        p["problem_id"], p["topic_id"], p.get("subfolder"), p["title"], p.get("filename"),
+                        p.get("question_text"), p.get("approach_text"), p.get("cpp_code"), p.get("java_code"),
+                        p.get("time_complexity"), p.get("space_complexity"), p.get("leetcode_number"),
+                        p.get("leetcode_title"), p.get("leetcode_link"), p.get("order_index", 0)
+                    ))
+                self.conn.commit()
+        else:
+            cursor = self.conn.cursor()
+            for t in topics_list:
+                cursor.execute("""
+                INSERT OR REPLACE INTO dsa_roadmap_topics (topic_id, title, total_problems, order_index)
+                VALUES (?, ?, ?, ?)
+                """, (t["topic_id"], t["title"], t["total_problems"], t["order_index"]))
+            
+            for p in problems_list:
+                cursor.execute("""
+                INSERT OR REPLACE INTO dsa_roadmap_problems 
+                (problem_id, topic_id, subfolder, title, filename, question_text, approach_text, cpp_code, java_code, time_complexity, space_complexity, leetcode_number, leetcode_title, leetcode_link, order_index)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    p["problem_id"], p["topic_id"], p.get("subfolder"), p["title"], p.get("filename"),
+                    p.get("question_text"), p.get("approach_text"), p.get("cpp_code"), p.get("java_code"),
+                    p.get("time_complexity"), p.get("space_complexity"), p.get("leetcode_number"),
+                    p.get("leetcode_title"), p.get("leetcode_link"), p.get("order_index", 0)
+                ))
+            self.conn.commit()
+
+    def get_dsa_topics(self, user_email: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Returns all 16 DSA topics with completed counts per topic if user_email provided."""
+        user_email = user_email.strip().lower() if user_email else None
+        
+        if self.is_postgres:
+            import psycopg2.extras
+            with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                cursor.execute("SELECT * FROM dsa_roadmap_topics ORDER BY order_index ASC;")
+                topics = [dict(row) for row in cursor.fetchall()]
+                
+                user_progress_map = {}
+                if user_email:
+                    cursor.execute("""
+                    SELECT p.topic_id, COUNT(*) as completed_count
+                    FROM user_dsa_progress up
+                    JOIN dsa_roadmap_problems p ON up.problem_id = p.problem_id
+                    WHERE up.user_email = %s AND (up.is_completed = TRUE OR up.is_completed = 1)
+                    GROUP BY p.topic_id;
+                    """, (user_email,))
+                    for row in cursor.fetchall():
+                        user_progress_map[row["topic_id"]] = row["completed_count"]
+                
+                for t in topics:
+                    t["completed_count"] = user_progress_map.get(t["topic_id"], 0)
+                return topics
+        else:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT * FROM dsa_roadmap_topics ORDER BY order_index ASC;")
+            rows = cursor.fetchall()
+            topics = [dict(row) for row in rows]
+            
+            user_progress_map = {}
+            if user_email:
+                cursor.execute("""
+                SELECT p.topic_id, COUNT(*) as completed_count
+                FROM user_dsa_progress up
+                JOIN dsa_roadmap_problems p ON up.problem_id = p.problem_id
+                WHERE up.user_email = ? AND (up.is_completed = 1 OR up.is_completed = '1' OR up.is_completed = 'true')
+                GROUP BY p.topic_id;
+                """, (user_email,))
+                for row in cursor.fetchall():
+                    user_progress_map[row[0]] = row[1]
+            
+            for t in topics:
+                t["completed_count"] = user_progress_map.get(t["topic_id"], 0)
+            return topics
+
+    def get_dsa_topic_problems(self, topic_id: int, user_email: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Returns all problems for a given topic_id with user completion and user private doubts."""
+        user_email = user_email.strip().lower() if user_email else None
+        
+        if self.is_postgres:
+            import psycopg2.extras
+            with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                cursor.execute("""
+                SELECT * FROM dsa_roadmap_problems WHERE topic_id = %s ORDER BY order_index ASC;
+                """, (topic_id,))
+                problems = [dict(p) for p in cursor.fetchall()]
+                
+                completed_set = set()
+                doubts_map = {}
+                if user_email:
+                    cursor.execute("""
+                    SELECT problem_id FROM user_dsa_progress
+                    WHERE user_email = %s AND (is_completed = TRUE OR is_completed = 1);
+                    """, (user_email,))
+                    completed_set = set(row["problem_id"] for row in cursor.fetchall())
+                    
+                    cursor.execute("""
+                    SELECT id, problem_id, doubt_text, ai_response, created_at
+                    FROM user_dsa_doubts
+                    WHERE user_email = %s ORDER BY created_at ASC;
+                    """, (user_email,))
+                    for d in cursor.fetchall():
+                        d_dict = dict(d)
+                        d_dict["created_at"] = str(d_dict.get("created_at") or "")
+                        pid = d_dict["problem_id"]
+                        if pid not in doubts_map:
+                            doubts_map[pid] = []
+                        doubts_map[pid].append(d_dict)
+                
+                for p in problems:
+                    pid = p["problem_id"]
+                    p["is_completed"] = pid in completed_set
+                    p["user_doubts"] = doubts_map.get(pid, [])
+                return problems
+        else:
+            cursor = self.conn.cursor()
+            cursor.execute("""
+            SELECT * FROM dsa_roadmap_problems WHERE topic_id = ? ORDER BY order_index ASC;
+            """, (topic_id,))
+            rows = cursor.fetchall()
+            problems = [dict(r) for r in rows]
+            
+            completed_set = set()
+            doubts_map = {}
+            if user_email:
+                cursor.execute("""
+                SELECT problem_id FROM user_dsa_progress
+                WHERE user_email = ? AND (is_completed = 1 OR is_completed = '1' OR is_completed = 'true');
+                """, (user_email,))
+                completed_set = set(row[0] for row in cursor.fetchall())
+                
+                cursor.execute("""
+                SELECT id, problem_id, doubt_text, ai_response, created_at
+                FROM user_dsa_doubts
+                WHERE user_email = ? ORDER BY created_at ASC;
+                """, (user_email,))
+                for row in cursor.fetchall():
+                    d_dict = {
+                        "id": row[0],
+                        "problem_id": row[1],
+                        "doubt_text": row[2],
+                        "ai_response": row[3],
+                        "created_at": str(row[4] or "")
+                    }
+                    pid = d_dict["problem_id"]
+                    if pid not in doubts_map:
+                        doubts_map[pid] = []
+                    doubts_map[pid].append(d_dict)
+            
+            for p in problems:
+                pid = p["problem_id"]
+                p["is_completed"] = pid in completed_set
+                p["user_doubts"] = doubts_map.get(pid, [])
+            return problems
+
+    def toggle_dsa_progress(self, user_email: str, problem_id: str, is_completed: bool) -> bool:
+        """Toggles user progress completion status for a specific DSA problem."""
+        user_email = user_email.strip().lower()
+        if self.is_postgres:
+            with self.conn.cursor() as cursor:
+                if is_completed:
+                    cursor.execute("""
+                    INSERT INTO user_dsa_progress (user_email, problem_id, is_completed)
+                    VALUES (%s, %s, TRUE)
+                    ON CONFLICT (user_email, problem_id) DO UPDATE SET is_completed = TRUE, updated_at = CURRENT_TIMESTAMP;
+                    """, (user_email, problem_id))
+                else:
+                    cursor.execute("""
+                    DELETE FROM user_dsa_progress WHERE user_email = %s AND problem_id = %s;
+                    """, (user_email, problem_id))
+                self.conn.commit()
+        else:
+            cursor = self.conn.cursor()
+            if is_completed:
+                cursor.execute("""
+                INSERT OR REPLACE INTO user_dsa_progress (user_email, problem_id, is_completed)
+                VALUES (?, ?, 1);
+                """, (user_email, problem_id))
+            else:
+                cursor.execute("""
+                DELETE FROM user_dsa_progress WHERE user_email = ? AND problem_id = ?;
+                """, (user_email, problem_id))
+            self.conn.commit()
+        return is_completed
+
+    def save_dsa_doubt(self, user_email: str, problem_id: str, doubt_text: str, ai_response: str) -> Dict[str, Any]:
+        """Saves a private user doubt and AI response thread for a specific problem."""
+        user_email = user_email.strip().lower()
+        if self.is_postgres:
+            import psycopg2.extras
+            with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                cursor.execute("""
+                INSERT INTO user_dsa_doubts (user_email, problem_id, doubt_text, ai_response)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id, problem_id, doubt_text, ai_response, created_at;
+                """, (user_email, problem_id, doubt_text, ai_response))
+                row = cursor.fetchone()
+                self.conn.commit()
+                res = dict(row)
+                res["created_at"] = str(res.get("created_at") or "")
+                return res
+        else:
+            cursor = self.conn.cursor()
+            cursor.execute("""
+            INSERT INTO user_dsa_doubts (user_email, problem_id, doubt_text, ai_response)
+            VALUES (?, ?, ?, ?);
+            """, (user_email, problem_id, doubt_text, ai_response))
+            doubt_id = cursor.lastrowid
+            self.conn.commit()
+            return {
+                "id": doubt_id,
+                "problem_id": problem_id,
+                "doubt_text": doubt_text,
+                "ai_response": ai_response,
+                "created_at": ""
+            }
+
+    def get_dsa_doubts(self, user_email: str, problem_id: str) -> List[Dict[str, Any]]:
+        """Retrieves private doubts for a user and problem."""
+        user_email = user_email.strip().lower()
+        if self.is_postgres:
+            import psycopg2.extras
+            with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                cursor.execute("""
+                SELECT id, problem_id, doubt_text, ai_response, created_at
+                FROM user_dsa_doubts
+                WHERE user_email = %s AND problem_id = %s ORDER BY created_at ASC;
+                """, (user_email, problem_id))
+                results = []
+                for row in cursor.fetchall():
+                    r = dict(row)
+                    r["created_at"] = str(r.get("created_at") or "")
+                    results.append(r)
+                return results
+        else:
+            cursor = self.conn.cursor()
+            cursor.execute("""
+            SELECT id, problem_id, doubt_text, ai_response, created_at
+            FROM user_dsa_doubts
+            WHERE user_email = ? AND problem_id = ? ORDER BY created_at ASC;
+            """, (user_email, problem_id))
+            results = []
+            for row in cursor.fetchall():
+                results.append({
+                    "id": row[0],
+                    "problem_id": row[1],
+                    "doubt_text": row[2],
+                    "ai_response": row[3],
+                    "created_at": str(row[4] or "")
+                })
+            return results
+

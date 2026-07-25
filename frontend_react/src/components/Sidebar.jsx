@@ -13,15 +13,25 @@ export default function Sidebar({
   onToggleSidebar,
   onToast,
   onOpenDashboard,
-  onOpenTour
+  onOpenTour,
+  activeTab = 'past_chats',
+  onTabChange,
+  dsaTopics = [],
+  selectedTopicId = null,
+  onSelectTopic,
+  language = 'cpp',
+  onToggleLanguage
 }) {
-  // { id, x, y } — fixed-positioned popup coords
   const [menu, setMenu] = useState(null)
   const menuRef = useRef(null)
 
   const sortedSessions = Object.entries(sessions).sort(([a], [b]) => b.localeCompare(a))
 
-  // Close menu on outside click
+  // Calculate overall roadmap progress
+  const totalRoadmapProblems = dsaTopics.reduce((acc, t) => acc + (t.total_problems || 0), 0)
+  const totalCompletedProblems = dsaTopics.reduce((acc, t) => acc + (t.completed_count || 0), 0)
+  const overallRoadmapPercentage = totalRoadmapProblems > 0 ? Math.round((totalCompletedProblems / totalRoadmapProblems) * 100) : 0
+
   const handleOutsideClick = useCallback((e) => {
     if (menuRef.current && !menuRef.current.contains(e.target)) {
       setMenu(null)
@@ -43,7 +53,6 @@ export default function Sidebar({
     const rect = e.currentTarget.getBoundingClientRect()
     setMenu({
       id,
-      // Position the popup to the right of the ⋮ button, vertically centred on it
       x: rect.right + 6,
       y: rect.top - 4
     })
@@ -62,7 +71,7 @@ export default function Sidebar({
   return (
     <>
       <aside className="sidebar" id="tour-sidebar">
-        {/* Fixed header */}
+        {/* Sidebar Header */}
         <div className="sidebar-header">
           <span className="sidebar-logo">Crack My DSA</span>
           <button
@@ -75,52 +84,146 @@ export default function Sidebar({
           </button>
         </div>
 
-        <div className="sidebar-section-label">Saved Conversations</div>
-
-        {/* Fixed new conversation button */}
-        <div className="sidebar-new-btn-wrap">
-          <button className="btn" onClick={() => { setMenu(null); onNewSession() }}>
-            + Start New Conversation
+        {/* Dual Tab Navigation Bar */}
+        <div className="sidebar-tab-bar">
+          <button
+            className={`sidebar-tab-btn ${activeTab === 'past_chats' ? 'active' : ''}`}
+            onClick={() => onTabChange('past_chats')}
+          >
+            💬 Past Chats
+          </button>
+          <button
+            className={`sidebar-tab-btn ${activeTab === 'dsa_roadmap' ? 'active' : ''}`}
+            onClick={() => onTabChange('dsa_roadmap')}
+          >
+            📚 DSA Roadmap
           </button>
         </div>
 
         <div className="sidebar-divider" />
 
-        {/* Scrollable conversation list */}
-        <div className="sidebar-conversations">
-          {sortedSessions.length === 0 && (
-            <div style={{ fontSize: '0.78rem', color: '#444', padding: '0.5rem 0.25rem' }}>
-              No saved conversations yet.
+        {/* Content based on Active Tab */}
+        {activeTab === 'past_chats' ? (
+          <>
+            <div className="sidebar-section-label">Saved Conversations</div>
+
+            {/* New Conversation Button */}
+            <div className="sidebar-new-btn-wrap">
+              <button className="btn" onClick={() => { setMenu(null); onNewSession() }}>
+                + Start New Conversation
+              </button>
             </div>
-          )}
 
-          {sortedSessions.map(([id, data]) => {
-            const title = data.title || 'New Conversation'
-            const isActive = id === currentSessionId
-            const isMenuOpen = menu?.id === id
+            {/* Conversations List */}
+            <div className="sidebar-conversations">
+              {sortedSessions.length === 0 && (
+                <div style={{ fontSize: '0.78rem', color: '#666', padding: '0.5rem 0.25rem' }}>
+                  No saved conversations yet.
+                </div>
+              )}
 
-            return (
-              <div key={id} className="conv-row">
+              {sortedSessions.map(([id, data]) => {
+                const title = data.title || 'New Conversation'
+                const isActive = id === currentSessionId
+                const isMenuOpen = menu?.id === id
+
+                return (
+                  <div key={id} className="conv-row">
+                    <button
+                      className={`conv-name-btn ${isActive ? 'active' : ''}`}
+                      onClick={() => { setMenu(null); onSelectSession(id) }}
+                      title={title}
+                    >
+                      {title}
+                    </button>
+                    <button
+                      className={`conv-dots-btn ${isMenuOpen ? 'dots-active' : ''}`}
+                      onClick={(e) => openMenu(e, id)}
+                      title="Options"
+                    >
+                      ⋮
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        ) : (
+          /* DSA Roadmap Tab Content */
+          <div className="sidebar-roadmap-container">
+            {/* Language Selector Header */}
+            <div className="sidebar-roadmap-lang-box">
+              <span className="sidebar-roadmap-lang-title">Code Language:</span>
+              <div className="sidebar-roadmap-lang-toggle">
                 <button
-                  className={`conv-name-btn ${isActive ? 'active' : ''}`}
-                  onClick={() => { setMenu(null); onSelectSession(id) }}
-                  title={title}
+                  className={`sidebar-lang-opt ${language === 'cpp' ? 'active' : ''}`}
+                  onClick={() => onToggleLanguage('cpp')}
                 >
-                  {title}
+                  C++
                 </button>
                 <button
-                  className={`conv-dots-btn ${isMenuOpen ? 'dots-active' : ''}`}
-                  onClick={(e) => openMenu(e, id)}
-                  title="Options"
+                  className={`sidebar-lang-opt ${language === 'java' ? 'active' : ''}`}
+                  onClick={() => onToggleLanguage('java')}
                 >
-                  ⋮
+                  Java
                 </button>
               </div>
-            )
-          })}
-        </div>
+            </div>
 
-        {/* Fixed footer */}
+            {/* Overall Progress Widget */}
+            <div className="sidebar-overall-progress-card">
+              <div className="sidebar-progress-title-row">
+                <span>Strivers A2Z Progress</span>
+                <span className="sidebar-progress-pct">{overallRoadmapPercentage}%</span>
+              </div>
+              <div className="dsa-progress-bar-bg" style={{ height: '6px', marginTop: '6px' }}>
+                <div className="dsa-progress-bar-fill" style={{ width: `${overallRoadmapPercentage}%` }} />
+              </div>
+              <div className="sidebar-progress-sub">
+                {totalCompletedProblems} of {totalRoadmapProblems} problems solved
+              </div>
+            </div>
+
+            <div className="sidebar-section-label" style={{ marginTop: '0.8rem' }}>
+              16 Core Topics (Striver's A2Z)
+            </div>
+
+            {/* Topics List */}
+            <div className="sidebar-conversations">
+              {dsaTopics.length === 0 ? (
+                <div style={{ fontSize: '0.78rem', color: '#666', padding: '0.5rem 0.25rem' }}>
+                  Loading DSA Topics...
+                </div>
+              ) : (
+                dsaTopics.map((topic) => {
+                  const isSelected = selectedTopicId === topic.topic_id
+                  const done = topic.completed_count || 0
+                  const total = topic.total_problems || 0
+                  const pct = total > 0 ? Math.round((done / total) * 100) : 0
+
+                  return (
+                    <button
+                      key={topic.topic_id}
+                      className={`dsa-topic-item-btn ${isSelected ? 'active' : ''}`}
+                      onClick={() => onSelectTopic(topic.topic_id)}
+                      title={topic.title}
+                    >
+                      <div className="dsa-topic-title-wrap">
+                        <span className="dsa-topic-title-text">{topic.title}</span>
+                        <span className="dsa-topic-badge">{done}/{total}</span>
+                      </div>
+                      <div className="dsa-topic-progress-mini-bar">
+                        <div className="dsa-topic-mini-fill" style={{ width: `${pct}%` }} />
+                      </div>
+                    </button>
+                  )
+                })
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Sidebar Fixed Footer */}
         <div className="sidebar-footer">
           <div className="sidebar-user-label">
             {guestUser ? 'Guest Mode' : `User: ${userName}`}
@@ -147,7 +250,7 @@ export default function Sidebar({
         </div>
       </aside>
 
-      {/* Floating context menu rendered outside sidebar via fixed positioning */}
+      {/* Floating Context Menu */}
       {menu && (
         <div
           ref={menuRef}

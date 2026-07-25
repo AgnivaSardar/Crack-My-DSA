@@ -368,6 +368,86 @@ async def sync_user_leetcode(email: str, request: LeetCodeSyncRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class DSAProgressRequest(BaseModel):
+    user_email: Optional[str] = None
+    problem_id: str
+    is_completed: bool
+
+class DSADoubtRequest(BaseModel):
+    user_email: str
+    problem_id: str
+    problem_title: str
+    code_context: Optional[str] = None
+    doubt_text: str
+
+@app.get("/dsa/topics")
+@app.get("/api/dsa/topics")
+async def get_dsa_topics(user_email: Optional[str] = None):
+    try:
+        from vectorstore.chat_db import ChatDatabaseManager
+        db = ChatDatabaseManager()
+        return db.get_dsa_topics(user_email)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/dsa/topics/{topic_id}")
+@app.get("/api/dsa/topics/{topic_id}")
+async def get_dsa_topic_problems(topic_id: int, user_email: Optional[str] = None):
+    try:
+        from vectorstore.chat_db import ChatDatabaseManager
+        db = ChatDatabaseManager()
+        return db.get_dsa_topic_problems(topic_id, user_email)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/dsa/progress")
+@app.post("/api/dsa/progress")
+async def toggle_dsa_progress(request: DSAProgressRequest):
+    try:
+        if not request.user_email:
+            return {"status": "guest", "is_completed": request.is_completed}
+        from vectorstore.chat_db import ChatDatabaseManager
+        db = ChatDatabaseManager()
+        status = db.toggle_dsa_progress(request.user_email, request.problem_id, request.is_completed)
+        return {"status": "success", "is_completed": status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/dsa/doubt")
+@app.post("/api/dsa/doubt")
+async def ask_dsa_doubt(request: DSADoubtRequest):
+    try:
+        global generator
+        if not generator:
+            try:
+                generator = LeetCodeGenerator()
+            except Exception:
+                generator = None
+
+        prompt = (
+            f"You are an expert DSA teacher. A student has a private doubt on the problem '{request.problem_title}'.\n"
+            f"Problem Code / Context:\n{request.code_context or 'N/A'}\n\n"
+            f"Student's Doubt: {request.doubt_text}\n\n"
+            f"Provide a clear, encouraging, step-by-step private explanation directly answering the student's doubt."
+        )
+        
+        if generator:
+            ai_answer = generator.generate_response(query=prompt, retrieved_questions=[])
+        else:
+            ai_answer = f"Great question regarding '{request.problem_title}'! Let's break down your doubt: {request.doubt_text}.\n\nWhen tackling this problem, keep in mind how the data structure handles operations in time and space complexity."
+
+        from vectorstore.chat_db import ChatDatabaseManager
+        db = ChatDatabaseManager()
+        saved_doubt = db.save_dsa_doubt(
+            user_email=request.user_email,
+            problem_id=request.problem_id,
+            doubt_text=request.doubt_text,
+            ai_response=ai_answer
+        )
+        return {"status": "success", "doubt": saved_doubt}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
