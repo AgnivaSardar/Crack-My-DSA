@@ -8,12 +8,14 @@ from pydantic import BaseModel
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 from configs import config
 
+import os
+
 class GeminiClient:
     def __init__(self):
         if not config.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY is not set in environment variables.")
         self.client = genai.Client(api_key=config.GEMINI_API_KEY)
-        self.model = "gemini-2.5-flash" # Standard fast Gemini model
+        self.model = os.getenv("GEMINI_MODEL", "gemini-2.0-flash-lite") # Gemini Flash Lite model (1500 RPM / 1M TPM free quota)
 
     def generate_text(self, prompt: str, system_instruction: Optional[str] = None) -> str:
         """Generates standard text output from a prompt."""
