@@ -555,6 +555,19 @@ export default function DSALessonChat({
                         <p className="dsa-apply-text">{pat.whenNotToApply}</p>
                       </div>
                     </div>
+
+                    {pat.youtubeLink && (
+                      <div style={{ marginTop: '8px' }}>
+                        <a
+                          href={pat.youtubeLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="dsa-yt-pattern-btn"
+                        >
+                          📺 Watch {pat.name} Video Deep Dive ↗
+                        </a>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -584,6 +597,23 @@ export default function DSALessonChat({
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+
+            {/* Recommended Video Tutorials & Full Concept Deep Dives */}
+            <div className="dsa-theory-section">
+              <h4 className="dsa-theory-section-title">
+                📺 Recommended Video Tutorials & Full Concept Deep Dives
+              </h4>
+              <div className="dsa-yt-banner">
+                <a
+                  href={theoryData.topicYoutubeLink || `https://www.youtube.com/results?search_query=Striver+A2Z+DSA+${encodeURIComponent(topic?.title || '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="dsa-yt-link-btn"
+                >
+                  📺 Watch Full {topic?.title} Video Tutorial & Concepts ↗
+                </a>
               </div>
             </div>
 
@@ -643,6 +673,15 @@ export default function DSALessonChat({
                     </div>
 
                     <div className="dsa-card-header-right">
+                      <a
+                        href={`https://www.youtube.com/results?search_query=Striver+LeetCode+${encodeURIComponent(prob.title)}+solution`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="dsa-btn-action ghost"
+                        title="Watch YouTube Solution"
+                      >
+                        YouTube Solution <IconExternal />
+                      </a>
                       {prob.leetcode_link && (
                         <a
                           href={prob.leetcode_link}
