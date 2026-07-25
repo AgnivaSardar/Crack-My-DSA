@@ -434,8 +434,8 @@ export const dsaTheoryData = {
       {
         name: "1. Subsequences Pick / Non-Pick Pattern",
         video: {
-          id: "K4xS-_f2n2E",
-          title: "Print all Subsequences | Pick and Non-Pick Pattern",
+          id: "AxNNVECce8c",
+          title: "L6. Recursion on Subsequences | Printing Subsequences",
           channel: "take U forward",
           duration: "20 mins"
         },
@@ -596,10 +596,10 @@ export const dsaTheoryData = {
       {
         name: "2. Trapping Rainwater (Two Pointers / Stack)",
         video: {
-          id: "ZI2z5B070cI",
-          title: "Trapping Rainwater - Two Pointers Solution",
-          channel: "NeetCode",
-          duration: "16 mins"
+          id: "m18Hntz4go8",
+          title: "Trapping Rainwater | Brute | Better | Optimal | with INTUITION",
+          channel: "take U forward",
+          duration: "25 mins"
         },
         explanation: "Calculates trapped water at index i as `min(leftMax, rightMax) - height[i]` using Two Pointers moving inward.",
         code: "int l = 0, r = n - 1, leftMax = 0, rightMax = 0, water = 0;\nwhile (l < r) {\n    if (height[l] <= height[r]) {\n        if (height[l] >= leftMax) leftMax = height[l];\n        else water += leftMax - height[l];\n        l++;\n    } else {\n        if (height[r] >= rightMax) rightMax = height[r];\n        else water += rightMax - height[r];\n        r--;\n    }\n}",
@@ -763,10 +763,10 @@ export const dsaTheoryData = {
       {
         name: "1. Height & Diameter of Binary Tree",
         video: {
-          id: "bkqdA8vv5Hk",
-          title: "Diameter of Binary Tree & Height Calculation",
-          channel: "NeetCode",
-          duration: "14 mins"
+          id: "Rezetez59Nk",
+          title: "L16. Diameter of Binary Tree | C++ | Java",
+          channel: "take U forward",
+          duration: "18 mins"
         },
         explanation: "Computes tree height recursively `1 + max(lh, rh)` and updates global max diameter (`lh + rh`).",
         code: "int getHeight(TreeNode* root) {\n    if (!root) return 0;\n    int lh = getHeight(root->left);\n    int rh = getHeight(root->right);\n    maxDiameter = max(maxDiameter, lh + rh);\n    return 1 + max(lh, rh);\n}",
