@@ -271,7 +271,21 @@ async def get_user_solved_problems(email: str):
     try:
         from vectorstore.chat_db import ChatDatabaseManager
         db = ChatDatabaseManager()
+        # Automatically sync LeetCode solved problems using candidate handles from email
+        db.sync_leetcode_solved_by_email(email)
         return db.get_user_solved_problems(email)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/users/{email}/auto-sync")
+@app.post("/api/users/{email}/auto-sync")
+async def auto_sync_user_leetcode_by_email(email: str):
+    try:
+        from vectorstore.chat_db import ChatDatabaseManager
+        db = ChatDatabaseManager()
+        count = db.sync_leetcode_solved_by_email(email)
+        solved = db.get_user_solved_problems(email)
+        return {"status": "success", "synced_count": count, "solved_problems": solved}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

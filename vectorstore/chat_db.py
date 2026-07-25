@@ -347,6 +347,65 @@ class ChatDatabaseManager:
             self.conn.commit()
         return True
 
+    def sync_leetcode_solved_by_email(self, email: str) -> int:
+        import urllib.request
+        import json
+
+        email = email.strip().lower()
+        if not email or "@" not in email:
+            return 0
+
+        self.get_or_create_user(email)
+
+        # Extract candidate LeetCode handles from sign-in email address
+        prefix = email.split("@")[0].strip().lower()
+        clean = "".join(c for c in prefix if c.isalnum())
+        with_hyphen = prefix.replace(".", "-").replace("_", "-")
+        with_underscore = prefix.replace(".", "_").replace("-", "_")
+
+        candidates = [prefix, clean, with_hyphen, with_underscore]
+        valid_candidates = []
+        for c in candidates:
+            if c and c not in valid_candidates:
+                valid_candidates.append(c)
+
+        total_synced = 0
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Referer": "https://leetcode.com"
+        }
+
+        url = "https://leetcode.com/graphql"
+        query = """
+        query getACSubmissions($username: String!, $limit: Int) {
+          recentAcSubmissionList(username: $username, limit: $limit) {
+            title
+            titleSlug
+          }
+        }
+        """
+
+        for cand in valid_candidates:
+            payload = json.dumps({"query": query, "variables": {"username": cand, "limit": 200}}).encode("utf-8")
+            try:
+                req = urllib.request.Request(url, data=payload, headers=headers)
+                with urllib.request.urlopen(req, timeout=8) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    subs = data.get("data", {}).get("recentAcSubmissionList") or []
+                    for s in subs:
+                        title = s.get("title")
+                        slug = s.get("titleSlug")
+                        if title:
+                            link = f"https://leetcode.com/problems/{slug}/" if slug else ""
+                            prob = {"title": title, "link": link, "company": "LeetCode", "difficulty": "Medium", "topics": "DSA"}
+                            self.toggle_problem_solved(email, prob, True)
+                            total_synced += 1
+            except Exception as e:
+                print(f"[LeetCode Sync Error for {cand}] {e}")
+
+        return total_synced
+
     def sync_leetcode_solved(self, email: str, username: str) -> int:
         import urllib.request
         import json
@@ -392,4 +451,3 @@ class ChatDatabaseManager:
             print(f"[LeetCode Sync Error] {e}")
 
         return synced_count
-
