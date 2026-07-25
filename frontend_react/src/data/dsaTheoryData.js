@@ -2,6 +2,20 @@ export const dsaTheoryData = {
   1: {
     title: "01. Arrays",
     summary: "Arrays are contiguous memory blocks storing elements of identical data type. Index-based access takes O(1) time because memory offsets are mathematically computed. Inserting or deleting elements at arbitrary positions requires shifting elements, resulting in O(N) worst-case time.",
+    topicVideos: [
+      {
+        id: "AHZpyENo7k4",
+        title: "Kadane's Algorithm | Maximum Subarray Sum",
+        channel: "take U forward",
+        duration: "20 mins"
+      },
+      {
+        id: "On03HWe2tZM",
+        title: "Visual introduction Two Pointer Algorithm",
+        channel: "Josh's DevBox",
+        duration: "15 mins"
+      }
+    ],
     basics: [
       {
         op: "1. Memory Layout & Index Access",
@@ -65,12 +79,20 @@ export const dsaTheoryData = {
   2: {
     title: "02. Binary Search",
     summary: "Binary Search is a divide-and-conquer algorithm operating on sorted arrays or monotonic search spaces, achieving O(log N) time.",
-    topicVideo: {
-      id: "C2apEw9pgtw",
-      title: "2.6.1 Binary Search Iterative Method Explanation & Code",
-      channel: "Abdul Bari",
-      duration: "18 mins"
-    },
+    topicVideos: [
+      {
+        id: "C2apEw9pgtw",
+        title: "2.6.1 Binary Search Iterative Method Explanation & Code",
+        channel: "Abdul Bari",
+        duration: "18 mins"
+      },
+      {
+        id: "j7NodO9HIbk",
+        title: "1 Binary Search Format Introduction",
+        channel: "Aditya Verma",
+        duration: "15 mins"
+      }
+    ],
     basics: [],
     patterns: [
       {
@@ -115,49 +137,106 @@ export const dsaTheoryData = {
   },
 
   3: {
-    title: "03. Strings",
-    summary: "Strings are sequence of characters stored as character arrays. Character matching algorithms optimize string search queries.",
-    topicVideo: {
-      id: "BfUejqd07yo",
-      title: "Rolling Hash Function Tutorial & String Searching Algorithm",
-      channel: "Stable Sort",
-      duration: "20 mins"
-    },
-    basics: [],
+    title: "03. Strings & Advanced String Algorithms",
+    summary: "Comprehensive guide to Strings covering character array indexing, ASCII frequency counting, String mutability, Two Pointers reversal/palindromes, as well as advanced hard string pattern matching algorithms (Knuth-Morris-Pratt KMP with LPS Array, Z-Algorithm, and Rabin-Karp Rolling Hash).",
+    topicVideos: [
+      {
+        id: "V5-7GzOfADQ",
+        title: "9.1 Knuth-Morris-Pratt KMP String Matching Algorithm",
+        channel: "Abdul Bari",
+        duration: "24 mins"
+      },
+      {
+        id: "BfUejqd07yo",
+        title: "Rolling Hash Function Tutorial & String Searching Algorithm",
+        channel: "Stable Sort",
+        duration: "20 mins"
+      }
+    ],
+    basics: [
+      {
+        op: "1. ASCII Character Mapping & Frequency Table",
+        detail: "Fixed-size frequency array of 256 (or 26 for lowercase a-z) allows constant-time O(1) character counts for Anagram and Substring checks.",
+        code: "// Frequency counting\nvector<int> freq(26, 0);\nfor (char c : s) freq[c - 'a']++;"
+      },
+      {
+        op: "2. Two Pointers String Reversal & Palindrome Check",
+        detail: "Using left and right pointers moving inward to check or reverse string characters in O(N) time and O(1) space.",
+        code: "bool isPalindrome(string s) {\n    int l = 0, r = s.length() - 1;\n    while (l < r) {\n        if (s[l++] != s[r--]) return false;\n    }\n    return true;\n}"
+      }
+    ],
     patterns: [
       {
-        name: "1. Knuth-Morris-Pratt (KMP) Pattern Search",
+        name: "1. Character Frequency & Anagram Hashing Pattern",
+        explanation: "Compares frequency vectors of two strings to check for anagram permutation matches in O(N) time.",
+        code: "bool isAnagram(string s, string t) {\n    if (s.length() != t.length()) return false;\n    vector<int> count(26, 0);\n    for (int i = 0; i < s.length(); i++) {\n        count[s[i] - 'a']++;\n        count[t[i] - 'a']--;\n    }\n    for (int val : count) if (val != 0) return false;\n    return true;\n}",
+        codeWalkthrough: "• Increment count for s[i], decrement count for t[i]. All frequencies must sum to zero.",
+        approach: "1. Compare frequency vector counts.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(1) 26-element array",
+        whenToApply: "Anagram checks, character permutations.",
+        whenNotToApply: "Non-character arbitrary values."
+      },
+      {
+        name: "2. Knuth-Morris-Pratt (KMP) Pattern Search (Hard)",
         video: {
           id: "V5-7GzOfADQ",
           title: "9.1 Knuth-Morris-Pratt KMP String Matching Algorithm",
           channel: "Abdul Bari",
           duration: "24 mins"
         },
-        explanation: "Uses Longest Prefix Suffix (LPS) array to avoid text pointer backtracking.",
+        explanation: "Uses Longest Prefix Suffix (LPS) array to avoid text pointer backtracking when pattern matching fails.",
         code: "vector<int> computeLPS(string p) {\n    int m = p.length(), len = 0;\n    vector<int> lps(m, 0);\n    for (int i = 1; i < m;) {\n        if (p[i] == p[len]) lps[i++] = ++len;\n        else if (len != 0) len = lps[len - 1];\n        else lps[i++] = 0;\n    }\n    return lps;\n}",
-        codeWalkthrough: "• Precomputes proper prefix that is also suffix.",
-        approach: "1. Construct LPS array in O(M).",
+        codeWalkthrough: "• Precomputes longest proper prefix that is also suffix to skip redundant comparisons.",
+        approach: "1. Construct LPS array in O(M).\n2. Search text in single O(N) pass.",
         timeComplexity: "O(N + M)",
         spaceComplexity: "O(M)",
-        whenToApply: "Exact pattern matching in linear time.",
-        whenNotToApply: "Simple short string equality."
+        whenToApply: "Linear time exact pattern matching in long texts.",
+        whenNotToApply: "Simple short string equality checks."
+      },
+      {
+        name: "3. Rabin-Karp Rolling Hash Pattern (Hard)",
+        video: {
+          id: "BfUejqd07yo",
+          title: "Rolling Hash Function Tutorial & String Searching Algorithm",
+          channel: "Stable Sort",
+          duration: "20 mins"
+        },
+        explanation: "Uses polynomial rolling hash function `H = (H * p + char) % mod` to match pattern hash against sliding window text hash in O(N) average time.",
+        code: "// Rolling hash calculation\nlong long hashVal = 0, p = 31, mod = 1e9+7;\nfor (char c : s) {\n    hashVal = (hashVal * p + (c - 'a' + 1)) % mod;\n}",
+        codeWalkthrough: "• Slide window and update rolling hash by removing top character contribution and adding new character.",
+        approach: "1. Compute initial pattern hash.\n2. Slide window and update text hash in O(1).",
+        timeComplexity: "O(N + M) average",
+        spaceComplexity: "O(1)",
+        whenToApply: "Multiple pattern matching, duplicate substring search.",
+        whenNotToApply: "Hash collision prone scenarios without double hashing."
       }
     ],
     complexities: [
-      { operation: "KMP Match", time: "O(N + M)", space: "O(M)" }
+      { operation: "Anagram Frequency Count", time: "O(N)", space: "O(1)" },
+      { operation: "KMP Pattern Match", time: "O(N + M)", space: "O(M)" },
+      { operation: "Rabin-Karp Rolling Hash", time: "O(N + M) avg", space: "O(1)" }
     ],
-    strategy: "Use KMP or Z-algorithm for pattern matching."
+    strategy: "Frequency table for anagrams -> Two Pointers for palindromes -> KMP/Rabin-Karp for exact pattern matching."
   },
 
   4: {
     title: "04. Linked List",
     summary: "Non-contiguous linear structure linked via pointers. Allows O(1) dynamic insertions/deletions at known nodes.",
-    topicVideo: {
-      id: "Nq7ok-OyEpg",
-      title: "L1. Introduction to LinkedList | Traversal | Length | Search",
-      channel: "take U forward",
-      duration: "50 mins"
-    },
+    topicVideos: [
+      {
+        id: "Nq7ok-OyEpg",
+        title: "L1. Introduction to LinkedList | Traversal | Length | Search",
+        channel: "take U forward",
+        duration: "50 mins"
+      },
+      {
+        id: "wiOo4DC5GGA",
+        title: "L14. Detect a loop or cycle in LinkedList",
+        channel: "take U forward",
+        duration: "16 mins"
+      }
+    ],
     basics: [],
     patterns: [
       {
@@ -204,12 +283,14 @@ export const dsaTheoryData = {
   5: {
     title: "05. Recursion & Backtracking",
     summary: "Recursive call stack execution exploring subproblems and backtracking on invalid choice branches.",
-    topicVideo: {
-      id: "yVdKa8dnKiE",
-      title: "Re 1. Introduction to Recursion | Recursion Tree | Stack Space",
-      channel: "take U forward",
-      duration: "40 mins"
-    },
+    topicVideos: [
+      {
+        id: "yVdKa8dnKiE",
+        title: "Re 1. Introduction to Recursion | Recursion Tree | Stack Space",
+        channel: "take U forward",
+        duration: "40 mins"
+      }
+    ],
     basics: [],
     patterns: [
       {
@@ -233,12 +314,20 @@ export const dsaTheoryData = {
   6: {
     title: "06. Bit Manipulation",
     summary: "Manipulating binary bit representation of integers directly using bitwise AND, OR, XOR, NOT, and bit shifts.",
-    topicVideo: {
-      id: "NLKQEOgBAnw",
-      title: "Algorithms: Bit Manipulation Tutorial",
-      channel: "HackerRank",
-      duration: "25 mins"
-    },
+    topicVideos: [
+      {
+        id: "NLKQEOgBAnw",
+        title: "Algorithms: Bit Manipulation Tutorial",
+        channel: "HackerRank",
+        duration: "25 mins"
+      },
+      {
+        id: "ZwU6wSkepBI",
+        title: "L2 | Bit Manipulations | Problem Solving on Bit Manipulations",
+        channel: "take U forward",
+        duration: "20 mins"
+      }
+    ],
     basics: [
       {
         op: "1. Bitwise Masking Operations",
@@ -261,8 +350,8 @@ export const dsaTheoryData = {
         approach: "1. Apply bitwise masks.",
         timeComplexity: "O(1)",
         spaceComplexity: "O(1)",
-        whenToApply: "Parity checks, bit masks, subset representations.",
-        whenNotToApply: "Floating point numbers."
+        whenToApply: "Bit parity, fast subset masks.",
+        whenNotToApply: "Continuous floating point numbers."
       }
     ],
     complexities: [
@@ -274,12 +363,14 @@ export const dsaTheoryData = {
   7: {
     title: "07. Stack and Queues",
     summary: "Stack (LIFO - Last In First Out) and Queue (FIFO - First In First Out) linear data structures.",
-    topicVideo: {
-      id: "GYptUgnIM_I",
-      title: "Implementation of Stack using Arrays",
-      channel: "take U forward",
-      duration: "25 mins"
-    },
+    topicVideos: [
+      {
+        id: "GYptUgnIM_I",
+        title: "Implementation of Stack using Arrays",
+        channel: "take U forward",
+        duration: "25 mins"
+      }
+    ],
     basics: [
       {
         op: "1. Stack LIFO vs Queue FIFO Operations",
@@ -309,6 +400,14 @@ export const dsaTheoryData = {
   8: {
     title: "08. Sliding Window & Two Pointers",
     summary: "Subarray window optimization over sequential data structures avoiding nested O(N^2) loops.",
+    topicVideos: [
+      {
+        id: "3IETreEybaA",
+        title: "LeetCode Longest Substring Without Repeating Characters Solution Explained",
+        channel: "Nick White",
+        duration: "14 mins"
+      }
+    ],
     basics: [
       {
         op: "1. Window Expansion & Contraction Mechanics",
@@ -318,7 +417,7 @@ export const dsaTheoryData = {
     ],
     patterns: [
       {
-        name: "1. Variable Size Sliding Window",
+        name: "1. Longest Substring Without Repeating Characters",
         video: {
           id: "3IETreEybaA",
           title: "LeetCode Longest Substring Without Repeating Characters Solution Explained",
@@ -344,12 +443,20 @@ export const dsaTheoryData = {
   9: {
     title: "09. Heaps & Priority Queue",
     summary: "Complete binary tree maintaining min-heap or max-heap property for fast O(1) top access.",
-    topicVideo: {
-      id: "HqPJF2L5h9U",
-      title: "2.6.3 Heap - Heap Sort - Heapify - Priority Queues",
-      channel: "Abdul Bari",
-      duration: "35 mins"
-    },
+    topicVideos: [
+      {
+        id: "HqPJF2L5h9U",
+        title: "2.6.3 Heap - Heap Sort - Heapify - Priority Queues",
+        channel: "Abdul Bari",
+        duration: "35 mins"
+      },
+      {
+        id: "t0Cq6tVNRBA",
+        title: "Data Structures: Heaps Tutorial",
+        channel: "HackerRank",
+        duration: "18 mins"
+      }
+    ],
     basics: [],
     patterns: [
       {
@@ -379,12 +486,14 @@ export const dsaTheoryData = {
   10: {
     title: "10. Greedy Approach",
     summary: "Making locally optimal choices at each step to reach a global optimum.",
-    topicVideo: {
-      id: "ARvQcqJ_-NY",
-      title: "3. Greedy Method - Introduction & Applications",
-      channel: "Abdul Bari",
-      duration: "30 mins"
-    },
+    topicVideos: [
+      {
+        id: "ARvQcqJ_-NY",
+        title: "3. Greedy Method - Introduction & Applications",
+        channel: "Abdul Bari",
+        duration: "30 mins"
+      }
+    ],
     basics: [
       {
         op: "1. Optimal Substructure & Choice Property",
@@ -414,12 +523,14 @@ export const dsaTheoryData = {
   11: {
     title: "11. Binary Trees",
     summary: "Hierarchical structure where each node has at most 2 children.",
-    topicVideo: {
-      id: "_ANrF3FJm7I",
-      title: "L1. Introduction to Trees | Types of Trees",
-      channel: "take U forward",
-      duration: "45 mins"
-    },
+    topicVideos: [
+      {
+        id: "_ANrF3FJm7I",
+        title: "L1. Introduction to Trees | Types of Trees",
+        channel: "take U forward",
+        duration: "45 mins"
+      }
+    ],
     basics: [],
     patterns: [],
     complexities: [
@@ -431,12 +542,14 @@ export const dsaTheoryData = {
   12: {
     title: "12. Binary Search Trees",
     summary: "Binary tree with invariant Left < Node < Right for all nodes.",
-    topicVideo: {
-      id: "pYT9F8_LFTM",
-      title: "Data structures: Binary Search Tree",
-      channel: "mycodeschool",
-      duration: "30 mins"
-    },
+    topicVideos: [
+      {
+        id: "pYT9F8_LFTM",
+        title: "Data structures: Binary Search Tree",
+        channel: "mycodeschool",
+        duration: "30 mins"
+      }
+    ],
     basics: [],
     patterns: [],
     complexities: [
@@ -448,12 +561,20 @@ export const dsaTheoryData = {
   13: {
     title: "13. Graphs",
     summary: "Vertices and Edges structure representing networks and relationships.",
-    topicVideo: {
-      id: "M3_pLsDdeuU",
-      title: "G-1. Introduction to Graph | Types & Conventions",
-      channel: "take U forward",
-      duration: "35 mins"
-    },
+    topicVideos: [
+      {
+        id: "M3_pLsDdeuU",
+        title: "G-1. Introduction to Graph | Types & Conventions",
+        channel: "take U forward",
+        duration: "35 mins"
+      },
+      {
+        id: "-tgVpUgsQ5k",
+        title: "G-5. Breadth-First Search (BFS) | Traversal Technique",
+        channel: "take U forward",
+        duration: "22 mins"
+      }
+    ],
     basics: [],
     patterns: [
       {
@@ -483,12 +604,14 @@ export const dsaTheoryData = {
   14: {
     title: "14. Dynamic Programming",
     summary: "Optimizes recursion by caching solutions to overlapping subproblems.",
-    topicVideo: {
-      id: "oBt53YbR9Kk",
-      title: "Dynamic Programming - Learn to Solve Algorithmic Problems",
-      channel: "freeCodeCamp.org",
-      duration: "65 mins"
-    },
+    topicVideos: [
+      {
+        id: "oBt53YbR9Kk",
+        title: "Dynamic Programming - Learn to Solve Algorithmic Problems",
+        channel: "freeCodeCamp.org",
+        duration: "65 mins"
+      }
+    ],
     basics: [],
     patterns: [],
     complexities: [
@@ -500,12 +623,14 @@ export const dsaTheoryData = {
   15: {
     title: "15. Tries",
     summary: "Tree structure storing character prefixes for fast string lookup.",
-    topicVideo: {
-      id: "dBGUmUQhjaM",
-      title: "L1. Implement TRIE | INSERT | SEARCH | STARTSWITH",
-      channel: "take U forward",
-      duration: "35 mins"
-    },
+    topicVideos: [
+      {
+        id: "dBGUmUQhjaM",
+        title: "L1. Implement TRIE | INSERT | SEARCH | STARTSWITH",
+        channel: "take U forward",
+        duration: "35 mins"
+      }
+    ],
     basics: [],
     patterns: [],
     complexities: [
@@ -515,18 +640,27 @@ export const dsaTheoryData = {
   },
 
   16: {
-    title: "16. Strings (Hard)",
-    summary: "Advanced string pattern matching and string transformation algorithms.",
-    topicVideo: {
-      id: "V5-7GzOfADQ",
-      title: "9.1 Knuth-Morris-Pratt KMP String Matching Algorithm",
-      channel: "Abdul Bari",
-      duration: "24 mins"
-    },
+    // Topic 16 maps to 03. Strings & Advanced String Algorithms
+    title: "16. Strings (Advanced Hard)",
+    summary: "Advanced hard string pattern matching algorithms (Knuth-Morris-Pratt KMP with LPS Array, Z-Algorithm, and Rabin-Karp Rolling Hash).",
+    topicVideos: [
+      {
+        id: "V5-7GzOfADQ",
+        title: "9.1 Knuth-Morris-Pratt KMP String Matching Algorithm",
+        channel: "Abdul Bari",
+        duration: "24 mins"
+      },
+      {
+        id: "BfUejqd07yo",
+        title: "Rolling Hash Function Tutorial & String Searching Algorithm",
+        channel: "Stable Sort",
+        duration: "20 mins"
+      }
+    ],
     basics: [],
     patterns: [
       {
-        name: "1. KMP Pattern Search (LPS Array)",
+        name: "1. Knuth-Morris-Pratt (KMP) Pattern Search",
         video: {
           id: "V5-7GzOfADQ",
           title: "9.1 Knuth-Morris-Pratt KMP String Matching Algorithm",

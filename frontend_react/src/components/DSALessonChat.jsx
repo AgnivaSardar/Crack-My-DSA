@@ -3,7 +3,7 @@ import { askDSADoubt } from '../api/client'
 import { dsaTheoryData } from '../data/dsaTheoryData'
 import { DSADiagram } from './DSADiagrams'
 
-// Minimalist Monochrome SVG Icons
+// Minimalist Monochrome SVG Icons (No Unicode Emojis)
 const IconBack = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -126,7 +126,28 @@ const IconLayers = () => (
   </svg>
 )
 
-// YouTube Video Card Component with Thumbnail & Title
+const IconVideo = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+    <line x1="7" y1="2" x2="7" y2="22" />
+    <line x1="17" y1="2" x2="17" y2="22" />
+    <line x1="2" y1="12" x2="22" y2="12" />
+    <line x1="2" y1="7" x2="7" y2="7" />
+    <line x1="2" y1="17" x2="7" y2="17" />
+    <line x1="17" y1="17" x2="22" y2="17" />
+    <line x1="17" y1="7" x2="22" y2="7" />
+  </svg>
+)
+
+const IconWarning = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+)
+
+// YouTube Video Card Component (Monochrome SVG Icons Only)
 function YouTubeVideoCard({ video }) {
   if (!video || !video.id) return null
   const thumbnailUrl = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`
@@ -149,9 +170,13 @@ function YouTubeVideoCard({ video }) {
         {video.duration && <span className="dsa-yt-duration">{video.duration}</span>}
       </div>
       <div className="dsa-yt-card-info">
-        <span className="dsa-yt-card-channel">📺 {video.channel || 'take U forward'}</span>
+        <span className="dsa-yt-card-channel">
+          <IconVideo /> {video.channel || 'take U forward'}
+        </span>
         <h5 className="dsa-yt-card-title">{video.title}</h5>
-        <span className="dsa-yt-card-watch-link">Watch Direct Video Lecture ↗</span>
+        <span className="dsa-yt-card-watch-link">
+          Watch Direct Video Lecture <IconExternal />
+        </span>
       </div>
     </a>
   )
@@ -427,13 +452,21 @@ export default function DSALessonChat({
               </div>
             </div>
 
-            {/* Topic Level Direct Video Card */}
-            {theoryData.topicVideo && (
+            {/* Master Video Lectures Grid (Supports Multiple Master Videos) */}
+            {((theoryData.topicVideos && theoryData.topicVideos.length > 0) || theoryData.topicVideo) && (
               <div className="dsa-theory-section">
                 <h4 className="dsa-theory-section-title">
-                  📺 Master Lecture Video & Concept Breakdown
+                  <IconVideo /> Master Video Lectures & Concept Breakdowns
                 </h4>
-                <YouTubeVideoCard video={theoryData.topicVideo} />
+                <div className="dsa-master-videos-grid">
+                  {theoryData.topicVideos ? (
+                    theoryData.topicVideos.map((v, vIdx) => (
+                      <YouTubeVideoCard key={vIdx} video={v} />
+                    ))
+                  ) : (
+                    <YouTubeVideoCard video={theoryData.topicVideo} />
+                  )}
+                </div>
               </div>
             )}
 
@@ -451,13 +484,13 @@ export default function DSALessonChat({
 
               <div className="dsa-suggested-pills">
                 <button className="dsa-pill-btn" onClick={() => handleSendTheoryDoubt(`Explain core principles and optimal approach of ${topic?.title}`)}>
-                  💡 Explain core principles of {topic?.title}
+                  <IconLightbulb /> Explain core principles of {topic?.title}
                 </button>
                 <button className="dsa-pill-btn" onClick={() => handleSendTheoryDoubt(`How to optimize time and space complexity in ${topic?.title}?`)}>
-                  ⏱️ How to optimize time & space complexity?
+                  <IconClock /> How to optimize time & space complexity?
                 </button>
                 <button className="dsa-pill-btn" onClick={() => handleSendTheoryDoubt(`What are common pitfalls and edge cases in ${topic?.title}?`)}>
-                  ⚠️ Common pitfalls & edge cases?
+                  <IconWarning /> Common pitfalls & edge cases?
                 </button>
               </div>
 
@@ -549,7 +582,7 @@ export default function DSALessonChat({
                     {pat.video && (
                       <div className="dsa-pattern-subblock">
                         <span className="dsa-pattern-subhead">
-                          📺 Sub-Topic Video Tutorial:
+                          <IconVideo /> Sub-Topic Video Tutorial:
                         </span>
                         <div style={{ marginTop: '4px' }}>
                           <YouTubeVideoCard video={pat.video} />

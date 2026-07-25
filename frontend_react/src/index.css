@@ -3063,6 +3063,13 @@ code, pre, .mono {
 
 
 /* Rich YouTube Video Card Component */
+.dsa-master-videos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.4rem;
+}
+
 .dsa-yt-video-card {
   display: flex;
   align-items: center;
@@ -3073,8 +3080,8 @@ code, pre, .mono {
   padding: 0.6rem;
   text-decoration: none;
   transition: all 0.2s ease;
-  max-width: 580px;
 }
+
 
 .dsa-yt-video-card:hover {
   border-color: #ef4444;
