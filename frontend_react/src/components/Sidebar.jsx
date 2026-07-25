@@ -1,5 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
+const IconChat = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+)
+
+const IconRoadmap = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+  </svg>
+)
+
 export default function Sidebar({
   sessions,
   currentSessionId,
@@ -90,13 +103,13 @@ export default function Sidebar({
             className={`sidebar-tab-btn ${activeTab === 'past_chats' ? 'active' : ''}`}
             onClick={() => onTabChange('past_chats')}
           >
-            💬 Past Chats
+            <IconChat /> Past Chats
           </button>
           <button
             className={`sidebar-tab-btn ${activeTab === 'dsa_roadmap' ? 'active' : ''}`}
             onClick={() => onTabChange('dsa_roadmap')}
           >
-            📚 DSA Roadmap
+            <IconRoadmap /> DSA Roadmap
           </button>
         </div>
 
@@ -176,7 +189,7 @@ export default function Sidebar({
                 <span>Strivers A2Z Progress</span>
                 <span className="sidebar-progress-pct">{overallRoadmapPercentage}%</span>
               </div>
-              <div className="dsa-progress-bar-bg" style={{ height: '6px', marginTop: '6px' }}>
+              <div className="dsa-progress-bar-bg" style={{ height: '5px', marginTop: '6px' }}>
                 <div className="dsa-progress-bar-fill" style={{ width: `${overallRoadmapPercentage}%` }} />
               </div>
               <div className="sidebar-progress-sub">
