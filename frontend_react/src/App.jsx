@@ -304,8 +304,8 @@ export default function App() {
 
   return (
     <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-      {sidebarCollapsed && (
-        <div className="sidebar-backdrop" onClick={() => setSidebarCollapsed(false)} />
+      {!sidebarCollapsed && (
+        <div className="sidebar-backdrop" onClick={() => setSidebarCollapsed(true)} />
       )}
 
       <Sidebar

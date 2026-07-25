@@ -1103,6 +1103,7 @@ code, pre, .mono {
    COLLAPSIBLE SIDEBAR & CENTERING
    ============================================ */
 .sidebar-backdrop {
+  display: none;
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.65);
