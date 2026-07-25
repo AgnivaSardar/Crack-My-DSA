@@ -97,21 +97,19 @@ export default function ChatArea({
     el.style.height = Math.min(el.scrollHeight, 120) + 'px'
   }
 
+  async function handleSend(e) {
+    if (e) e.preventDefault()
+    if (!input.trim() || isLoading) return
+    const query = input.trim()
+    setInput('')
+    if (textareaRef.current) { textareaRef.current.style.height = 'auto' }
+    await onNewMessage(query)
+  }
+
   function handleKeyDown(e) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (input.trim()) {
-        onNewMessage(input.trim())
-        setInput('')
-      }
-    }
-  }
-
-  function handleFormSubmit(e) {
-    e.preventDefault()
-    if (input.trim()) {
-      onNewMessage(input.trim())
-      setInput('')
+      handleSend(e)
     }
   }
 
