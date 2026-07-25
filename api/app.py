@@ -117,9 +117,6 @@ async def query_rag(request: QueryRequest):
             generator = LeetCodeGenerator()
         
     try:
-        # Retrieve relevant questions
-        retrieved_questions = retriever.retrieve(request.query, limit=request.limit)
-
         # Get user's solved titles if email is passed
         user_solved_titles = []
         if request.user_email:
@@ -134,10 +131,17 @@ async def query_rag(request: QueryRequest):
         # Check if user query asks to remove/exclude solved questions or if solved titles exist
         query_lower = request.query.lower()
         is_exclude_explicit = any(k in query_lower for k in ["already done", "unsolved", "todo", "not done", "not solved", "exclude", "remove"])
+
+        # Fetch candidate pool (oversampled if filtering solved) so retrieved_questions contains full target_limit UNSOLVED problems
+        target_limit = request.limit or 10
+        fetch_limit = target_limit * 5 if (is_exclude_explicit or user_solved_titles) else target_limit
+        candidates = retriever.retrieve(request.query, limit=fetch_limit)
         
         if (is_exclude_explicit or user_solved_titles) and user_solved_titles:
             solved_set = set(t.strip().lower() for t in user_solved_titles)
-            retrieved_questions = [q for q in retrieved_questions if (q.get("title") or q.get("problem_title") or "").strip().lower() not in solved_set]
+            retrieved_questions = [q for q in candidates if (q.get("title") or q.get("problem_title") or "").strip().lower() not in solved_set][:target_limit]
+        else:
+            retrieved_questions = candidates[:target_limit]
 
         # Format history
         history_dicts = []
