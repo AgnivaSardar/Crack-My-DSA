@@ -1,10 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import { askDSADoubt } from '../api/client'
+import { dsaTheoryData } from '../data/dsaTheoryData'
 
 // Minimalist Monochrome SVG Icons
 const IconBack = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 12H5M12 19l-7-7 7-7" />
+  </svg>
+)
+
+const IconTheory = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+  </svg>
+)
+
+const IconProblems = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="16 18 22 12 16 6" />
+    <polyline points="8 6 2 12 8 18" />
   </svg>
 )
 
@@ -29,13 +44,6 @@ const IconApproach = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
     <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
-  </svg>
-)
-
-const IconCode = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="16 18 22 12 16 6" />
-    <polyline points="8 6 2 12 8 18" />
   </svg>
 )
 
@@ -81,6 +89,103 @@ const IconCheck = () => (
   </svg>
 )
 
+// Markdown Formatter (Fixes **bold** text and `inline code`)
+function renderFormattedMarkdown(text) {
+  if (!text) return null
+
+  // Split into lines
+  const lines = text.split('\n')
+  return lines.map((line, lIdx) => {
+    let cleanLine = line.trim()
+    
+    // Clean any leading artifact prefixes like "1. 1. ", "2. 2. ", "1. **"
+    cleanLine = cleanLine.replace(/^(\d+[\.\)])\s*(\d+[\.\)])\s*/, '$1 ')
+
+    // Parse **bold** and `code` markers inside line
+    const parts = cleanLine.split(/(\*\*.*?\*\*|`.*?`)/g)
+    const formattedElements = parts.map((part, pIdx) => {
+      if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
+        return <strong key={pIdx} className="dsa-bold-text">{part.slice(2, -2)}</strong>
+      }
+      if (part.startsWith('`') && part.endsWith('`') && part.length >= 2) {
+        return <code key={pIdx} className="dsa-inline-code">{part.slice(1, -1)}</code>
+      }
+      return part
+    })
+
+    return (
+      <React.Fragment key={lIdx}>
+        {formattedElements}
+        {lIdx < lines.length - 1 && <br />}
+      </React.Fragment>
+    )
+  })
+}
+
+// IDE / ChatGPT Style Code Syntax Highlighter Component
+function SyntaxCodeBlock({ code }) {
+  if (!code) return <pre className="dsa-code-block"><code>// No code available</code></pre>
+
+  // Helper tokenization for C++ & Java code syntax
+  const lines = code.split('\n')
+
+  return (
+    <pre className="dsa-code-block">
+      <code>
+        {lines.map((line, lineIdx) => {
+          // Tokenize line with regex rules
+          const tokens = []
+          let remaining = line
+
+          // Regex matching comments, strings, keywords, types, numbers
+          const regex = /(\/\/.*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b(?:class|public|private|protected|void|int|bool|boolean|double|float|char|string|String|vector|unordered_map|map|set|unordered_set|stack|queue|priority_queue|if|else|for|while|return|new|delete|import|include|using|namespace|const|static|struct|NULL|nullptr|true|false|this)\b|\b[A-Z][a-zA-Z0-9_]*\b|\b\d+\b)/g
+
+          let match
+          let lastIndex = 0
+
+          while ((match = regex.exec(line)) !== null) {
+            const tokenText = match[0]
+            const index = match.index
+
+            // Add plain text before match
+            if (index > lastIndex) {
+              tokens.push(<span key={`txt-${lastIndex}`} className="syn-plain">{line.slice(lastIndex, index)}</span>)
+            }
+
+            // Style token based on type
+            let tokenClass = "syn-plain"
+            if (tokenText.startsWith("//") || tokenText.startsWith("/*")) {
+              tokenClass = "syn-comment"
+            } else if (tokenText.startsWith('"') || tokenText.startsWith("'")) {
+              tokenClass = "syn-string"
+            } else if (/^\b\d+\b$/.test(tokenText)) {
+              tokenClass = "syn-number"
+            } else if (/^\b[A-Z][a-zA-Z0-9_]*\b$/.test(tokenText)) {
+              tokenClass = "syn-type"
+            } else {
+              tokenClass = "syn-keyword"
+            }
+
+            tokens.push(<span key={`tok-${index}`} className={tokenClass}>{tokenText}</span>)
+            lastIndex = regex.lastIndex
+          }
+
+          if (lastIndex < line.length) {
+            tokens.push(<span key={`txt-${lastIndex}`} className="syn-plain">{line.slice(lastIndex)}</span>)
+          }
+
+          return (
+            <div key={lineIdx} className="code-line">
+              <span className="code-line-num">{lineIdx + 1}</span>
+              <span className="code-line-content">{tokens.length > 0 ? tokens : ' '}</span>
+            </div>
+          )
+        })}
+      </code>
+    </pre>
+  )
+}
+
 export default function DSALessonChat({
   topic,
   problems = [],
@@ -92,6 +197,7 @@ export default function DSALessonChat({
   onBackToRoadmap,
   onToast
 }) {
+  const [viewTab, setViewTab] = useState('problems') // 'theory' | 'problems'
   const [openDoubts, setOpenDoubts] = useState({})
   const [doubtInputs, setDoubtInputs] = useState({})
   const [doubtLoading, setDoubtLoading] = useState({})
@@ -101,6 +207,9 @@ export default function DSALessonChat({
   useEffect(() => {
     setLocalProblems(problems)
   }, [problems])
+
+  const topicId = topic?.topic_id || 1
+  const theoryData = dsaTheoryData[topicId] || dsaTheoryData[1]
 
   const totalProblems = localProblems.length
   const completedCount = localProblems.filter(p => p.is_completed).length
@@ -152,7 +261,7 @@ export default function DSALessonChat({
 
   return (
     <div className="dsa-lesson-chat-container">
-      {/* Sleek Compact Header */}
+      {/* Sleek Compact Topic Header */}
       <div className="dsa-lesson-header">
         <div className="dsa-header-left">
           <button className="dsa-back-btn" onClick={onBackToRoadmap} title="Back to Topics List">
@@ -164,6 +273,22 @@ export default function DSALessonChat({
               Strivers A2Z Sheet • {completedCount}/{totalProblems} Completed ({percentage}%)
             </span>
           </div>
+        </div>
+
+        {/* Navigation Sub-Tabs (Theory vs Problems/Code) */}
+        <div className="dsa-view-subtabs">
+          <button
+            className={`dsa-subtab-btn ${viewTab === 'theory' ? 'active' : ''}`}
+            onClick={() => setViewTab('theory')}
+          >
+            <IconTheory /> Topic Theory & Concepts
+          </button>
+          <button
+            className={`dsa-subtab-btn ${viewTab === 'problems' ? 'active' : ''}`}
+            onClick={() => setViewTab('problems')}
+          >
+            <IconProblems /> Problems & Solutions ({totalProblems})
+          </button>
         </div>
 
         {/* Progress & Language Toggle */}
@@ -192,174 +317,252 @@ export default function DSALessonChat({
         </div>
       </div>
 
-      {/* Main Teaching Chat Stream */}
+      {/* Main View Area (Theory vs Problems Stream) */}
       <div className="dsa-lesson-stream">
-        <div className="dsa-ai-instructor-intro">
-          <div className="dsa-ai-badge">
-            <IconAI /> AI Instructor
+        {viewTab === 'theory' ? (
+          /* --- TOPIC THEORY & CONCEPT TAB --- */
+          <div className="dsa-theory-card">
+            <div className="dsa-theory-banner">
+              <div className="dsa-ai-badge">
+                <IconTheory /> Topic Theory Guide
+              </div>
+              <h3 className="dsa-theory-title">{theoryData.title} — Comprehensive Concept Guide</h3>
+              <p className="dsa-theory-summary">{theoryData.summary}</p>
+            </div>
+
+            {/* Patterns & Mechanics */}
+            <div className="dsa-theory-section">
+              <h4 className="dsa-theory-section-title">
+                <IconApproach /> Core Patterns & Essential Techniques
+              </h4>
+              <div className="dsa-theory-grid">
+                {theoryData.patterns.map((pat, pIdx) => (
+                  <div key={pIdx} className="dsa-pattern-box">
+                    <span className="dsa-pattern-name">{pat.name}</span>
+                    <p className="dsa-pattern-desc">{pat.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Complexity Operations Cheat Sheet */}
+            <div className="dsa-theory-section">
+              <h4 className="dsa-theory-section-title">
+                <IconClock /> Operation Complexity Cheat Sheet
+              </h4>
+              <div className="dsa-complexity-table-wrap">
+                <table className="dsa-complexity-table">
+                  <thead>
+                    <tr>
+                      <th>Operation / Sub-type</th>
+                      <th>Time Complexity</th>
+                      <th>Space Complexity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {theoryData.complexities.map((row, cIdx) => (
+                      <tr key={cIdx}>
+                        <td>{row.operation}</td>
+                        <td><code className="dsa-code-tag">{row.time}</code></td>
+                        <td><code className="dsa-code-tag">{row.space}</code></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Master Strategy */}
+            <div className="dsa-theory-section">
+              <h4 className="dsa-theory-section-title">
+                <IconAI /> Master Problem-Solving Strategy
+              </h4>
+              <div className="dsa-strategy-box">
+                {theoryData.strategy}
+              </div>
+            </div>
+
+            <div className="dsa-theory-footer-action">
+              <button className="dsa-btn-action solid" onClick={() => setViewTab('problems')}>
+                Start Solving {totalProblems} Problems in {topic?.title} →
+              </button>
+            </div>
           </div>
-          <p>
-            Welcome to <strong>{topic?.title}</strong>. Below are all {totalProblems} core problems parsed from Strivers A2Z DSA Sheet.
-            Review intuition, step-by-step approach, complexity, and solution code in <strong>{language === 'cpp' ? 'C++' : 'Java'}</strong>.
-            Ask private doubts under any code block for instant AI guidance.
-          </p>
-        </div>
-
-        {localProblems.map((prob, index) => {
-          const isDone = prob.is_completed
-          const activeCode = language === 'java' ? (prob.java_code || prob.cpp_code) : prob.cpp_code
-          const doubtsList = prob.user_doubts || []
-          const isDoubtOpen = !!openDoubts[prob.problem_id]
-          const isAsking = !!doubtLoading[prob.problem_id]
-
-          return (
-            <div key={prob.problem_id || index} className={`dsa-problem-card ${isDone ? 'completed-card' : ''}`}>
-              {/* Problem Title Bar */}
-              <div className="dsa-card-header">
-                <div className="dsa-card-header-left">
-                  <label className="dsa-checkbox-container" title="Toggle Solved Status">
-                    <input
-                      type="checkbox"
-                      checked={isDone}
-                      onChange={() => handleCheckToggle(prob.problem_id, isDone)}
-                    />
-                    <span className="dsa-checkmark" />
-                  </label>
-                  <span className="dsa-problem-num">#{index + 1}</span>
-                  <h3 className="dsa-problem-title">{prob.title}</h3>
-                  {prob.subfolder && <span className="dsa-subfolder-tag">{prob.subfolder}</span>}
-                </div>
-
-                <div className="dsa-card-header-right">
-                  {prob.leetcode_link && (
-                    <a
-                      href={prob.leetcode_link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="dsa-btn-action ghost"
-                      title="Open on LeetCode"
-                    >
-                      LeetCode <IconExternal />
-                    </a>
-                  )}
-                  <button
-                    className={`dsa-btn-action ${isDone ? 'solid' : 'ghost'}`}
-                    onClick={() => handleCheckToggle(prob.problem_id, isDone)}
-                  >
-                    {isDone ? <><IconCheck /> Solved</> : 'Mark Solved'}
-                  </button>
-                </div>
+        ) : (
+          /* --- PROBLEMS & SOLUTIONS CODE STREAM TAB --- */
+          <>
+            <div className="dsa-ai-instructor-intro">
+              <div className="dsa-ai-badge">
+                <IconAI /> AI Instructor
               </div>
+              <p>
+                Welcome to <strong>{topic?.title}</strong>. Below are all {totalProblems} core problems parsed from Strivers A2Z DSA Sheet.
+                Review intuition, step-by-step approach, complexity, and solution code in <strong>{language === 'cpp' ? 'C++' : 'Java'}</strong>.
+                Ask private doubts under any code block for instant AI guidance.
+              </p>
+            </div>
 
-              {/* Question Description */}
-              <div className="dsa-card-section">
-                <div className="dsa-section-label">
-                  <IconQuestion /> Question & Examples
-                </div>
-                <div className="dsa-text-content pre-wrap">{prob.question_text}</div>
-              </div>
+            {localProblems.map((prob, index) => {
+              const isDone = prob.is_completed
+              const activeCode = language === 'java' ? (prob.java_code || prob.cpp_code) : prob.cpp_code
+              const doubtsList = prob.user_doubts || []
+              const isDoubtOpen = !!openDoubts[prob.problem_id]
+              const isAsking = !!doubtLoading[prob.problem_id]
 
-              {/* Intuition & Approach Breakdown */}
-              <div className="dsa-card-section">
-                <div className="dsa-section-label">
-                  <IconApproach /> AI Intuition & Step-by-Step Approach
-                </div>
-                <div className="dsa-text-content pre-wrap">{prob.approach_text}</div>
-              </div>
+              return (
+                <div key={prob.problem_id || index} className={`dsa-problem-card ${isDone ? 'completed-card' : ''}`}>
+                  {/* Problem Title Bar */}
+                  <div className="dsa-card-header">
+                    <div className="dsa-card-header-left">
+                      <label className="dsa-checkbox-container" title="Toggle Solved Status">
+                        <input
+                          type="checkbox"
+                          checked={isDone}
+                          onChange={() => handleCheckToggle(prob.problem_id, isDone)}
+                        />
+                        <span className="dsa-checkmark" />
+                      </label>
+                      <span className="dsa-problem-num">#{index + 1}</span>
+                      <h3 className="dsa-problem-title">{prob.title}</h3>
+                      {prob.subfolder && <span className="dsa-subfolder-tag">{prob.subfolder}</span>}
+                    </div>
 
-              {/* Code Snippet Block */}
-              <div className="dsa-card-section">
-                <div className="dsa-code-header">
-                  <span className="dsa-section-label">
-                    <IconCode /> Solution ({language === 'cpp' ? 'C++' : 'Java'})
-                  </span>
-                  <button
-                    className="dsa-btn-action ghost sm"
-                    onClick={() => copyCode(prob.problem_id, activeCode)}
-                  >
-                    {copiedId === prob.problem_id ? <><IconCheck /> Copied</> : <><IconCopy /> Copy</>}
-                  </button>
-                </div>
-                <pre className="dsa-code-block">
-                  <code>{activeCode}</code>
-                </pre>
-              </div>
-
-              {/* Complexity Analysis Cards */}
-              <div className="dsa-complexity-row">
-                <div className="dsa-complexity-box">
-                  <span className="dsa-comp-title"><IconClock /> Time Complexity</span>
-                  <span className="dsa-comp-value">{prob.time_complexity || 'O(N)'}</span>
-                </div>
-                <div className="dsa-complexity-box">
-                  <span className="dsa-comp-title"><IconDatabase /> Space Complexity</span>
-                  <span className="dsa-comp-value">{prob.space_complexity || 'O(1)'}</span>
-                </div>
-              </div>
-
-              {/* Private User Doubt & Notes Section */}
-              <div className="dsa-doubt-container">
-                <button
-                  className="dsa-doubt-toggle-btn"
-                  onClick={() => toggleDoubtSection(prob.problem_id)}
-                >
-                  <span className="dsa-doubt-toggle-left">
-                    <IconMessage /> Private Doubts & Notes ({doubtsList.length})
-                  </span>
-                  <span className="dsa-doubt-toggle-arrow">{isDoubtOpen ? '▲' : '▼'}</span>
-                </button>
-
-                {isDoubtOpen && (
-                  <div className="dsa-doubt-content">
-                    {doubtsList.length === 0 ? (
-                      <div className="dsa-no-doubts-msg">
-                        No private doubts asked for this problem yet. Type below to ask a question or write a private note.
-                      </div>
-                    ) : (
-                      <div className="dsa-doubts-list">
-                        {doubtsList.map((d, dIdx) => (
-                          <div key={d.id || dIdx} className="dsa-doubt-item">
-                            <div className="dsa-user-doubt-bubble">
-                              <span className="dsa-doubt-role">You:</span> {d.doubt_text}
-                            </div>
-                            <div className="dsa-ai-doubt-response">
-                              <span className="dsa-doubt-role ai">
-                                <IconAI /> Private AI Response:
-                              </span>
-                              <div className="pre-wrap" style={{ marginTop: '3px' }}>{d.ai_response}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Doubt Input Row */}
-                    <div className="dsa-doubt-input-row">
-                      <input
-                        type="text"
-                        className="dsa-doubt-input"
-                        placeholder="Ask a doubt or write a private note..."
-                        value={doubtInputs[prob.problem_id] || ''}
-                        onChange={(e) => setDoubtInputs({ ...doubtInputs, [prob.problem_id]: e.target.value })}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleSendDoubt(prob.problem_id, prob.title, activeCode)
-                        }}
-                        disabled={isAsking}
-                      />
+                    <div className="dsa-card-header-right">
+                      {prob.leetcode_link && (
+                        <a
+                          href={prob.leetcode_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="dsa-btn-action ghost"
+                          title="Open on LeetCode"
+                        >
+                          LeetCode <IconExternal />
+                        </a>
+                      )}
                       <button
-                        className="dsa-btn-action solid"
-                        onClick={() => handleSendDoubt(prob.problem_id, prob.title, activeCode)}
-                        disabled={isAsking || !(doubtInputs[prob.problem_id] || '').trim()}
+                        className={`dsa-btn-action ${isDone ? 'solid' : 'ghost'}`}
+                        onClick={() => handleCheckToggle(prob.problem_id, isDone)}
                       >
-                        {isAsking ? 'Asking...' : 'Ask AI'}
+                        {isDone ? <><IconCheck /> Solved</> : 'Mark Solved'}
                       </button>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
-          )
-        })}
+
+                  {/* Question Description */}
+                  <div className="dsa-card-section">
+                    <div className="dsa-section-label">
+                      <IconQuestion /> Question & Examples
+                    </div>
+                    <div className="dsa-text-content">
+                      {renderFormattedMarkdown(prob.question_text)}
+                    </div>
+                  </div>
+
+                  {/* Intuition & Approach Breakdown */}
+                  <div className="dsa-card-section">
+                    <div className="dsa-section-label">
+                      <IconApproach /> AI Intuition & Step-by-Step Approach
+                    </div>
+                    <div className="dsa-text-content">
+                      {renderFormattedMarkdown(prob.approach_text)}
+                    </div>
+                  </div>
+
+                  {/* Syntax Highlighted Code Snippet Block */}
+                  <div className="dsa-card-section">
+                    <div className="dsa-code-header">
+                      <span className="dsa-section-label">
+                        Solution ({language === 'cpp' ? 'C++' : 'Java'})
+                      </span>
+                      <button
+                        className="dsa-btn-action ghost sm"
+                        onClick={() => copyCode(prob.problem_id, activeCode)}
+                      >
+                        {copiedId === prob.problem_id ? <><IconCheck /> Copied</> : <><IconCopy /> Copy</>}
+                      </button>
+                    </div>
+                    <SyntaxCodeBlock code={activeCode} />
+                  </div>
+
+                  {/* Complexity Analysis Cards */}
+                  <div className="dsa-complexity-row">
+                    <div className="dsa-complexity-box">
+                      <span className="dsa-comp-title"><IconClock /> Time Complexity</span>
+                      <span className="dsa-comp-value">{prob.time_complexity || 'O(N)'}</span>
+                    </div>
+                    <div className="dsa-complexity-box">
+                      <span className="dsa-comp-title"><IconDatabase /> Space Complexity</span>
+                      <span className="dsa-comp-value">{prob.space_complexity || 'O(1)'}</span>
+                    </div>
+                  </div>
+
+                  {/* Private User Doubt & Notes Section */}
+                  <div className="dsa-doubt-container">
+                    <button
+                      className="dsa-doubt-toggle-btn"
+                      onClick={() => toggleDoubtSection(prob.problem_id)}
+                    >
+                      <span className="dsa-doubt-toggle-left">
+                        <IconMessage /> Private Doubts & Notes ({doubtsList.length})
+                      </span>
+                      <span className="dsa-doubt-toggle-arrow">{isDoubtOpen ? '▲' : '▼'}</span>
+                    </button>
+
+                    {isDoubtOpen && (
+                      <div className="dsa-doubt-content">
+                        {doubtsList.length === 0 ? (
+                          <div className="dsa-no-doubts-msg">
+                            No private doubts asked for this problem yet. Type below to ask a question or write a private note.
+                          </div>
+                        ) : (
+                          <div className="dsa-doubts-list">
+                            {doubtsList.map((d, dIdx) => (
+                              <div key={d.id || dIdx} className="dsa-doubt-item">
+                                <div className="dsa-user-doubt-bubble">
+                                  <span className="dsa-doubt-role">You:</span> {d.doubt_text}
+                                </div>
+                                <div className="dsa-ai-doubt-response">
+                                  <span className="dsa-doubt-role ai">
+                                    <IconAI /> Private AI Response:
+                                  </span>
+                                  <div style={{ marginTop: '3px' }}>
+                                    {renderFormattedMarkdown(d.ai_response)}
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Doubt Input Row */}
+                        <div className="dsa-doubt-input-row">
+                          <input
+                            type="text"
+                            className="dsa-doubt-input"
+                            placeholder="Ask a doubt or write a private note..."
+                            value={doubtInputs[prob.problem_id] || ''}
+                            onChange={(e) => setDoubtInputs({ ...doubtInputs, [prob.problem_id]: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSendDoubt(prob.problem_id, prob.title, activeCode)
+                            }}
+                            disabled={isAsking}
+                          />
+                          <button
+                            className="dsa-btn-action solid"
+                            onClick={() => handleSendDoubt(prob.problem_id, prob.title, activeCode)}
+                            disabled={isAsking || !(doubtInputs[prob.problem_id] || '').trim()}
+                          >
+                            {isAsking ? 'Asking...' : 'Ask AI'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </>
+        )}
       </div>
     </div>
   )

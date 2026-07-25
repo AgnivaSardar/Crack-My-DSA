@@ -10,11 +10,10 @@ sys.path.append(str(PROJECT_ROOT))
 
 from vectorstore.chat_db import ChatDatabaseManager
 
-def generate_rich_intuition(title: str, topic_name: str, subfolder: str, question_text: str, cpp_code: str, existing_app: str) -> str:
-    code_upper = cpp_code.upper()
+def generate_clean_approach(title: str, topic_name: str, subfolder: str, question_text: str, cpp_code: str, existing_app: str) -> str:
     title_lower = title.lower()
 
-    # 1. Specialized Intuitions for Core DSA Patterns
+    # 1. Specialized Intuition for Key Classics
     if "largest element" in title_lower and "second" not in title_lower:
         return (
             "To find the largest element in an array, we do not need sorting which takes O(N log N). "
@@ -97,27 +96,20 @@ def generate_rich_intuition(title: str, topic_name: str, subfolder: str, questio
             "3. **Return Output**: Return `max_sum`."
         )
 
-    # 2. Extract existing comment approach if clean and multi-line
-    cleaned_existing = existing_app.strip()
-    if cleaned_existing and len(cleaned_existing.splitlines()) >= 3 and "Standard optimal algorithmic approach" not in cleaned_existing and "Intialize the ans" not in cleaned_existing:
-        raw_lines = [line.strip().lstrip('->').lstrip('*').lstrip('-').strip() for line in cleaned_existing.splitlines() if line.strip()]
-        lines = [re.sub(r'^\d+[\.\)]\s*', '', line).strip() for line in raw_lines if line.strip()]
-        formatted_steps = "\n".join(f"{idx+1}. {line}" for idx, line in enumerate(lines))
-        return f"To solve **{title}**, follow the core algorithmic steps below:\n\n**Step-by-Step Approach:**\n{formatted_steps}"
-
-    # 3. Analyze C++ Code Syntax & Topic to build structured breakdown
+    # 2. Parse C++ syntax to determine technique
+    code_upper = cpp_code.upper()
     tech_list = []
     if 'UNORDERED_MAP' in code_upper or 'MAP<' in code_upper:
-        tech_list.append('Hash Map for O(1) frequency & index lookup')
+        tech_list.append('Hash Map for O(1) frequency & index tracking')
     if 'UNORDERED_SET' in code_upper or 'SET<' in code_upper:
-        tech_list.append('Hash Set for O(1) presence verification')
+        tech_list.append('Hash Set for O(1) lookup')
     if 'SORT(' in code_upper:
-        tech_list.append('Sorting to order elements efficiently')
+        tech_list.append('Sorting to order elements')
     if 'PRIORITY_QUEUE' in code_upper:
         tech_list.append('Priority Queue (Heap) for dynamic min/max tracking')
     if 'STACK<' in code_upper:
         if 'WHILE (!' in code_upper or 'WHILE(!' in code_upper:
-            tech_list.append('Monotonic Stack to compute next greater/smaller elements')
+            tech_list.append('Monotonic Stack for next greater/smaller elements')
         else:
             tech_list.append('Stack LIFO processing')
     if 'QUEUE<' in code_upper:
@@ -138,9 +130,9 @@ def generate_rich_intuition(title: str, topic_name: str, subfolder: str, questio
         elif 'Strings' in topic_name:
             tech_list.append('Character Frequency Counting & Pattern Matching')
         elif 'Linked List' in topic_name:
-            tech_list.append('Linked List Pointer Manipulation & Traversal')
+            tech_list.append('Linked List Pointer Traversal & Node Manipulation')
         elif 'Recursion' in topic_name:
-            tech_list.append('Recursive Backtracking & Decision Tree Exploration')
+            tech_list.append('Recursive Backtracking & Decision Tree State Space')
         elif 'Bit' in topic_name:
             tech_list.append('Bitwise Operations (&, |, ^, <<, >>)')
         elif 'Trees' in topic_name or 'BST' in topic_name:
@@ -166,7 +158,7 @@ def generate_rich_intuition(title: str, topic_name: str, subfolder: str, questio
     )
 
 def enrich_roadmap_approaches():
-    print("Starting DSA Roadmap complete approaches enrichment...")
+    print("Starting clean DSA Roadmap approaches enrichment...")
     db = ChatDatabaseManager()
     
     if db.is_postgres:
@@ -180,12 +172,12 @@ def enrich_roadmap_approaches():
         rows = cursor.fetchall()
         problems = [dict(r) for r in rows]
 
-    print(f"Loaded {len(problems)} problems. Regenerating clean, structured step-by-step intuitive approaches...")
+    print(f"Loaded {len(problems)} problems. Cleaning and regenerating step-by-step intuitive approaches...")
 
     updated_count = 0
     for p in problems:
         current_app = p.get("approach_text") or ""
-        new_app = generate_rich_intuition(
+        new_app = generate_clean_approach(
             title=p.get("title", ""),
             topic_name=p.get("topic_title", ""),
             subfolder=p.get("subfolder", ""),
@@ -205,7 +197,7 @@ def enrich_roadmap_approaches():
         updated_count += 1
 
     db.conn.commit()
-    print(f"Successfully enriched and updated all {updated_count} problem approaches in database!")
+    print(f"Successfully cleaned and updated all {updated_count} problem approaches in database!")
 
 if __name__ == "__main__":
     enrich_roadmap_approaches()

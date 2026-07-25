@@ -2543,5 +2543,206 @@ code, pre, .mono {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* Sub-Tabs (Theory vs Problems) */
+.dsa-view-subtabs {
+  display: flex;
+  background: #000000;
+  padding: 3px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dsa-subtab-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.3rem 0.7rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.dsa-subtab-btn:hover {
+  color: #ffffff;
+}
+
+.dsa-subtab-btn.active {
+  background: #1e1e24;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Formatted Markdown & Bold Text */
+.dsa-bold-text {
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.dsa-inline-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  background: rgba(255, 255, 255, 0.08);
+  color: #38bdf8;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+/* Syntax Highlighting Colors (ChatGPT / VS Code Dark Theme) */
+.code-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.code-line-num {
+  user-select: none;
+  font-size: 0.74rem;
+  color: #475569;
+  width: 24px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.code-line-content {
+  flex: 1;
+}
+
+.syn-keyword { color: #569cd6; font-weight: 600; }
+.syn-string { color: #ce9178; }
+.syn-number { color: #b5cea8; }
+.syn-comment { color: #6a9955; font-style: italic; }
+.syn-type { color: #4ec9b0; }
+.syn-plain { color: #f1f5f9; }
+
+/* Theory Tab Card Styles */
+.dsa-theory-card {
+  background: #09090b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.dsa-theory-banner {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 0.85rem;
+}
+
+.dsa-theory-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-top: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.dsa-theory-summary {
+  font-size: 0.84rem;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.dsa-theory-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dsa-theory-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dsa-theory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+
+.dsa-pattern-box {
+  background: #0d0d10;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 0.7rem 0.85rem;
+}
+
+.dsa-pattern-name {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.3rem;
+}
+
+.dsa-pattern-desc {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+.dsa-complexity-table-wrap {
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+}
+
+.dsa-complexity-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.dsa-complexity-table th {
+  background: #111115;
+  color: #f8fafc;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dsa-complexity-table td {
+  padding: 0.45rem 0.75rem;
+  color: #cbd5e1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.dsa-code-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.dsa-strategy-box {
+  background: #0d0d10;
+  border-left: 3px solid #ffffff;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.82rem;
+  color: #f8fafc;
+  line-height: 1.5;
+  border-radius: 0 6px 6px 0;
+}
+
+.dsa-theory-footer-action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+
 
 
