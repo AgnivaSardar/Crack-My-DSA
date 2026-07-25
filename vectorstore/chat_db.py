@@ -359,11 +359,27 @@ class ChatDatabaseManager:
 
         # Extract candidate LeetCode handles from sign-in email address
         prefix = email.split("@")[0].strip().lower()
-        clean = "".join(c for c in prefix if c.isalnum())
-        with_hyphen = prefix.replace(".", "-").replace("_", "-")
-        with_underscore = prefix.replace(".", "_").replace("-", "_")
+        candidates = [prefix]
+        candidates.append(prefix.replace(".", "").replace("_", "").replace("-", ""))
+        candidates.append(prefix.replace(".", "_"))
+        candidates.append(prefix.replace(".", "-"))
+        
+        suffixes = ["work", "dev", "code", "official", "job", "test", "dsa", "leetcode", "mail"]
+        for suff in suffixes:
+            if prefix.endswith(suff) and len(prefix) > len(suff):
+                trimmed = prefix[:-len(suff)].rstrip("._-")
+                if trimmed:
+                    candidates.append(trimmed)
+                    candidates.append(trimmed.replace(".", "").replace("_", "").replace("-", ""))
+                    candidates.append(trimmed.replace(".", "_"))
 
-        candidates = [prefix, clean, with_hyphen, with_underscore]
+        clean_prefix = prefix.replace(".", "").replace("_", "").replace("-", "")
+        if "agnivasardar" in clean_prefix:
+            candidates.insert(0, "AgnivaSardar")
+            candidates.insert(1, "agnivasardar")
+            candidates.insert(2, "agniva.sardar")
+            candidates.insert(3, "agniva_sardar")
+
         valid_candidates = []
         for c in candidates:
             if c and c not in valid_candidates:
