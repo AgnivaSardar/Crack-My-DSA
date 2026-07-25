@@ -2,7 +2,12 @@ export const dsaTheoryData = {
   1: {
     title: "01. Arrays",
     summary: "Arrays are contiguous memory blocks storing elements of identical data type. Index-based access takes O(1) time because memory offsets are mathematically computed. Inserting or deleting elements at arbitrary positions requires shifting elements, resulting in O(N) worst-case time.",
-    topicYoutubeLink: "https://www.youtube.com/results?search_query=Striver+A2Z+DSA+Arrays+Complete+Course",
+    topicVideo: {
+      id: "1346d-N6S3k",
+      title: "Arrays Complete Masterclass - Strivers A2Z DSA Sheet",
+      channel: "take U forward (Striver)",
+      duration: "45 mins"
+    },
     basics: [
       {
         op: "1. Memory Layout & Index Access",
@@ -28,7 +33,12 @@ export const dsaTheoryData = {
     patterns: [
       {
         name: "1. Two Pointers Pattern",
-        youtubeLink: "https://www.youtube.com/results?search_query=Two+Pointers+Algorithm+Striver",
+        video: {
+          id: "3G4F-08O0bA",
+          title: "Two Pointers Technique & Two Sum - Striver",
+          channel: "take U forward",
+          duration: "18 mins"
+        },
         explanation: "Uses two pointer variables (`left` and `right`) traversing the array towards each other or in tandem to eliminate nested O(N^2) loops into a single O(N) pass.",
         code: "int left = 0, right = n - 1;\nwhile (left < right) {\n    int sum = arr[left] + arr[right];\n    if (sum == target) return {left, right};\n    else if (sum < target) left++; // Increase sum\n    else right--; // Decrease sum\n}",
         codeWalkthrough: "• Line 1: Place left at index 0 and right at last index n-1.\n• Line 2: Continue while pointers have not met.\n• Line 4-6: If current sum is smaller than target, advance left pointer to get a larger value. If sum is greater, decrement right pointer to get a smaller value.",
@@ -40,7 +50,12 @@ export const dsaTheoryData = {
       },
       {
         name: "2. Prefix Sum & Difference Array",
-        youtubeLink: "https://www.youtube.com/results?search_query=Prefix+Sum+and+Difference+Array+Striver",
+        video: {
+          id: "p0BjD5sS48w",
+          title: "Prefix Sum Array & Range Query Applications",
+          channel: "take U forward",
+          duration: "15 mins"
+        },
         explanation: "Precomputes running cumulative sums (`prefix[i] = prefix[i-1] + arr[i]`) to answer range sum queries `[L, R]` in O(1) constant time.",
         code: "// Build Prefix Sum Array\nvector<int> prefix(n);\nprefix[0] = arr[0];\nfor (int i = 1; i < n; i++) {\n    prefix[i] = prefix[i - 1] + arr[i];\n}\n// Query range sum [L, R] in O(1)\nint rangeSum = (L == 0) ? prefix[R] : (prefix[R] - prefix[L - 1]);",
         codeWalkthrough: "• Line 3-5: Build running sum where prefix[i] stores sum of arr[0...i].\n• Line 7: Range sum from L to R is calculated by subtracting prefix[L-1] from prefix[R].",
@@ -52,7 +67,12 @@ export const dsaTheoryData = {
       },
       {
         name: "3. Kadane's Algorithm (Maximum Subarray Sum)",
-        youtubeLink: "https://www.youtube.com/results?search_query=Kadanes+Algorithm+Striver",
+        video: {
+          id: "AHZpyENo7k4",
+          title: "Kadane's Algorithm - Maximum Subarray Sum in 1 Pass",
+          channel: "take U forward",
+          duration: "20 mins"
+        },
         explanation: "Dynamic programming method that finds maximum subarray sum in O(N) time by deciding at each element whether to extend the current subarray or start a new subarray.",
         code: "int max_sum = INT_MIN, curr_sum = 0;\nfor (int i = 0; i < n; i++) {\n    curr_sum += arr[i];\n    max_sum = max(max_sum, curr_sum);\n    if (curr_sum < 0) {\n        curr_sum = 0; // Reset negative sum\n    }\n}",
         codeWalkthrough: "• Line 3: Add current element to running subarray sum.\n• Line 4: Update global maximum sum.\n• Line 5-7: If running sum becomes negative, reset it to 0 because a negative sum will only diminish subsequent subarray sums.",
@@ -64,7 +84,12 @@ export const dsaTheoryData = {
       },
       {
         name: "4. Boyer-Moore Voting Algorithm",
-        youtubeLink: "https://www.youtube.com/results?search_query=Boyer+Moore+Majority+Vote+Algorithm+Striver",
+        video: {
+          id: "nP_ns3uVuis",
+          title: "Majority Element (>N/2 times) - Boyer-Moore Voting Algorithm",
+          channel: "take U forward",
+          duration: "16 mins"
+        },
         explanation: "Finds the majority element (element appearing > N/2 times) in O(N) time and O(1) space using a candidate counter mechanism.",
         code: "int candidate = 0, count = 0;\nfor (int num : nums) {\n    if (count == 0) candidate = num;\n    count += (num == candidate) ? 1 : -1;\n}",
         codeWalkthrough: "• Line 3: When count drops to 0, choose current element as new majority candidate.\n• Line 4: Increment count if element matches candidate, else decrement count.",
@@ -76,7 +101,12 @@ export const dsaTheoryData = {
       },
       {
         name: "5. Dutch National Flag Algorithm (3-Way Partitioning)",
-        youtubeLink: "https://www.youtube.com/results?search_query=Dutch+National+Flag+Algorithm+Sort+0+1+2+Striver",
+        video: {
+          id: "tp8JIuCXBaU",
+          title: "Sort an Array of 0s, 1s and 2s (Dutch National Flag)",
+          channel: "take U forward",
+          duration: "14 mins"
+        },
         explanation: "Sorts an array containing 0s, 1s, and 2s in a single pass O(N) time and O(1) space using 3 pointers (`low`, `mid`, `high`).",
         code: "int low = 0, mid = 0, high = n - 1;\nwhile (mid <= high) {\n    if (arr[mid] == 0) {\n        swap(arr[low++], arr[mid++]);\n    } else if (arr[mid] == 1) {\n        mid++;\n    } else {\n        swap(arr[mid], arr[high--]);\n    }\n}",
         codeWalkthrough: "• 0s placed in range [0 ... low-1]\n• 1s placed in range [low ... mid-1]\n• 2s placed in range [high+1 ... n-1]",
@@ -99,7 +129,12 @@ export const dsaTheoryData = {
   2: {
     title: "02. Binary Search",
     summary: "Binary Search is a divide-and-conquer algorithm operating on sorted arrays or monotonic search spaces. At each step, it compares target with the middle element and eliminates half of the remaining elements, achieving O(log N) time.",
-    topicYoutubeLink: "https://www.youtube.com/results?search_query=Striver+Binary+Search+Playlist",
+    topicVideo: {
+      id: "MHf6awe89xU",
+      title: "Binary Search Complete Course & Pattern Breakdown",
+      channel: "take U forward",
+      duration: "55 mins"
+    },
     basics: [
       {
         op: "1. Search Space Monotonicity",
@@ -110,7 +145,12 @@ export const dsaTheoryData = {
     patterns: [
       {
         name: "1. Classic Binary Search",
-        youtubeLink: "https://www.youtube.com/results?search_query=Binary+Search+1D+Array+Striver",
+        video: {
+          id: "C2apEw9pgtw",
+          title: "Binary Search 1D Array Explanation & Code",
+          channel: "take U forward",
+          duration: "15 mins"
+        },
         explanation: "Eliminates half the search space at each iteration by checking `mid` element.",
         code: "int low = 0, high = n - 1;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] == target) return mid;\n    else if (arr[mid] < target) low = mid + 1;\n    else high = mid - 1;\n}",
         codeWalkthrough: "• Line 3: Compute mid avoiding integer overflow.\n• Line 5: Search right half if target > arr[mid].\n• Line 6: Search left half if target < arr[mid].",
@@ -122,7 +162,12 @@ export const dsaTheoryData = {
       },
       {
         name: "2. Lower Bound Pattern",
-        youtubeLink: "https://www.youtube.com/results?search_query=Lower+Bound+Binary+Search+Striver",
+        video: {
+          id: "6zhGS79oQ4E",
+          title: "Lower Bound & Upper Bound in Binary Search",
+          channel: "take U forward",
+          duration: "18 mins"
+        },
         explanation: "Finds first index where `arr[index] >= target`.",
         code: "int low = 0, high = n - 1, ans = n;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] >= target) {\n        ans = mid; // Potential answer found\n        high = mid - 1; // Look left\n    } else {\n        low = mid + 1;\n    }\n}\nreturn ans;",
         codeWalkthrough: "• Line 5-6: Record candidate index and move high left to find earlier occurrence.",
@@ -142,7 +187,12 @@ export const dsaTheoryData = {
   4: {
     title: "04. Linked List",
     summary: "Non-contiguous linear structure linked via pointers. Allows O(1) dynamic insertions/deletions at known nodes.",
-    topicYoutubeLink: "https://www.youtube.com/results?search_query=Striver+Linked+List+Playlist",
+    topicVideo: {
+      id: "Nq7ok-OyEpg",
+      title: "Linked List Complete Course - Strivers A2Z DSA Sheet",
+      channel: "take U forward",
+      duration: "50 mins"
+    },
     basics: [
       {
         op: "1. Node Memory Structure",
@@ -153,7 +203,12 @@ export const dsaTheoryData = {
     patterns: [
       {
         name: "1. Floyd's Cycle Detection (Tortoise and Hare)",
-        youtubeLink: "https://www.youtube.com/results?search_query=Detect+Cycle+in+Linked+List+Striver",
+        video: {
+          id: "wiOo4DC5GGA",
+          title: "Detect Loop / Cycle in Linked List - Tortoise & Hare",
+          channel: "take U forward",
+          duration: "16 mins"
+        },
         explanation: "Detects loops using fast (2 steps) and slow (1 step) pointers.",
         code: "Node *slow = head, *fast = head;\nwhile (fast && fast->next) {\n    slow = slow->next;\n    fast = fast->next->next;\n    if (slow == fast) return true;\n}\nreturn false;",
         codeWalkthrough: "• Line 3: Move slow 1 step.\n• Line 4: Move fast 2 steps.",
@@ -173,12 +228,22 @@ export const dsaTheoryData = {
   7: {
     title: "07. Stack and Queues",
     summary: "Stack (LIFO) and Queue (FIFO) linear data structures.",
-    topicYoutubeLink: "https://www.youtube.com/results?search_query=Striver+Stack+and+Queue+Playlist",
+    topicVideo: {
+      id: "rU2T-jZJ8s4",
+      title: "Stack & Queue Complete Series - Strivers A2Z DSA",
+      channel: "take U forward",
+      duration: "45 mins"
+    },
     basics: [],
     patterns: [
       {
         name: "1. Monotonic Stack Pattern",
-        youtubeLink: "https://www.youtube.com/results?search_query=Monotonic+Stack+Next+Greater+Element+Striver",
+        video: {
+          id: "V51KBEj8wXE",
+          title: "Monotonic Stack - Next Greater Element I & II",
+          channel: "take U forward",
+          duration: "20 mins"
+        },
         explanation: "Maintains stack elements in strictly increasing/decreasing order.",
         code: "stack<int> st;\nfor (int i = 0; i < n; i++) {\n    while (!st.empty() && arr[i] > arr[st.top()]) {\n        nextGreater[st.top()] = arr[i];\n        st.pop();\n    }\n    st.push(i);\n}",
         codeWalkthrough: "• Pop elements smaller than current element.",
@@ -198,12 +263,22 @@ export const dsaTheoryData = {
   11: {
     title: "11. Binary Trees",
     summary: "Hierarchical structure where each node has at most 2 children.",
-    topicYoutubeLink: "https://www.youtube.com/results?search_query=Striver+Binary+Tree+Playlist",
+    topicVideo: {
+      id: "_ANrF3FJm7I",
+      title: "Binary Tree Traversals & Operations Masterclass",
+      channel: "take U forward",
+      duration: "60 mins"
+    },
     basics: [],
     patterns: [
       {
         name: "1. Tree Height & Path Diameter",
-        youtubeLink: "https://www.youtube.com/results?search_query=Diameter+of+Binary+Tree+Striver",
+        video: {
+          id: "Rezetez59j8",
+          title: "Diameter of Binary Tree & Height Calculation",
+          channel: "take U forward",
+          duration: "18 mins"
+        },
         explanation: "Computes tree height recursively and tracks maximum diameter (`lh + rh`).",
         code: "int getHeight(TreeNode* root) {\n    if (!root) return 0;\n    int lh = getHeight(root->left);\n    int rh = getHeight(root->right);\n    maxDiameter = max(maxDiameter, lh + rh);\n    return 1 + max(lh, rh);\n}",
         codeWalkthrough: "• Compute left and right subtree heights.",
@@ -223,12 +298,22 @@ export const dsaTheoryData = {
   13: {
     title: "13. Graphs",
     summary: "Vertices and Edges structure representing networks and relationships.",
-    topicYoutubeLink: "https://www.youtube.com/results?search_query=Striver+Graph+Series+Playlist",
+    topicVideo: {
+      id: "M3_pLsDdeuU",
+      title: "Graph Series Complete Masterclass - Strivers A2Z DSA",
+      channel: "take U forward",
+      duration: "70 mins"
+    },
     basics: [],
     patterns: [
       {
         name: "1. BFS Traversal & Shortest Path",
-        youtubeLink: "https://www.youtube.com/results?search_query=Graph+BFS+Traversal+Striver",
+        video: {
+          id: "-tgVpUgsQ5k",
+          title: "Graph BFS & DFS Traversal Explanation",
+          channel: "take U forward",
+          duration: "22 mins"
+        },
         explanation: "Level-order queue traversal finding shortest path in unweighted graphs.",
         code: "queue<int> q;\nq.push(startNode);\nvis[startNode] = 1;\nwhile (!q.empty()) {\n    int node = q.front(); q.pop();\n    for (int neighbor : adj[node]) {\n        if (!vis[neighbor]) {\n            vis[neighbor] = 1;\n            q.push(neighbor);\n        }\n    }\n}",
         codeWalkthrough: "• Enqueue start node and process level by level.",
@@ -248,12 +333,22 @@ export const dsaTheoryData = {
   14: {
     title: "14. Dynamic Programming",
     summary: "Optimizes recursion by caching solutions to overlapping subproblems.",
-    topicYoutubeLink: "https://www.youtube.com/results?search_query=Striver+Dynamic+Programming+Playlist",
+    topicVideo: {
+      id: "FfXoiwnnMFw",
+      title: "Dynamic Programming Masterclass - Strivers DP Series",
+      channel: "take U forward",
+      duration: "65 mins"
+    },
     basics: [],
     patterns: [
       {
         name: "1. 0/1 Knapsack Pattern",
-        youtubeLink: "https://www.youtube.com/results?search_query=01+Knapsack+Problem+Dynamic+Programming+Striver",
+        video: {
+          id: "GqOmJwHwO_k",
+          title: "0/1 Knapsack Problem - Dynamic Programming Tabulation",
+          channel: "take U forward",
+          duration: "25 mins"
+        },
         explanation: "At item `i` with capacity `w`, choose max of excluding or including item.",
         code: "for (int i = 1; i <= n; i++) {\n    for (int w = 0; w <= W; w++) {\n        if (wt[i-1] <= w) {\n            dp[i][w] = max(dp[i-1][w], val[i-1] + dp[i-1][w - wt[i-1]]);\n        } else dp[i][w] = dp[i-1][w];\n    }\n}",
         codeWalkthrough: "• Max of excluding item or including item.",
@@ -273,12 +368,22 @@ export const dsaTheoryData = {
   15: {
     title: "15. Tries",
     summary: "Tree structure storing character prefixes for fast string lookup.",
-    topicYoutubeLink: "https://www.youtube.com/results?search_query=Striver+Trie+Series+Playlist",
+    topicVideo: {
+      id: "dBGUmUQhjaM",
+      title: "Trie Data Structure Complete Masterclass - Striver",
+      channel: "take U forward",
+      duration: "35 mins"
+    },
     basics: [],
     patterns: [
       {
         name: "1. Prefix Tree Insert & Search",
-        youtubeLink: "https://www.youtube.com/results?search_query=Implement+Trie+Prefix+Tree+Striver",
+        video: {
+          id: "NnN7hX-bNtc",
+          title: "Implement Trie (Prefix Tree) Insert & Search",
+          channel: "take U forward",
+          duration: "18 mins"
+        },
         explanation: "Traverses character children pointers in O(L) time.",
         code: "void insert(string word) {\n    TrieNode* curr = root;\n    for (char c : word) {\n        int idx = c - 'a';\n        if (!curr->children[idx]) curr->children[idx] = new TrieNode();\n        curr = curr->children[idx];\n    }\n    curr->isWord = true;\n}",
         codeWalkthrough: "• Follow or create character child pointer.",
@@ -298,12 +403,22 @@ export const dsaTheoryData = {
   16: {
     title: "16. Strings (Hard)",
     summary: "Advanced string pattern matching and string transformation algorithms.",
-    topicYoutubeLink: "https://www.youtube.com/results?search_query=Striver+KMP+Z+Algorithm+String+Matching",
+    topicVideo: {
+      id: "qa_v_a9k05A",
+      title: "Advanced String Pattern Matching - KMP & Z-Algorithm",
+      channel: "take U forward",
+      duration: "40 mins"
+    },
     basics: [],
     patterns: [
       {
         name: "1. KMP Pattern Search (LPS Array)",
-        youtubeLink: "https://www.youtube.com/results?search_query=KMP+Algorithm+String+Matching+Striver",
+        video: {
+          id: "V5-7GzOfADQ",
+          title: "KMP Algorithm for Pattern Matching (LPS Array)",
+          channel: "take U forward",
+          duration: "24 mins"
+        },
         explanation: "Uses Longest Prefix Suffix (LPS) array to avoid text pointer backtracking.",
         code: "vector<int> computeLPS(string p) {\n    int m = p.length(), len = 0;\n    vector<int> lps(m, 0);\n    for (int i = 1; i < m;) {\n        if (p[i] == p[len]) lps[i++] = ++len;\n        else if (len != 0) len = lps[len - 1];\n        else lps[i++] = 0;\n    }\n    return lps;\n}",
         codeWalkthrough: "• Precomputes longest proper prefix that is also suffix.",

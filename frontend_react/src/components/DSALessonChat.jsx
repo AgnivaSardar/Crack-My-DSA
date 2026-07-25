@@ -126,6 +126,37 @@ const IconLayers = () => (
   </svg>
 )
 
+// YouTube Video Card Component with Thumbnail & Title
+function YouTubeVideoCard({ video }) {
+  if (!video || !video.id) return null
+  const thumbnailUrl = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`
+  const watchUrl = `https://www.youtube.com/watch?v=${video.id}`
+
+  return (
+    <a
+      href={watchUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="dsa-yt-video-card"
+    >
+      <div className="dsa-yt-thumb-wrap">
+        <img src={thumbnailUrl} alt={video.title} className="dsa-yt-thumb-img" />
+        <div className="dsa-yt-play-overlay">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#ffffff">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </div>
+        {video.duration && <span className="dsa-yt-duration">{video.duration}</span>}
+      </div>
+      <div className="dsa-yt-card-info">
+        <span className="dsa-yt-card-channel">📺 {video.channel || 'take U forward'}</span>
+        <h5 className="dsa-yt-card-title">{video.title}</h5>
+        <span className="dsa-yt-card-watch-link">Watch Direct Video Lecture ↗</span>
+      </div>
+    </a>
+  )
+}
+
 // Markdown Formatter
 function renderFormattedMarkdown(text) {
   if (!text) return null
@@ -223,7 +254,6 @@ export default function DSALessonChat({
   onBackToRoadmap,
   onToast
 }) {
-  // Always default to Theory view first when opening topic!
   const [viewTab, setViewTab] = useState('theory')
   const [openDoubts, setOpenDoubts] = useState({})
   const [doubtInputs, setDoubtInputs] = useState({})
@@ -231,7 +261,6 @@ export default function DSALessonChat({
   const [localProblems, setLocalProblems] = useState(problems)
   const [copiedId, setCopiedId] = useState(null)
 
-  // Dedicated AI Theory Concept Assistant state
   const [theoryDoubts, setTheoryDoubts] = useState([])
   const [theoryInput, setTheoryInput] = useState('')
   const [isAskingTheory, setIsAskingTheory] = useState(false)
@@ -286,7 +315,6 @@ export default function DSALessonChat({
     }
   }
 
-  // Handle AI Theory Concept Assistant Questions
   async function handleSendTheoryDoubt(customQuery) {
     const queryText = (customQuery || theoryInput).trim()
     if (!queryText) return
@@ -319,7 +347,7 @@ export default function DSALessonChat({
 
   return (
     <div className="dsa-lesson-chat-container">
-      {/* Prominent Header with Enlarged Title Font Size */}
+      {/* Header Title Bar */}
       <div className="dsa-lesson-header">
         <div className="dsa-header-left">
           <button className="dsa-back-btn" onClick={onBackToRoadmap} title="Back to Topics List">
@@ -333,7 +361,7 @@ export default function DSALessonChat({
           </div>
         </div>
 
-        {/* Navigation Sub-Tabs (Theory First!) */}
+        {/* Navigation Sub-Tabs */}
         <div className="dsa-view-subtabs">
           <button
             className={`dsa-subtab-btn ${viewTab === 'theory' ? 'active' : ''}`}
@@ -375,7 +403,7 @@ export default function DSALessonChat({
         </div>
       </div>
 
-      {/* Main View Area (Theory vs Problems Stream) */}
+      {/* Main View Area */}
       <div className="dsa-lesson-stream">
         {viewTab === 'theory' ? (
           /* --- TOPIC THEORY & CONCEPT TAB --- */
@@ -390,10 +418,20 @@ export default function DSALessonChat({
               </div>
             </div>
 
-            {/* Rich Visual SVG Diagram Representation */}
+            {/* Topic Level Direct Video Card */}
+            {theoryData.topicVideo && (
+              <div className="dsa-theory-section">
+                <h4 className="dsa-theory-section-title">
+                  📺 Master Lecture Video & Concept Breakdown
+                </h4>
+                <YouTubeVideoCard video={theoryData.topicVideo} />
+              </div>
+            )}
+
+            {/* Rich Visual Diagram Representation */}
             <DSADiagram topicId={topicId} />
 
-            {/* AI Theory Concept Chat Assistant (Directly embedded in Theory Tab) */}
+            {/* AI Theory Concept Chat Assistant */}
             <div className="dsa-theory-ai-chat-box">
               <div className="dsa-theory-chat-header">
                 <div className="dsa-ai-badge">
@@ -402,7 +440,6 @@ export default function DSALessonChat({
                 <h4 className="dsa-theory-chat-title">Ask AI Anything About {topic?.title} Theory</h4>
               </div>
 
-              {/* Suggested Questions Pills */}
               <div className="dsa-suggested-pills">
                 <button className="dsa-pill-btn" onClick={() => handleSendTheoryDoubt(`Explain core principles and optimal approach of ${topic?.title}`)}>
                   💡 Explain core principles of {topic?.title}
@@ -415,7 +452,6 @@ export default function DSALessonChat({
                 </button>
               </div>
 
-              {/* Theory Doubts Q&A Stream */}
               {theoryDoubts.length > 0 && (
                 <div className="dsa-doubts-list" style={{ marginTop: '0.5rem' }}>
                   {theoryDoubts.map((td, tdIdx) => (
@@ -436,7 +472,6 @@ export default function DSALessonChat({
                 </div>
               )}
 
-              {/* Theory Doubt Input */}
               <div className="dsa-doubt-input-row" style={{ marginTop: '0.5rem' }}>
                 <input
                   type="text"
@@ -459,7 +494,7 @@ export default function DSALessonChat({
               </div>
             </div>
 
-            {/* Data Structure Basics & Fundamentals (Access, Insertion, Deletion, Traversal) */}
+            {/* Data Structure Basics */}
             {theoryData.basics && theoryData.basics.length > 0 && (
               <div className="dsa-theory-section">
                 <h4 className="dsa-theory-section-title">
@@ -483,10 +518,10 @@ export default function DSALessonChat({
               </div>
             )}
 
-            {/* Elaborate Patterns & Mechanics with Code Snippets */}
+            {/* Elaborate Patterns with Video Cards */}
             <div className="dsa-theory-section">
               <h4 className="dsa-theory-section-title">
-                <IconApproach /> Core Patterns, Code Snippets & Trade-offs
+                <IconApproach /> Core Patterns, Code Snippets & Video Tutorials
               </h4>
 
               <div className="dsa-patterns-list">
@@ -500,6 +535,18 @@ export default function DSALessonChat({
                       </span>
                       <p className="dsa-pattern-text">{pat.explanation}</p>
                     </div>
+
+                    {/* Sub-Topic Direct YouTube Video Block */}
+                    {pat.video && (
+                      <div className="dsa-pattern-subblock">
+                        <span className="dsa-pattern-subhead">
+                          📺 Sub-Topic Video Tutorial:
+                        </span>
+                        <div style={{ marginTop: '4px' }}>
+                          <YouTubeVideoCard video={pat.video} />
+                        </div>
+                      </div>
+                    )}
 
                     {pat.code && (
                       <div className="dsa-pattern-subblock">
@@ -555,19 +602,6 @@ export default function DSALessonChat({
                         <p className="dsa-apply-text">{pat.whenNotToApply}</p>
                       </div>
                     </div>
-
-                    {pat.youtubeLink && (
-                      <div style={{ marginTop: '8px' }}>
-                        <a
-                          href={pat.youtubeLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="dsa-yt-pattern-btn"
-                        >
-                          📺 Watch {pat.name} Video Deep Dive ↗
-                        </a>
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -597,23 +631,6 @@ export default function DSALessonChat({
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </div>
-
-            {/* Recommended Video Tutorials & Full Concept Deep Dives */}
-            <div className="dsa-theory-section">
-              <h4 className="dsa-theory-section-title">
-                📺 Recommended Video Tutorials & Full Concept Deep Dives
-              </h4>
-              <div className="dsa-yt-banner">
-                <a
-                  href={theoryData.topicYoutubeLink || `https://www.youtube.com/results?search_query=Striver+A2Z+DSA+${encodeURIComponent(topic?.title || '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="dsa-yt-link-btn"
-                >
-                  📺 Watch Full {topic?.title} Video Tutorial & Concepts ↗
-                </a>
               </div>
             </div>
 
@@ -673,15 +690,6 @@ export default function DSALessonChat({
                     </div>
 
                     <div className="dsa-card-header-right">
-                      <a
-                        href={`https://www.youtube.com/results?search_query=Striver+LeetCode+${encodeURIComponent(prob.title)}+solution`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="dsa-btn-action ghost"
-                        title="Watch YouTube Solution"
-                      >
-                        YouTube Solution <IconExternal />
-                      </a>
                       {prob.leetcode_link && (
                         <a
                           href={prob.leetcode_link}

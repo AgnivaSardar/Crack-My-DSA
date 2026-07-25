@@ -2975,6 +2975,102 @@ code, pre, .mono {
   border-color: #dc2626;
 }
 
+/* Rich YouTube Video Card Component */
+.dsa-yt-video-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #0d0d12;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.6rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  max-width: 580px;
+}
+
+.dsa-yt-video-card:hover {
+  border-color: #ef4444;
+  background: #121218;
+  transform: translateY(-1px);
+}
+
+.dsa-yt-thumb-wrap {
+  position: relative;
+  width: 140px;
+  height: 80px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #000000;
+}
+
+.dsa-yt-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.dsa-yt-play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.dsa-yt-video-card:hover .dsa-yt-play-overlay {
+  background: rgba(220, 38, 38, 0.4);
+}
+
+.dsa-yt-duration {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.dsa-yt-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.dsa-yt-card-channel {
+  font-size: 0.72rem;
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.dsa-yt-card-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.dsa-yt-card-watch-link {
+  font-size: 0.73rem;
+  color: #38bdf8;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+
 
 
 
