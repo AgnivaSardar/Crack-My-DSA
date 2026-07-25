@@ -12,6 +12,8 @@ export default function LeetCodeDashboard({
   onOpenAuth,
   onSyncSuccess
 }) {
+  if (!isOpen) return null
+
   const [searchTerm, setSearchTerm] = useState('')
   const [diffFilter, setDiffFilter] = useState('All')
   const [companyFilter, setCompanyFilter] = useState('All')
