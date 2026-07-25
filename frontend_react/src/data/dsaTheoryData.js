@@ -2,6 +2,24 @@ export const dsaTheoryData = {
   1: {
     title: "01. Arrays",
     summary: "Arrays are contiguous memory blocks storing elements of identical data type. Index-based access is O(1), but searching in unsorted arrays or inserting/deleting elements at arbitrary positions requires shifting elements, leading to O(N) time.",
+    basics: [
+      {
+        op: "1. Memory Layout & Indexing",
+        detail: "Elements are allocated sequentially in contiguous RAM addresses: `Address(i) = BaseAddress + (i * ElementSize)`. Because the memory offset is mathematically computed directly, accessing `arr[i]` takes instant O(1) time regardless of array size."
+      },
+      {
+        op: "2. Traversal",
+        detail: "Iterating through all N elements sequentially from index `0` to `N-1`. Time Complexity: O(N) | Space Complexity: O(1)."
+      },
+      {
+        op: "3. Insertion Operations",
+        detail: "• At End: O(1) amortized (if capacity available).\n• At Beginning: O(N) time because all existing N elements must be shifted 1 position to the right.\n• At Arbitrary Index k: O(N) time because (N - k) elements must be shifted right."
+      },
+      {
+        op: "4. Deletion Operations",
+        detail: "• From End: O(1) time by decrementing size.\n• From Beginning: O(N) time because all elements must be shifted 1 position to the left.\n• From Arbitrary Index k: O(N) time because (N - k - 1) elements must be shifted left to fill the gap."
+      }
+    ],
     patterns: [
       {
         name: "1. Two Pointers Pattern",
@@ -61,6 +79,20 @@ export const dsaTheoryData = {
   2: {
     title: "02. Binary Search",
     summary: "Binary Search is a divide-and-conquer algorithm for finding a target in a sorted array or monotonic search space. At each step, it compares target with the middle element and eliminates half of the remaining elements, achieving O(log N) time.",
+    basics: [
+      {
+        op: "1. Search Space Monotonicity",
+        detail: "Binary Search requires the underlying domain to be monotonic (strictly increasing, decreasing, or boolean YES/NO threshold). If `arr[mid]` is less than `target`, all elements to the left of `mid` can be safely eliminated."
+      },
+      {
+        op: "2. Midpoint Calculation",
+        detail: "Calculate `mid = low + (high - low) / 2` to prevent integer overflow that occurs with `(low + high) / 2` when values exceed 2^31 - 1."
+      },
+      {
+        op: "3. Boundary Maintenance",
+        detail: "• Loop condition: `while (low <= high)` for standard search.\n• Range reduction: `low = mid + 1` or `high = mid - 1` to prevent infinite loops."
+      }
+    ],
     patterns: [
       {
         name: "1. Classic Binary Search",
@@ -108,7 +140,17 @@ export const dsaTheoryData = {
 
   3: {
     title: "03. Strings",
-    summary: "Strings are sequences of characters. They are immutable in Java/Python and mutable in C++.",
+    summary: "Strings are sequences of characters stored as character arrays.",
+    basics: [
+      {
+        op: "1. Mutability Differences",
+        detail: "In C++, `std::string` is mutable and allows O(1) character modification. In Java/Python, strings are immutable, meaning string concatenation in loops takes O(N^2) time unless using `StringBuilder`."
+      },
+      {
+        op: "2. ASCII & Unicode Encoding",
+        detail: "Standard ASCII uses 8-bit codepoints (0-255). Lowercase letters `'a'` to `'z'` map to 97 to 122. Index offset formula: `index = ch - 'a'`."
+      }
+    ],
     patterns: [
       {
         name: "1. Character Frequency Array Pattern",
@@ -139,6 +181,20 @@ export const dsaTheoryData = {
   4: {
     title: "04. Linked List",
     summary: "Non-contiguous linear structure linked via pointers. Allows O(1) dynamic insertions/deletions at known nodes.",
+    basics: [
+      {
+        op: "1. Node Architecture",
+        detail: "Each node contains data payload and pointer to next node: `struct ListNode { int val; ListNode* next; }`. Doubly Linked Lists include `prev` pointer."
+      },
+      {
+        op: "2. Insertion Operations",
+        detail: "• At Head: `newNode->next = head; head = newNode;` -> O(1) time.\n• At Tail: Traverse to end `O(N)` or use tail pointer `O(1)`, then `tail->next = newNode`.\n• At Known Node p: `newNode->next = p->next; p->next = newNode;` -> O(1) time."
+      },
+      {
+        op: "3. Deletion Operations",
+        detail: "• At Head: `temp = head; head = head->next; delete temp;` -> O(1) time.\n• At Known Node p: `temp = p->next; p->next = p->next->next; delete temp;` -> O(1) time."
+      }
+    ],
     patterns: [
       {
         name: "1. Floyd's Cycle Detection (Tortoise and Hare)",
@@ -169,6 +225,16 @@ export const dsaTheoryData = {
   5: {
     title: "05. Recursion",
     summary: "Function calling itself to break down problems into base cases and subproblems.",
+    basics: [
+      {
+        op: "1. Call Stack Execution",
+        detail: "Each recursive function call pushes a frame onto system call stack storing parameters, local variables, and return address. Maximum depth equals stack memory."
+      },
+      {
+        op: "2. Base Case & Unwinding",
+        detail: "Base cases stop infinite recursion and start unwinding return values back up the call stack."
+      }
+    ],
     patterns: [
       {
         name: "1. Pick / Non-Pick Pattern (Subsequence / Subset)",
@@ -189,6 +255,12 @@ export const dsaTheoryData = {
   6: {
     title: "06. Bit Manipulation",
     summary: "Manipulates binary bits directly using bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`).",
+    basics: [
+      {
+        op: "1. Binary Representation",
+        detail: "Numbers stored in 32-bit or 64-bit 2's complement binary form. Sign bit is most significant bit (MSB)."
+      }
+    ],
     patterns: [
       {
         name: "1. Bit Manipulation Formulas",
@@ -209,6 +281,16 @@ export const dsaTheoryData = {
   7: {
     title: "07. Stack and Queues",
     summary: "Stack (LIFO) and Queue (FIFO) linear data structures.",
+    basics: [
+      {
+        op: "1. Stack Mechanics (LIFO)",
+        detail: "Last-In-First-Out. Operations: `push(x)` at top, `pop()` from top, `top()` / `peek()` in O(1) time."
+      },
+      {
+        op: "2. Queue Mechanics (FIFO)",
+        detail: "First-In-First-Out. Operations: `enqueue(x)` at rear, `dequeue()` from front in O(1) time."
+      }
+    ],
     patterns: [
       {
         name: "1. Monotonic Stack Pattern",
@@ -229,6 +311,12 @@ export const dsaTheoryData = {
   8: {
     title: "08. Sliding Window",
     summary: "Transforms O(N^2) subarray checks into O(N) linear scans using expanding and shrinking boundaries.",
+    basics: [
+      {
+        op: "1. Window Mechanics",
+        detail: "Maintains contiguous range `[left, right]`. `right` expands window by 1 element, `left` shrinks window when constraint is violated."
+      }
+    ],
     patterns: [
       {
         name: "1. Variable Size Sliding Window",
@@ -249,6 +337,12 @@ export const dsaTheoryData = {
   9: {
     title: "09. Heaps",
     summary: "Tree structure with O(1) access to min/max and O(log N) insertion/deletion.",
+    basics: [
+      {
+        op: "1. Heap Array Storage",
+        detail: "Complete binary tree stored as flat array. For index i: `left_child = 2i + 1`, `right_child = 2i + 2`, `parent = (i - 1) / 2`."
+      }
+    ],
     patterns: [
       {
         name: "1. Top K Elements Pattern",
@@ -269,6 +363,12 @@ export const dsaTheoryData = {
   10: {
     title: "10. Greedy Approach",
     summary: "Makes locally optimal choice at each step hoping for global optimum.",
+    basics: [
+      {
+        op: "1. Greedy Choice Property",
+        detail: "Locally optimal choice leads to globally optimal solution without backtracking."
+      }
+    ],
     patterns: [
       {
         name: "1. Interval Scheduling",
@@ -289,6 +389,16 @@ export const dsaTheoryData = {
   11: {
     title: "11. Binary Trees",
     summary: "Hierarchical tree structure where nodes have at most 2 children.",
+    basics: [
+      {
+        op: "1. Node Architecture",
+        detail: "`struct TreeNode { int val; TreeNode* left; TreeNode* right; }`."
+      },
+      {
+        op: "2. Traversal Mechanics",
+        detail: "• Preorder: Root -> Left -> Right\n• Inorder: Left -> Root -> Right\n• Postorder: Left -> Right -> Root\n• Level Order: BFS using Queue level by level."
+      }
+    ],
     patterns: [
       {
         name: "1. Tree Height & Diameter Pattern",
@@ -309,6 +419,12 @@ export const dsaTheoryData = {
   12: {
     title: "12. Binary Search Trees",
     summary: "Binary Tree where `left < node < right`. Inorder traversal yields sorted order.",
+    basics: [
+      {
+        op: "1. BST Inorder Property",
+        detail: "Inorder traversal of BST produces strictly sorted ascending values."
+      }
+    ],
     patterns: [
       {
         name: "1. BST Inorder Sorted Traversal",
@@ -329,6 +445,12 @@ export const dsaTheoryData = {
   13: {
     title: "13. Graphs",
     summary: "Vertices and Edges structure representing networks and relationships.",
+    basics: [
+      {
+        op: "1. Graph Representations",
+        detail: "• Adjacency Matrix: `adj[V][V]` matrix. Space O(V^2), lookup O(1).\n• Adjacency List: `vector<int> adj[V]`. Space O(V + E), lookup O(deg(V))."
+      }
+    ],
     patterns: [
       {
         name: "1. Topological Sort (Kahn's Algorithm)",
@@ -350,6 +472,12 @@ export const dsaTheoryData = {
   14: {
     title: "14. Dynamic Programming",
     summary: "Optimizes recursion by caching solutions to overlapping subproblems.",
+    basics: [
+      {
+        op: "1. DP Principles",
+        detail: "1. Overlapping Subproblems: Same subproblem solved multiple times.\n2. Optimal Substructure: Optimal solution constructed from optimal subproblem solutions."
+      }
+    ],
     patterns: [
       {
         name: "1. 0/1 Knapsack Pattern",
@@ -370,6 +498,12 @@ export const dsaTheoryData = {
   15: {
     title: "15. Tries",
     summary: "Tree structure storing character prefixes for fast string lookup.",
+    basics: [
+      {
+        op: "1. Node Architecture",
+        detail: "`struct TrieNode { TrieNode* children[26]; bool isEnd; }`."
+      }
+    ],
     patterns: [
       {
         name: "1. Prefix Tree Search & Insert",
@@ -390,6 +524,12 @@ export const dsaTheoryData = {
   16: {
     title: "16. Strings (Hard)",
     summary: "Advanced string pattern matching and string transformation algorithms.",
+    basics: [
+      {
+        op: "1. Advanced Matching Concepts",
+        detail: "Linear time string matching algorithms avoid quadratic worst-case fallback using state arrays."
+      }
+    ],
     patterns: [
       {
         name: "1. KMP Algorithm (LPS Array)",

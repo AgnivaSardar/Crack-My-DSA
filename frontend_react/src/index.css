@@ -2122,14 +2122,15 @@ code, pre, .mono {
 }
 
 .dsa-lesson-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #f8fafc;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
   line-height: 1.2;
+  letter-spacing: -0.3px;
 }
 
 .dsa-lesson-subtitle {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: #94a3b8;
 }
 
@@ -2856,6 +2857,73 @@ code, pre, .mono {
   line-height: 1.45;
   margin: 0;
 }
+
+/* SVG Visual Diagram Card */
+.dsa-svg-diagram-card {
+  background: #0d0d12;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.85rem 1.1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.dsa-diagram-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dsa-diagram-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.dsa-diagram-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.dsa-svg-canvas {
+  width: 100%;
+  height: auto;
+  max-height: 200px;
+  background: #050507;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Data Structure Basics List */
+.dsa-basics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.4rem;
+}
+
+.dsa-basic-item {
+  background: #0d0d11;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  padding: 0.65rem 0.85rem;
+}
+
+.dsa-basic-head {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #ffffff;
+  display: block;
+}
+
 
 
 

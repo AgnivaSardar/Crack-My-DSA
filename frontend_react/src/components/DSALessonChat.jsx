@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { askDSADoubt } from '../api/client'
 import { dsaTheoryData } from '../data/dsaTheoryData'
+import { DSADiagram } from './DSADiagrams'
 
-// Minimalist Monochrome SVG Icons
+// Minimalist Monochrome SVG Icons (No Emojis!)
 const IconBack = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -89,19 +90,51 @@ const IconCheck = () => (
   </svg>
 )
 
-// Markdown Formatter (Fixes **bold** text and `inline code`)
+const IconLightbulb = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 18h6M10 22h4M15.09 14A6 6 0 0 0 18 9a6 6 0 0 0-12 0 6 6 0 0 0 2.91 5" />
+  </svg>
+)
+
+const IconGear = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="3" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+  </svg>
+)
+
+const IconCheckCircle = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+)
+
+const IconXCircle = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="15" y1="9" x2="9" y2="15" />
+    <line x1="9" y1="9" x2="15" y2="15" />
+  </svg>
+)
+
+const IconLayers = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+    <polyline points="2 17 12 22 22 17" />
+    <polyline points="2 12 12 17 22 12" />
+  </svg>
+)
+
+// Markdown Formatter
 function renderFormattedMarkdown(text) {
   if (!text) return null
 
-  // Split into lines
   const lines = text.split('\n')
   return lines.map((line, lIdx) => {
     let cleanLine = line.trim()
-    
-    // Clean any leading artifact prefixes like "1. 1. ", "2. 2. ", "1. **"
     cleanLine = cleanLine.replace(/^(\d+[\.\)])\s*(\d+[\.\)])\s*/, '$1 ')
 
-    // Parse **bold** and `code` markers inside line
     const parts = cleanLine.split(/(\*\*.*?\*\*|`.*?`)/g)
     const formattedElements = parts.map((part, pIdx) => {
       if (part.startsWith('**') && part.endsWith('**') && part.length >= 4) {
@@ -126,18 +159,13 @@ function renderFormattedMarkdown(text) {
 function SyntaxCodeBlock({ code }) {
   if (!code) return <pre className="dsa-code-block"><code>// No code available</code></pre>
 
-  // Helper tokenization for C++ & Java code syntax
   const lines = code.split('\n')
 
   return (
     <pre className="dsa-code-block">
       <code>
         {lines.map((line, lineIdx) => {
-          // Tokenize line with regex rules
           const tokens = []
-          let remaining = line
-
-          // Regex matching comments, strings, keywords, types, numbers
           const regex = /(\/\/.*|\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b(?:class|public|private|protected|void|int|bool|boolean|double|float|char|string|String|vector|unordered_map|map|set|unordered_set|stack|queue|priority_queue|if|else|for|while|return|new|delete|import|include|using|namespace|const|static|struct|NULL|nullptr|true|false|this)\b|\b[A-Z][a-zA-Z0-9_]*\b|\b\d+\b)/g
 
           let match
@@ -147,12 +175,10 @@ function SyntaxCodeBlock({ code }) {
             const tokenText = match[0]
             const index = match.index
 
-            // Add plain text before match
             if (index > lastIndex) {
               tokens.push(<span key={`txt-${lastIndex}`} className="syn-plain">{line.slice(lastIndex, index)}</span>)
             }
 
-            // Style token based on type
             let tokenClass = "syn-plain"
             if (tokenText.startsWith("//") || tokenText.startsWith("/*")) {
               tokenClass = "syn-comment"
@@ -197,7 +223,8 @@ export default function DSALessonChat({
   onBackToRoadmap,
   onToast
 }) {
-  const [viewTab, setViewTab] = useState('problems') // 'theory' | 'problems'
+  // CRITICAL DIRECTIVE: Always open Theory & Concepts first!
+  const [viewTab, setViewTab] = useState('theory')
   const [openDoubts, setOpenDoubts] = useState({})
   const [doubtInputs, setDoubtInputs] = useState({})
   const [doubtLoading, setDoubtLoading] = useState({})
@@ -206,7 +233,9 @@ export default function DSALessonChat({
 
   useEffect(() => {
     setLocalProblems(problems)
-  }, [problems])
+    // Whenever topic changes, force default to Theory sub-tab first!
+    setViewTab('theory')
+  }, [topic, problems])
 
   const topicId = topic?.topic_id || 1
   const theoryData = dsaTheoryData[topicId] || dsaTheoryData[1]
@@ -261,7 +290,7 @@ export default function DSALessonChat({
 
   return (
     <div className="dsa-lesson-chat-container">
-      {/* Sleek Compact Topic Header */}
+      {/* Prominent Header with Increased Title Font Size */}
       <div className="dsa-lesson-header">
         <div className="dsa-header-left">
           <button className="dsa-back-btn" onClick={onBackToRoadmap} title="Back to Topics List">
@@ -275,7 +304,7 @@ export default function DSALessonChat({
           </div>
         </div>
 
-        {/* Navigation Sub-Tabs (Theory vs Problems/Code) */}
+        {/* Navigation Sub-Tabs (Theory First!) */}
         <div className="dsa-view-subtabs">
           <button
             className={`dsa-subtab-btn ${viewTab === 'theory' ? 'active' : ''}`}
@@ -332,6 +361,28 @@ export default function DSALessonChat({
               </div>
             </div>
 
+            {/* Visual Diagram Representation */}
+            <DSADiagram topicId={topicId} />
+
+            {/* Data Structure Basics & Fundamentals (Access, Insertion, Deletion, Traversal) */}
+            {theoryData.basics && theoryData.basics.length > 0 && (
+              <div className="dsa-theory-section">
+                <h4 className="dsa-theory-section-title">
+                  <IconLayers /> Data Structure Fundamentals & Core Operations
+                </h4>
+                <div className="dsa-basics-list">
+                  {theoryData.basics.map((b, bIdx) => (
+                    <div key={bIdx} className="dsa-basic-item">
+                      <span className="dsa-basic-head">{b.op}</span>
+                      <div className="dsa-text-content" style={{ marginTop: '3px' }}>
+                        {renderFormattedMarkdown(b.detail)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Elaborate Patterns & Mechanics */}
             <div className="dsa-theory-section">
               <h4 className="dsa-theory-section-title">
@@ -344,29 +395,41 @@ export default function DSALessonChat({
                     <h5 className="dsa-pattern-title">{pat.name}</h5>
                     
                     <div className="dsa-pattern-subblock">
-                      <span className="dsa-pattern-subhead">💡 Explanation & Core Mechanics:</span>
+                      <span className="dsa-pattern-subhead">
+                        <IconLightbulb /> Explanation & Core Mechanics:
+                      </span>
                       <p className="dsa-pattern-text">{pat.explanation}</p>
                     </div>
 
                     <div className="dsa-pattern-subblock">
-                      <span className="dsa-pattern-subhead">⚙️ Full Algorithmic Approach & Step-by-Step Execution:</span>
+                      <span className="dsa-pattern-subhead">
+                        <IconGear /> Full Algorithmic Approach & Step-by-Step Execution:
+                      </span>
                       <div className="dsa-text-content" style={{ marginTop: '4px' }}>
                         {renderFormattedMarkdown(pat.approach)}
                       </div>
                     </div>
 
                     <div className="dsa-pattern-complexity-row">
-                      <span className="dsa-comp-pill">⏱️ <strong>Time Complexity:</strong> {pat.timeComplexity}</span>
-                      <span className="dsa-comp-pill">💾 <strong>Space Complexity:</strong> {pat.spaceComplexity}</span>
+                      <span className="dsa-comp-pill">
+                        <IconClock /> <strong>Time Complexity:</strong> {pat.timeComplexity}
+                      </span>
+                      <span className="dsa-comp-pill">
+                        <IconDatabase /> <strong>Space Complexity:</strong> {pat.spaceComplexity}
+                      </span>
                     </div>
 
                     <div className="dsa-pattern-apply-grid">
                       <div className="dsa-apply-box apply-yes">
-                        <span className="dsa-apply-head">✅ When to Apply:</span>
+                        <span className="dsa-apply-head">
+                          <IconCheckCircle /> When to Apply:
+                        </span>
                         <p className="dsa-apply-text">{pat.whenToApply}</p>
                       </div>
                       <div className="dsa-apply-box apply-no">
-                        <span className="dsa-apply-head">❌ When NOT to Apply (Pitfalls & Counter-scenarios):</span>
+                        <span className="dsa-apply-head">
+                          <IconXCircle /> When NOT to Apply (Pitfalls & Counter-scenarios):
+                        </span>
                         <p className="dsa-apply-text">{pat.whenNotToApply}</p>
                       </div>
                     </div>
