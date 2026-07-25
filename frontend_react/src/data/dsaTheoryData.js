@@ -65,6 +65,12 @@ export const dsaTheoryData = {
       },
       {
         name: "3. Dutch National Flag (3-Way Array Partitioning)",
+        video: {
+          id: "tp8JIuCXBaU",
+          title: "Sort an array of 0's 1's & 2's | Dutch National Flag Algorithm",
+          channel: "take U forward",
+          duration: "18 mins"
+        },
         explanation: "Sorts an array containing 0s, 1s, and 2s in a single pass O(N) time and O(1) space using low, mid, high pointers.",
         code: "int low = 0, mid = 0, high = n - 1;\nwhile (mid <= high) {\n    if (arr[mid] == 0) swap(arr[low++], arr[mid++]);\n    else if (arr[mid] == 1) mid++;\n    else swap(arr[mid], arr[high--]);\n}",
         codeWalkthrough: "• 0s placed in range [0...low-1], 1s in range [low...mid-1], 2s in range [high+1...n-1].",
@@ -76,6 +82,12 @@ export const dsaTheoryData = {
       },
       {
         name: "4. Boyer-Moore Voting Algorithm (Majority Element)",
+        video: {
+          id: "wD7fs5P_Mvo",
+          title: "Majority Element (>N/2 times) | Boyer Moore Voting Algorithm",
+          channel: "take U forward",
+          duration: "16 mins"
+        },
         explanation: "Finds the candidate element appearing more than N/2 (or N/3) times in O(N) time and O(1) space using a counter balance mechanism.",
         code: "int candidate = 0, count = 0;\nfor (int num : nums) {\n    if (count == 0) candidate = num;\n    count += (num == candidate) ? 1 : -1;\n}",
         codeWalkthrough: "• When count drops to 0, choose current element as candidate. Increment count on match, decrement on mismatch.",
@@ -87,6 +99,12 @@ export const dsaTheoryData = {
       },
       {
         name: "5. Next Permutation Algorithm",
+        video: {
+          id: "JDOXKqF60RQ",
+          title: "Next Permutation | Find next lexicographical sequence",
+          channel: "take U forward",
+          duration: "20 mins"
+        },
         explanation: "Finds lexicographically next greater permutation in O(N) time by finding pivot breakpoint `arr[i] < arr[i+1]`, swapping pivot with next greater, and reversing suffix.",
         code: "int pivot = -1;\nfor (int i = n - 2; i >= 0; i--) {\n    if (arr[i] < arr[i + 1]) { pivot = i; break; }\n}\nif (pivot == -1) { reverse(arr.begin(), arr.end()); return; }\nfor (int i = n - 1; i > pivot; i--) {\n    if (arr[i] > arr[pivot]) { swap(arr[pivot], arr[i]); break; }\n}\nreverse(arr.begin() + pivot + 1, arr.end());",
         codeWalkthrough: "• Find rightmost dip (pivot), swap with smallest larger element on right, reverse right suffix.",
@@ -98,6 +116,12 @@ export const dsaTheoryData = {
       },
       {
         name: "6. Rotate Image / Matrix by 90 Degrees",
+        video: {
+          id: "Z0R2u6gd3GU",
+          title: "Rotate Matrix / Image by 90 Degrees Clockwise",
+          channel: "take U forward",
+          duration: "18 mins"
+        },
         explanation: "Rotates an N x N matrix 90 degrees clockwise in-place by taking Matrix Transpose `matrix[i][j] <-> matrix[j][i]` and then reversing every row.",
         code: "// Step 1: Transpose Matrix\nfor (int i = 0; i < n; i++) {\n    for (int j = i + 1; j < n; j++) swap(matrix[i][j], matrix[j][i]);\n}\n// Step 2: Reverse Each Row\nfor (int i = 0; i < n; i++) reverse(matrix[i].begin(), matrix[i].end());",
         codeWalkthrough: "• Transpose converts rows into columns. Reversing rows flips matrix 90 degrees clockwise.",
@@ -163,7 +187,7 @@ export const dsaTheoryData = {
         name: "2. Lower Bound & Upper Bound Pattern",
         video: {
           id: "j7NodO9HIbk",
-          title: "1 Binary Search Format Introduction",
+          title: "Lower Bound and Upper Bound Binary Search",
           channel: "Aditya Verma",
           duration: "15 mins"
         },
@@ -178,6 +202,12 @@ export const dsaTheoryData = {
       },
       {
         name: "3. Search in Rotated Sorted Array",
+        video: {
+          id: "r3pRJ8-Sk4g",
+          title: "Search in Rotated Sorted Array",
+          channel: "NeetCode",
+          duration: "14 mins"
+        },
         explanation: "Identifies which half (left or right) is sorted (`arr[low] <= arr[mid]`) and checks if target lies within that sorted range.",
         code: "int low = 0, high = n - 1;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] == target) return mid;\n    if (arr[low] <= arr[mid]) { // Left half sorted\n        if (arr[low] <= target && target < arr[mid]) high = mid - 1;\n        else low = mid + 1;\n    } else { // Right half sorted\n        if (arr[mid] < target && target <= arr[high]) low = mid + 1;\n        else high = mid - 1;\n    }\n}",
         codeWalkthrough: "• Determine sorted half, check target boundary, discard unsorted half.",
@@ -189,6 +219,12 @@ export const dsaTheoryData = {
       },
       {
         name: "4. Binary Search on Search Space / Answer (Koko Eating Bananas)",
+        video: {
+          id: "qwC8r2Lg62s",
+          title: "Koko Eating Bananas - Binary Search on Answer",
+          channel: "NeetCode",
+          duration: "15 mins"
+        },
         explanation: "Applies Binary Search on hypothetical minimum/maximum answer range `[low, high]` when a predicate function `isValid(mid)` is monotonic.",
         code: "long long low = 1, high = maxElem, ans = high;\nwhile (low <= high) {\n    long long mid = low + (high - low) / 2;\n    if (checkPossible(mid, piles, h)) {\n        ans = mid; high = mid - 1; // Try smaller eating speed\n    } else low = mid + 1;\n}",
         codeWalkthrough: "• Define minimum and maximum feasible answer values. If mid is valid, try smaller answer.",
@@ -239,6 +275,12 @@ export const dsaTheoryData = {
     patterns: [
       {
         name: "1. Character Frequency & Anagram Hashing Pattern",
+        video: {
+          id: "9UtInBqnCgA",
+          title: "Valid Anagram & Frequency Hashing",
+          channel: "NeetCode",
+          duration: "10 mins"
+        },
         explanation: "Compares frequency vectors of two strings to check for anagram permutation matches in O(N) time.",
         code: "bool isAnagram(string s, string t) {\n    if (s.length() != t.length()) return false;\n    vector<int> count(26, 0);\n    for (int i = 0; i < s.length(); i++) {\n        count[s[i] - 'a']++; count[t[i] - 'a']--;\n    }\n    for (int val : count) if (val != 0) return false;\n    return true;\n}",
         codeWalkthrough: "• Increment count for s[i], decrement count for t[i]. All frequencies must sum to zero.",
@@ -300,12 +342,6 @@ export const dsaTheoryData = {
         title: "L1. Introduction to LinkedList | Traversal | Length | Search",
         channel: "take U forward",
         duration: "50 mins"
-      },
-      {
-        id: "wiOo4DC5GGA",
-        title: "L14. Detect a loop or cycle in LinkedList",
-        channel: "take U forward",
-        duration: "16 mins"
       }
     ],
     basics: [
@@ -352,6 +388,12 @@ export const dsaTheoryData = {
       },
       {
         name: "3. Remove N-th Node From End of List",
+        video: {
+          id: "XVuQxVxj6y8",
+          title: "Remove Nth Node From End of List",
+          channel: "NeetCode",
+          duration: "12 mins"
+        },
         explanation: "Advances `fast` pointer by N steps first, then moves `fast` and `slow` together until `fast` reaches tail node.",
         code: "Node* dummy = new Node(0, head);\nNode *fast = dummy, *slow = dummy;\nfor (int i = 0; i < n; i++) fast = fast->next;\nwhile (fast->next) {\n    fast = fast->next;\n    slow = slow->next;\n}\nslow->next = slow->next->next;\nreturn dummy->next;",
         codeWalkthrough: "• Maintain N node gap between fast and slow. When fast reaches end, slow sits right before target node.",
@@ -391,6 +433,12 @@ export const dsaTheoryData = {
     patterns: [
       {
         name: "1. Subsequences Pick / Non-Pick Pattern",
+        video: {
+          id: "K4xS-_f2n2E",
+          title: "Print all Subsequences | Pick and Non-Pick Pattern",
+          channel: "take U forward",
+          duration: "20 mins"
+        },
         explanation: "Explores inclusion vs exclusion choice branches for every element generating 2^N total subsets.",
         code: "void solve(int idx, vector<int>& ds, vector<int>& nums) {\n    if (idx == nums.size()) { print(ds); return; }\n    ds.push_back(nums[idx]); solve(idx + 1, ds, nums); // Pick\n    ds.pop_back(); solve(idx + 1, ds, nums); // Non-Pick / Backtrack\n}",
         codeWalkthrough: "• Recurse with element included, backtrack to explore exclusion.",
@@ -402,6 +450,12 @@ export const dsaTheoryData = {
       },
       {
         name: "2. Subset Sum II (Duplicate Skipping Pattern)",
+        video: {
+          id: "rYjiPPAjF90",
+          title: "Subset Sum II | Duplicate Skipping Pattern",
+          channel: "take U forward",
+          duration: "16 mins"
+        },
         explanation: "Sorts input array first and skips duplicate choices at same recursion depth `if (i > idx && nums[i] == nums[i-1]) continue` to avoid duplicate subsets.",
         code: "void findSubsets(int idx, vector<int>& nums, vector<int>& ds) {\n    ans.push_back(ds);\n    for (int i = idx; i < nums.size(); i++) {\n        if (i > idx && nums[i] == nums[i - 1]) continue; // Skip duplicates\n        ds.push_back(nums[i]);\n        findSubsets(i + 1, nums, ds);\n        ds.pop_back();\n    }\n}",
         codeWalkthrough: "• Sort array. Loop skips duplicate element choices at current branch depth.",
@@ -413,6 +467,12 @@ export const dsaTheoryData = {
       },
       {
         name: "3. N-Queens & Backtracking Validation",
+        video: {
+          id: "Ph95IHm3F1s",
+          title: "N-Queens Problem - Backtracking Algorithm",
+          channel: "NeetCode",
+          duration: "18 mins"
+        },
         explanation: "Places Queens row-by-row and uses bitmask or boolean arrays (col, upperDiag, lowerDiag) to check attack collisions in O(1) time.",
         code: "void solveNQueens(int col, vector<string>& board) {\n    if (col == n) { ans.push_back(board); return; }\n    for (int row = 0; row < n; row++) {\n        if (!leftRow[row] && !lowerDiag[row + col] && !upperDiag[n - 1 + col - row]) {\n            leftRow[row] = lowerDiag[row + col] = upperDiag[n - 1 + col - row] = 1;\n            board[row][col] = 'Q';\n            solveNQueens(col + 1, board);\n            board[row][col] = '.'; // Backtrack\n            leftRow[row] = lowerDiag[row + col] = upperDiag[n - 1 + col - row] = 0;\n        }\n    }\n}",
         codeWalkthrough: "• Check attack collision using lookup arrays, place Queen, recurse, and clear lookup array on backtrack.",
@@ -457,6 +517,12 @@ export const dsaTheoryData = {
     patterns: [
       {
         name: "1. Single Number & XOR Properties",
+        video: {
+          id: "XnOad556sKw",
+          title: "Single Number - XOR Bitwise Operations",
+          channel: "NeetCode",
+          duration: "10 mins"
+        },
         explanation: "Uses XOR identity `a ^ a = 0` and `a ^ 0 = a` to cancel out pairs in O(N) time and O(1) space.",
         code: "int singleNumber(vector<int>& nums) {\n    int xorVal = 0;\n    for (int num : nums) xorVal ^= num;\n    return xorVal;\n}",
         codeWalkthrough: "• Pair elements cancel to 0 under XOR, leaving the unique single number.",
@@ -468,6 +534,12 @@ export const dsaTheoryData = {
       },
       {
         name: "2. Brian Kernighan's Algorithm (Set Bit Counting)",
+        video: {
+          id: "ZwU6wSkepBI",
+          title: "Brian Kernighan's Algorithm - Count Set Bits",
+          channel: "take U forward",
+          duration: "12 mins"
+        },
         explanation: "Counts set bits in O(SetBits) time by repeatedly clearing the rightmost set bit using `n = n & (n - 1)`.",
         code: "int countSetBits(int n) {\n    int count = 0;\n    while (n > 0) {\n        n = n & (n - 1); // Clears rightmost set bit\n        count++;\n    }\n    return count;\n}",
         codeWalkthrough: "• `n & (n - 1)` turns off the lowest 1-bit in constant time.",
@@ -506,6 +578,12 @@ export const dsaTheoryData = {
     patterns: [
       {
         name: "1. Monotonic Stack (Next Greater / Smaller Element)",
+        video: {
+          id: "Dq_ObZwTY_U",
+          title: "Next Greater Element using Monotonic Stack",
+          channel: "NeetCode",
+          duration: "14 mins"
+        },
         explanation: "Maintains stack elements in strictly increasing or decreasing order. When encountering a larger element, pop elements from stack to assign their next greater element.",
         code: "stack<int> st;\nvector<int> ans(n, -1);\nfor (int i = 0; i < n; i++) {\n    while (!st.empty() && arr[i] > arr[st.top()]) {\n        ans[st.top()] = arr[i]; st.pop();\n    }\n    st.push(i);\n}",
         codeWalkthrough: "• Maintain index stack. Current element pops smaller elements from stack.",
@@ -517,6 +595,12 @@ export const dsaTheoryData = {
       },
       {
         name: "2. Trapping Rainwater (Two Pointers / Stack)",
+        video: {
+          id: "ZI2z5B070cI",
+          title: "Trapping Rainwater - Two Pointers Solution",
+          channel: "NeetCode",
+          duration: "16 mins"
+        },
         explanation: "Calculates trapped water at index i as `min(leftMax, rightMax) - height[i]` using Two Pointers moving inward.",
         code: "int l = 0, r = n - 1, leftMax = 0, rightMax = 0, water = 0;\nwhile (l < r) {\n    if (height[l] <= height[r]) {\n        if (height[l] >= leftMax) leftMax = height[l];\n        else water += leftMax - height[l];\n        l++;\n    } else {\n        if (height[r] >= rightMax) rightMax = height[r];\n        else water += rightMax - height[r];\n        r--;\n    }\n}",
         codeWalkthrough: "• Move smaller height pointer inward while maintaining leftMax and rightMax boundaries.",
@@ -641,6 +725,12 @@ export const dsaTheoryData = {
     patterns: [
       {
         name: "1. Activity Selection / Interval Scheduling",
+        video: {
+          id: "ARvQcqJ_-NY",
+          title: "3. Greedy Method - Introduction & Applications",
+          channel: "Abdul Bari",
+          duration: "30 mins"
+        },
         explanation: "Sorts activities by finish time to greedily select maximum non-overlapping intervals.",
         code: "sort(meetings.begin(), meetings.end(), [](auto& a, auto& b) { return a.end < b.end; });\nint count = 1, limit = meetings[0].end;\nfor (int i = 1; i < n; i++) {\n    if (meetings[i].start > limit) { count++; limit = meetings[i].end; }\n}",
         codeWalkthrough: "• Sort by end time, pick meeting if start time > previous limit.",
@@ -672,6 +762,12 @@ export const dsaTheoryData = {
     patterns: [
       {
         name: "1. Height & Diameter of Binary Tree",
+        video: {
+          id: "bkqdA8vv5Hk",
+          title: "Diameter of Binary Tree & Height Calculation",
+          channel: "NeetCode",
+          duration: "14 mins"
+        },
         explanation: "Computes tree height recursively `1 + max(lh, rh)` and updates global max diameter (`lh + rh`).",
         code: "int getHeight(TreeNode* root) {\n    if (!root) return 0;\n    int lh = getHeight(root->left);\n    int rh = getHeight(root->right);\n    maxDiameter = max(maxDiameter, lh + rh);\n    return 1 + max(lh, rh);\n}",
         codeWalkthrough: "• Calculate left and right subtree heights recursively.",
@@ -703,6 +799,12 @@ export const dsaTheoryData = {
     patterns: [
       {
         name: "1. Validate Binary Search Tree (Range Check)",
+        video: {
+          id: "s6ATEkipzow",
+          title: "Validate Binary Search Tree",
+          channel: "NeetCode",
+          duration: "12 mins"
+        },
         explanation: "Validates BST invariant recursively passing valid min and max node value bounds `(minVal < node->val < maxVal)`.",
         code: "bool isValidBST(TreeNode* root, long long minVal, long long maxVal) {\n    if (!root) return true;\n    if (root->val <= minVal || root->val >= maxVal) return false;\n    return isValidBST(root->left, minVal, root->val) && isValidBST(root->right, root->val, maxVal);\n}",
         codeWalkthrough: "• Left subtree must be < root->val; Right subtree must be > root->val.",
@@ -777,6 +879,12 @@ export const dsaTheoryData = {
     patterns: [
       {
         name: "1. 0/1 Knapsack Pattern",
+        video: {
+          id: "oBt53YbR9Kk",
+          title: "Dynamic Programming - Learn to Solve Algorithmic Problems",
+          channel: "freeCodeCamp.org",
+          duration: "65 mins"
+        },
         explanation: "At item i with capacity w, choose max of excluding item or including item.",
         code: "for (int i = 1; i <= n; i++) {\n    for (int w = 0; w <= W; w++) {\n        if (wt[i-1] <= w) {\n            dp[i][w] = max(dp[i-1][w], val[i-1] + dp[i-1][w - wt[i-1]]);\n        } else dp[i][w] = dp[i-1][w];\n    }\n}",
         codeWalkthrough: "• Max of excluding item or including item.",
