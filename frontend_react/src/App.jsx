@@ -295,7 +295,7 @@ export default function App() {
     }
   }
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768)
   const [refDrawerOpen, setRefDrawerOpen] = useState(false)
 
   if (!authenticated) {
