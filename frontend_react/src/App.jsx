@@ -302,7 +302,7 @@ export default function App() {
     setIsLoading(true)
 
     try {
-      const { answer, references } = await runQuery(query, messages)
+      const { answer, references } = await runQuery(query, messages, null, userEmail)
       const assistantMsg = { role: 'assistant', content: answer }
       const finalMessages = [...newMessages, assistantMsg]
       setMessages(finalMessages)

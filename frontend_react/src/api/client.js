@@ -24,11 +24,12 @@ export async function getMetadata() {
   }
 }
 
-export async function runQuery(query, history = [], limit = null) {
+export async function runQuery(query, history = [], limit = null, userEmail = null) {
   const payload = {
     query,
     history: history.map(m => ({ role: m.role, content: m.content })),
-    ...(limit !== null && { limit })
+    ...(limit !== null && { limit }),
+    ...(userEmail && { user_email: userEmail })
   }
   const data = await safeFetch(`${API_BASE}/query`, {
     method: 'POST',

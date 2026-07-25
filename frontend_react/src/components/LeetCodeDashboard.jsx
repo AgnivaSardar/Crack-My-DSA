@@ -205,7 +205,7 @@ export default function LeetCodeDashboard({
                   {topCompanies.map(([comp, count]) => (
                     <div key={comp} className="dash-company-chip">
                       <span>{comp}</span>
-                      <span className="dash-chip-count">{count} solved</span>
+                      <span className="dash-chip-count">{totalSolved} solved</span>
                     </div>
                   ))}
                 </div>
@@ -216,7 +216,7 @@ export default function LeetCodeDashboard({
             <div className="dash-table-section">
               <div className="dash-table-header-row">
                 <div className="dash-section-title" style={{ margin: 0 }}>
-                  Solved Questions Log ({filteredProblems.length})
+                  Solved Questions Log ({totalSolved})
                 </div>
                 <div className="dash-table-filters">
                   <input

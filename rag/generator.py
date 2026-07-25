@@ -165,7 +165,7 @@ class LeetCodeGenerator:
         response.append("💡 *Tip: Connect this machine to the internet and input a valid API key in your .env to see full dynamic AI explanations and code dry-runs.*")
         return "\n".join(response)
 
-    def generate_response(self, query: str, retrieved_questions: List[Dict[str, Any]], chat_history: Optional[List[Dict[str, str]]] = None) -> str:
+    def generate_response(self, query: str, retrieved_questions: List[Dict[str, Any]], chat_history: Optional[List[Dict[str, str]]] = None, solved_titles: Optional[List[str]] = None) -> str:
         """Builds prompt, appends context, and generates final response. Falls back to offline templates if needed."""
         if self.is_offline_mode:
             return self.generate_offline_response(query, retrieved_questions)
@@ -179,6 +179,13 @@ class LeetCodeGenerator:
                 role = "Candidate" if msg["role"] == "user" else "Coach"
                 prompt += f"{role}: {msg['content']}\n"
             prompt += "\n"
+
+        if solved_titles:
+            prompt += (
+                f"CRITICAL DIRECTIVE: The candidate has ALREADY SOLVED the following problems:\n"
+                f"{', '.join(solved_titles[:60])}\n"
+                f"DO NOT include or recommend ANY of these already-solved problems in your recommended response or table!\n\n"
+            )
             
         prompt += (
             f"Candidate Query: \"{query}\"\n\n"

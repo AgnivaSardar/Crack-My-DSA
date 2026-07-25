@@ -81,6 +81,7 @@ class QueryRequest(BaseModel):
     query: str
     history: Optional[List[ChatMessage]] = None
     limit: Optional[int] = None
+    user_email: Optional[str] = None
 
 class QueryResponse(BaseModel):
     answer: str
@@ -118,7 +119,26 @@ async def query_rag(request: QueryRequest):
     try:
         # Retrieve relevant questions
         retrieved_questions = retriever.retrieve(request.query, limit=request.limit)
+
+        # Get user's solved titles if email is passed
+        user_solved_titles = []
+        if request.user_email:
+            try:
+                from vectorstore.chat_db import ChatDatabaseManager
+                db = ChatDatabaseManager()
+                solved_list = db.get_user_solved_problems(request.user_email)
+                user_solved_titles = [p.get("problem_title") or p.get("title") for p in solved_list if (p.get("problem_title") or p.get("title"))]
+            except Exception as e:
+                print(f"[Query Solved Fetch Error] {e}")
+
+        # Check if user query asks to remove/exclude solved questions or if solved titles exist
+        query_lower = request.query.lower()
+        is_exclude_explicit = any(k in query_lower for k in ["already done", "unsolved", "todo", "not done", "not solved", "exclude", "remove"])
         
+        if (is_exclude_explicit or user_solved_titles) and user_solved_titles:
+            solved_set = set(t.strip().lower() for t in user_solved_titles)
+            retrieved_questions = [q for q in retrieved_questions if (q.get("title") or q.get("problem_title") or "").strip().lower() not in solved_set]
+
         # Format history
         history_dicts = []
         if request.history:
@@ -128,7 +148,8 @@ async def query_rag(request: QueryRequest):
         answer = generator.generate_response(
             query=request.query, 
             retrieved_questions=retrieved_questions, 
-            chat_history=history_dicts
+            chat_history=history_dicts,
+            solved_titles=user_solved_titles if (is_exclude_explicit or user_solved_titles) else None
         )
         
         return QueryResponse(

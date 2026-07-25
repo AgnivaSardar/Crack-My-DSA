@@ -812,11 +812,9 @@ code, pre, .mono {
   flex-shrink: 0;
 }
 
-.diff-badge.easy, .diff-badge.medium, .diff-badge.hard {
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.06);
-}
+.diff-badge.easy { color: #4ade80; border-color: rgba(74,222,128,0.25); background: rgba(74,222,128,0.06); }
+.diff-badge.medium { color: #fbbf24; border-color: rgba(251,191,36,0.25); background: rgba(251,191,36,0.06); }
+.diff-badge.hard { color: #f87171; border-color: rgba(248,113,113,0.25); background: rgba(248,113,113,0.06); }
 
 .ref-card-meta {
   font-size: 0.75rem;
@@ -1398,13 +1396,13 @@ code, pre, .mono {
 }
 
 .ref-table-header.todo {
-  color: #ffffff;
-  border-left: 3px solid #ffffff;
+  color: #60a5fa;
+  border-left: 3px solid #3b82f6;
 }
 
 .ref-table-header.done {
-  color: #e5e7eb;
-  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  color: #34d399;
+  border-left: 3px solid #10b981;
 }
 
 .ref-table-count {
@@ -1424,14 +1422,14 @@ code, pre, .mono {
 }
 
 .ref-card-done {
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: rgba(52, 211, 153, 0.25) !important;
+  background: rgba(6, 28, 18, 0.4) !important;
 }
 
 .ref-card-solve-btn {
-  background: rgba(255, 255, 255, 0.08);
-  color: #e5e7eb;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(59, 130, 246, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 4px;
   font-size: 0.72rem;
   padding: 0.2rem 0.55rem;
@@ -1440,20 +1438,20 @@ code, pre, .mono {
 }
 
 .ref-card-solve-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(59, 130, 246, 0.3);
   color: #fff;
 }
 
 .ref-card-solve-btn.done {
-  background: rgba(255, 255, 255, 0.12);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.4);
 }
 
 .ref-card-solve-btn.done:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.4);
 }
 
 /* ============================================
@@ -1529,14 +1527,14 @@ code, pre, .mono {
 }
 
 .hackerrank-badge {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  background: linear-gradient(135deg, #1ba94c, #117834);
+  color: #fff;
   font-size: 0.7rem;
-  font-weight: 600;
+  font-weight: 700;
   padding: 0.25rem 0.6rem;
   border-radius: 20px;
   letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(27, 169, 76, 0.3);
 }
 
 .dashboard-subtitle {
@@ -1627,9 +1625,9 @@ code, pre, .mono {
   margin: 0.25rem 0;
 }
 
-.dash-stat-val.easy { color: #ffffff; }
-.dash-stat-val.medium { color: #ffffff; }
-.dash-stat-val.hard { color: #ffffff; }
+.dash-stat-val.easy { color: #00b8a3; }
+.dash-stat-val.medium { color: #ffc01e; }
+.dash-stat-val.hard { color: #ff375f; }
 
 .dash-stat-sub {
   font-size: 0.72rem;
@@ -1644,9 +1642,9 @@ code, pre, .mono {
   margin-top: 0.5rem;
 }
 
-.dash-progress-fill.easy { background: #ffffff; height: 100%; }
-.dash-progress-fill.medium { background: rgba(255, 255, 255, 0.6); height: 100%; }
-.dash-progress-fill.hard { background: rgba(255, 255, 255, 0.3); height: 100%; }
+.dash-progress-fill.easy { background: #00b8a3; height: 100%; }
+.dash-progress-fill.medium { background: #ffc01e; height: 100%; }
+.dash-progress-fill.hard { background: #ff375f; height: 100%; }
 
 .dash-company-section {
   background: #16161d;
