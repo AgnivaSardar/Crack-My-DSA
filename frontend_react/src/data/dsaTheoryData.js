@@ -1,423 +1,409 @@
 export const dsaTheoryData = {
   1: {
     title: "01. Arrays",
-    summary: "Arrays are contiguous memory blocks storing elements of the same type. Operations at index are O(1), while searching in unsorted arrays is O(N).",
+    summary: "Arrays are contiguous memory blocks storing elements of identical data type. Index-based access is O(1), but searching in unsorted arrays or inserting/deleting elements at arbitrary positions requires shifting elements, leading to O(N) time.",
     patterns: [
       {
-        name: "Two Pointers Pattern",
-        desc: "Uses two pointers (left/right or slow/fast) moving toward each other or in the same direction to solve problems in O(N) time and O(1) space."
+        name: "1. Two Pointers Pattern",
+        explanation: "Uses two pointer variables (e.g. left/right or slow/fast) traversing the array towards each other or in the same direction to solve range or pair problems in O(N) linear time and O(1) auxiliary space.",
+        approach: "1. Place pointers at strategic starting locations (e.g. `left = 0`, `right = N - 1`).\n2. Evaluate condition at current pointers (e.g. `arr[left] + arr[right] == target`).\n3. Increment `left` or decrement `right` based on comparison logic until pointers meet or cross.",
+        timeComplexity: "O(N) single pass traversal",
+        spaceComplexity: "O(1) auxiliary memory",
+        whenToApply: "Sorted arrays, pair sum targets, reversing arrays, or in-place element removals.",
+        whenNotToApply: "Unsorted arrays where sorting destroys original index positions needed by output, or when non-contiguous random elements must be accessed."
       },
       {
-        name: "Prefix Sum & Difference Array",
-        desc: "Precomputes cumulative sums (`prefix[i] = prefix[i-1] + arr[i]`) to answer range sum queries in O(1) time."
+        name: "2. Prefix Sum & Difference Array",
+        explanation: "Precomputes running cumulative sums in an auxiliary array (`prefix[i] = prefix[i-1] + arr[i]`) so that any range sum query between indices L and R can be computed in O(1) time.",
+        approach: "1. Construct `prefix` array where `prefix[0] = arr[0]` and `prefix[i] = prefix[i-1] + arr[i]`.\n2. For any range `[L, R]`, return `prefix[R] - prefix[L-1]` (handling L = 0 boundary).\n3. Difference array: To apply range updates `+val` from `L` to `R`, set `diff[L] += val` and `diff[R+1] -= val`, then compute prefix sums at end.",
+        timeComplexity: "O(N) precomputation, O(1) per range sum query",
+        spaceComplexity: "O(N) for prefix array storage",
+        whenToApply: "Static arrays with frequent range sum queries or multiple range updates.",
+        whenNotToApply: "Dynamic arrays with frequent individual element updates between queries, as recomputing prefix sums takes O(N)."
       },
       {
-        name: "Kadane's Algorithm",
-        desc: "Dynamic programming approach for finding maximum subarray sum in O(N) time by resetting current sum to zero whenever it drops below zero."
+        name: "3. Kadane's Algorithm (Maximum Subarray Sum)",
+        explanation: "Dynamic programming approach that calculates maximum subarray sum in a single O(N) pass by maintaining a running current sum and deciding whether to extend the existing subarray or start a new one.",
+        approach: "1. Initialize `max_sum = -INF` and `curr_sum = 0`.\n2. Iterate through each element `x` in array:\n   - `curr_sum += x`\n   - Update `max_sum = max(max_sum, curr_sum)`\n   - If `curr_sum < 0`, reset `curr_sum = 0`.\n3. Return `max_sum`.",
+        timeComplexity: "O(N) single pass",
+        spaceComplexity: "O(1) auxiliary space",
+        whenToApply: "Finding contiguous subarray with maximum/minimum sum in 1D array.",
+        whenNotToApply: "When non-contiguous elements (subsequences) are required, or when negative numbers are not allowed to be reset."
       },
       {
-        name: "Boyer-Moore Voting Algorithm",
-        desc: "Finds majority element (> N/2 times) in O(N) time and O(1) space by maintaining a candidate and a counter."
+        name: "4. Boyer-Moore Voting Algorithm",
+        explanation: "Efficiently finds the majority element (element appearing more than N/2 times) in O(N) time and O(1) space by maintaining a candidate and a counter.",
+        approach: "1. Initialize `candidate = None` and `count = 0`.\n2. Iterate through array:\n   - If `count == 0`, set `candidate = arr[i]`.\n   - If `arr[i] == candidate`, `count++`, else `count--`.\n3. Verify if candidate appears > N/2 times in a second pass if presence isn't guaranteed.",
+        timeComplexity: "O(N) time",
+        spaceComplexity: "O(1) space",
+        whenToApply: "Finding majority element that appears > N/2 times (or > N/3 times with two candidates).",
+        whenNotToApply: "When looking for general element frequencies or mode in an arbitrary distribution with no guaranteed majority."
       },
       {
-        name: "Dutch National Flag Algorithm",
-        desc: "3-pointer approach (low, mid, high) to sort an array of 0s, 1s, and 2s in a single pass O(N) time."
+        name: "5. Dutch National Flag Algorithm (3-Pointer Partition)",
+        explanation: "Sorts an array containing three distinct values (e.g. 0s, 1s, 2s) in a single pass O(N) time and O(1) space using three pointers (`low`, `mid`, `high`).",
+        approach: "1. Initialize `low = 0`, `mid = 0`, `high = N - 1`.\n2. While `mid <= high`:\n   - If `arr[mid] == 0`: Swap `arr[low]` and `arr[mid]`, increment `low++` and `mid++`.\n   - If `arr[mid] == 1`: Increment `mid++`.\n   - If `arr[mid] == 2`: Swap `arr[mid]` and `arr[high]`, decrement `high--`.",
+        timeComplexity: "O(N) single pass",
+        spaceComplexity: "O(1) in-place",
+        whenToApply: "Partitioning array into 3 distinct categories or sorting arrays with 3 unique elements.",
+        whenNotToApply: "General sorting of arbitrary continuous numbers (use QuickSort/MergeSort)."
       }
     ],
     complexities: [
       { operation: "Access by Index", time: "O(1)", space: "O(1)" },
       { operation: "Linear Search", time: "O(N)", space: "O(1)" },
       { operation: "Insertion / Deletion at End", time: "O(1) amortized", space: "O(1)" },
-      { operation: "Insertion / Deletion at Start/Middle", time: "O(N)", space: "O(1)" }
+      { operation: "Insertion / Deletion at Start / Middle", time: "O(N)", space: "O(1)" }
     ],
-    strategy: "Always check if the array is sorted. If sorted, consider Binary Search or Two Pointers. If asking for subarrays, consider Prefix Sums, Kadane's, or Sliding Window."
+    strategy: "When tackling Array problems: 1. Check if sorted -> consider Two Pointers or Binary Search. 2. Subarray problem -> consider Kadane's, Prefix Sum, or Sliding Window. 3. Frequency/Duplicate -> consider Hash Map or In-Place Index Marking."
   },
 
   2: {
     title: "02. Binary Search",
-    summary: "Divide-and-conquer algorithm operating on sorted arrays or monotonic search spaces. Reduces search space by half at each step, achieving O(log N) time.",
+    summary: "Binary Search is a divide-and-conquer algorithm for finding a target in a sorted array or monotonic search space. At each step, it compares target with the middle element and eliminates half of the remaining elements, achieving O(log N) time.",
     patterns: [
       {
-        name: "Classic Binary Search",
-        desc: "Maintain `low` and `high`. Calculate `mid = low + (high - low)/2`. Adjust boundaries based on target comparison."
+        name: "1. Classic Binary Search",
+        explanation: "Reduces search boundary iteratively by evaluating middle element.",
+        approach: "1. Set `low = 0`, `high = N - 1`.\n2. While `low <= high`:\n   - `mid = low + (high - low) / 2`\n   - If `arr[mid] == target`: return `mid`.\n   - Else if `arr[mid] < target`: `low = mid + 1`.\n   - Else: `high = mid - 1`.\n3. Return `-1` if not found.",
+        timeComplexity: "O(log N)",
+        spaceComplexity: "O(1) iterative",
+        whenToApply: "Searching target in strictly sorted 1D or 2D array.",
+        whenNotToApply: "Unsorted arrays where sorting takes O(N log N) which exceeds linear scan."
       },
       {
-        name: "Lower Bound & Upper Bound",
-        desc: "Lower Bound finds first element >= target. Upper Bound finds first element > target. Crucial for range queries."
+        name: "2. Lower Bound & Upper Bound Pattern",
+        explanation: "Lower Bound finds first index where `arr[index] >= target`. Upper Bound finds first index where `arr[index] > target`.",
+        approach: "1. Set `ans = N`, `low = 0`, `high = N - 1`.\n2. While `low <= high`:\n   - If `arr[mid] >= target`: `ans = mid`, `high = mid - 1` (search left for earlier boundary).\n   - Else: `low = mid + 1`.\n3. Return `ans`.",
+        timeComplexity: "O(log N)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Finding boundary indices, counting duplicate element frequencies in sorted array.",
+        whenNotToApply: "Non-monotonic distributions."
       },
       {
-        name: "Search in Rotated Sorted Array",
-        desc: "Identify which half (left or right) is sorted at `mid`, then check if target lies within the sorted half's boundaries."
+        name: "3. Search in Rotated Sorted Array",
+        explanation: "Determines which half (left or right) is sorted at `mid`, then checks if target lies within sorted boundaries.",
+        approach: "1. Find `mid = low + (high - low) / 2`.\n2. Check if `arr[low] <= arr[mid]` (Left half is sorted):\n   - If `arr[low] <= target < arr[mid]`: `high = mid - 1`, else `low = mid + 1`.\n3. Else (Right half is sorted):\n   - If `arr[mid] < target <= arr[high]`: `low = mid + 1`, else `high = mid - 1`.",
+        timeComplexity: "O(log N)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Rotated sorted arrays with distinct or duplicate values.",
+        whenNotToApply: "Array with duplicate values where `arr[low] == arr[mid] == arr[high]` (requires `low++`, `high--` fallback giving O(N) worst case)."
       },
       {
-        name: "Binary Search on Answer / Search Space",
-        desc: "Used when searching for minimum or maximum value satisfying a boolean condition `isPossible(mid)` (e.g. Koko Eating Bananas, Book Allocation)."
+        name: "4. Binary Search on Answer Space (Minimax / Maximin)",
+        explanation: "Used when searching for optimal answer `X` within a continuous numeric range `[min_possible, max_possible]` where feasibility function `isPossible(X)` is monotonic.",
+        approach: "1. Define range `low = min_val`, `high = max_val`.\n2. While `low <= high`:\n   - Test `mid = low + (high - low) / 2` with helper `isPossible(mid)`.\n   - If valid: Save `ans = mid`, adjust boundary to find better candidate.\n   - If invalid: Adjust boundary to valid side.\n3. Return `ans`.",
+        timeComplexity: "O(N * log(range))",
+        spaceComplexity: "O(1)",
+        whenToApply: "Problems asking to 'minimize the maximum' or 'maximize the minimum' (e.g. Koko Eating Bananas, Book Allocation, Painter Partition).",
+        whenNotToApply: "When feasibility function `isPossible(X)` is non-monotonic."
       }
     ],
     complexities: [
-      { operation: "Binary Search", time: "O(log N)", space: "O(1) iterative / O(log N) recursive" },
-      { operation: "Matrix Binary Search", time: "O(log(M * N))", space: "O(1)" }
+      { operation: "Binary Search 1D", time: "O(log N)", space: "O(1)" },
+      { operation: "Binary Search 2D Matrix", time: "O(log(M * N))", space: "O(1)" }
     ],
-    strategy: "If a problem asks to 'minimize maximum' or 'maximize minimum' value, or if problem array is sorted/rotated, apply Binary Search."
+    strategy: "Identify monotonic properties. If array is sorted or if answer domain has a clear boolean YES/NO threshold, use Binary Search."
   },
 
   3: {
     title: "03. Strings",
-    summary: "Strings are sequences of characters. In C++, strings are mutable (`std::string`), whereas in Java/Python, strings are immutable.",
+    summary: "Strings are sequences of characters. They are immutable in Java/Python and mutable in C++.",
     patterns: [
       {
-        name: "Character Frequency Hashing",
-        desc: "Use a fixed size array of 26 (lowercase) or 256 (ASCII) to count character frequencies in O(N) time and O(1) auxiliary space."
+        name: "1. Character Frequency Array Pattern",
+        explanation: "Uses fixed-size array of 26 (lowercase) or 256 (ASCII) to count character occurrences in O(N) time and O(1) space.",
+        approach: "1. Initialize `freq[26] = {0}`.\n2. Iterate through string: `freq[ch - 'a']++`.\n3. Use frequency array for anagram checks, palindrome construction, or character matching.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(1) auxiliary space",
+        whenToApply: "Anagram checking, character counting, string permutation validation.",
+        whenNotToApply: "When character set contains arbitrary Unicode codepoints across huge ranges (use Hash Map instead)."
       },
       {
-        name: "Two Pointers (Palindrome Check)",
-        desc: "Compare characters from start (`left`) and end (`right`) moving inward."
-      },
-      {
-        name: "Sliding Window for Substrings",
-        desc: "Expand right pointer to include characters and shrink left pointer when constraint is violated."
-      },
-      {
-        name: "KMP & Z-Algorithm Pattern Matching",
-        desc: "Precomputes Longest Prefix Suffix (LPS) array to perform pattern matching in linear O(N + M) time without backtracking."
+        name: "2. KMP Pattern Matching Algorithm (LPS Array)",
+        explanation: "Avoids redundant backtracking in pattern matching by precomputing Longest Prefix Suffix (LPS) array.",
+        approach: "1. Build `lps` array of pattern `P` where `lps[i]` is length of longest proper prefix that is also suffix for `P[0..i]`.\n2. Scan text `T` with pointer `i` and pattern `P` with pointer `j`.\n3. On mismatch, set `j = lps[j-1]` without decrementing `i`.",
+        timeComplexity: "O(N + M) linear time",
+        spaceComplexity: "O(M) for LPS array",
+        whenToApply: "Exact pattern searching in long text strings without quadratic worst case.",
+        whenNotToApply: "Simple single character searches or small fixed length substring lookups."
       }
     ],
     complexities: [
       { operation: "Character Access", time: "O(1)", space: "O(1)" },
-      { operation: "Substring Extraction", time: "O(K)", space: "O(K)" },
-      { operation: "Anagram / Frequency Check", time: "O(N)", space: "O(26) = O(1)" }
+      { operation: "KMP Pattern Search", time: "O(N + M)", space: "O(M)" }
     ],
-    strategy: "For substring problems, think Sliding Window or Hash Map. For anagrams, think Frequency Array. For pattern matching, think KMP or Rolling Hash."
+    strategy: "Use Frequency Arrays for anagrams. Use Two Pointers for palindromes. Use KMP or Z-algorithm for linear pattern matching."
   },
 
   4: {
     title: "04. Linked List",
-    summary: "Linear data structure where nodes contain data and pointers to the next (and optionally previous) node. Allows O(1) dynamic insertions without reallocating contiguous memory.",
+    summary: "Non-contiguous linear structure linked via pointers. Allows O(1) dynamic insertions/deletions at known nodes.",
     patterns: [
       {
-        name: "Floyd's Cycle Detection (Tortoise and Hare)",
-        desc: "Use `slow` (moves 1 step) and `fast` (moves 2 steps) pointers. If fast meets slow, a cycle exists. To find cycle start, reset slow to head and move both 1 step at a time."
+        name: "1. Floyd's Cycle Detection (Tortoise and Hare)",
+        explanation: "Detects cycles and finds cycle starting node using fast (2 steps) and slow (1 step) pointers.",
+        approach: "1. Initialize `slow = head`, `fast = head`.\n2. Move `slow = slow.next`, `fast = fast.next.next`.\n3. If `slow == fast`, cycle exists.\n4. To find start: Reset `slow = head`. Move both `slow` and `fast` 1 step at a time; meeting node is cycle start.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Detecting loops, finding cycle start node, finding middle node.",
+        whenNotToApply: "Arrays or trees where child links are explicit."
       },
       {
-        name: "Dummy Head Technique",
-        desc: "Create a sentinel `Dummy` node before the head to simplify edge cases when inserting/deleting the true head node."
-      },
-      {
-        name: "Iterative Pointer Reversal",
-        desc: "Maintain `prev = nullptr`, `curr = head`, and `next = nullptr`. In a loop: `next = curr->next; curr->next = prev; prev = curr; curr = next;`"
-      },
-      {
-        name: "Middle Node & Merging",
-        desc: "Find middle node using slow/fast pointers, split list into halves, and merge sorted lists recursively or iteratively."
+        name: "2. Dummy Head Sentinel Pattern",
+        explanation: "Creates a temporary sentinel node before `head` to eliminate edge cases when modifying or removing the real head node.",
+        approach: "1. `dummy = new ListNode(0); dummy.next = head`.\n2. Perform list operations using `curr = dummy`.\n3. Return `dummy.next` as new head.",
+        timeComplexity: "O(1) setup",
+        spaceComplexity: "O(1)",
+        whenToApply: "Merging lists, removing head/nodes, partition operations.",
+        whenNotToApply: "Read-only traversals."
       }
     ],
     complexities: [
-      { operation: "Head Insertion / Deletion", time: "O(1)", space: "O(1)" },
-      { operation: "Traversal / Access by Index", time: "O(N)", space: "O(1)" },
-      { operation: "Reversal", time: "O(N)", space: "O(1)" }
+      { operation: "Insertion at Head", time: "O(1)", space: "O(1)" },
+      { operation: "Traversal / Access", time: "O(N)", space: "O(1)" }
     ],
-    strategy: "Always handle null pointers (`head == null` or `head.next == null`). Dummy nodes eliminate 90% of null pointer checks."
+    strategy: "Dummy heads eliminate 90% of null pointer bugs. Fast & Slow pointers solve cycle and middle node problems cleanly."
   },
 
   5: {
-    title: "05. Recursion & Backtracking",
-    summary: "Recursion breaks a problem into smaller subproblems until reaching base cases. Backtracking builds candidates incrementally and abandons ('backtracks') as soon as a candidate cannot yield a valid solution.",
+    title: "05. Recursion",
+    summary: "Function calling itself to break down problems into base cases and subproblems.",
     patterns: [
       {
-        name: "Pick / Non-Pick Subsequence Pattern",
-        desc: "At index `i`, make two decisions: (1) Include element in current subset, (2) Exclude element from current subset. Generates all 2^N subsets."
-      },
-      {
-        name: "Permutations Pattern (Swapping)",
-        desc: "Loop index `j` from `index` to `N-1`, swap `arr[index]` with `arr[j]`, recurse for `index + 1`, and swap back (backtrack)."
-      },
-      {
-        name: "Constraint Validation (N-Queens & Sudoku)",
-        desc: "Place a value, check if valid via helper `isValid()`, recurse to next cell/row. If recursion returns false, un-place value."
+        name: "1. Pick / Non-Pick Pattern (Subsequence / Subset)",
+        explanation: "Explores all 2^N subsets by deciding whether to include or exclude each element.",
+        approach: "1. Base Case: `if (index == N)` process current subset and return.\n2. Pick: Add `arr[index]`, recurse `solve(index + 1)`.\n3. Backtrack: Remove `arr[index]`.\n4. Non-Pick: Recurse `solve(index + 1)`.",
+        timeComplexity: "O(2^N)",
+        spaceComplexity: "O(N) stack",
+        whenToApply: "Generating all subsets, combination sums, power set.",
+        whenNotToApply: "When N > 25 (requires Dynamic Programming or Greedy)."
       }
     ],
     complexities: [
-      { operation: "Subsets Generation", time: "O(2^N)", space: "O(N) recursion stack" },
-      { operation: "Permutations Generation", time: "O(N!)", space: "O(N)" }
+      { operation: "Subsets Generation", time: "O(2^N)", space: "O(N)" }
     ],
-    strategy: "Define (1) Base Case, (2) Work in current call, and (3) Recursive Calls. Always undo modifications when returning from recursion."
+    strategy: "Identify (1) Base Case, (2) Work done in current call, (3) Subproblem recursive calls."
   },
 
   6: {
     title: "06. Bit Manipulation",
-    summary: "Manipulates binary bits directly using bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`). Extremely fast and memory efficient.",
+    summary: "Manipulates binary bits directly using bitwise operators (`&`, `|`, `^`, `~`, `<<`, `>>`).",
     patterns: [
       {
-        name: "Core Bit Formulas",
-        desc: "Check K-th bit set: `(n & (1 << k)) != 0` | Set K-th bit: `n | (1 << k)` | Clear K-th bit: `n & ~(1 << k)` | Toggle K-th bit: `n ^ (1 << k)`"
-      },
-      {
-        name: "Clear Lowest Set Bit",
-        desc: "`n & (n - 1)` clears the rightmost set bit of `n`. Used to count set bits (Brian Kernighan's Algorithm) and check if power of 2 (`(n & (n-1)) == 0`)."
-      },
-      {
-        name: "XOR Properties",
-        desc: "`x ^ x = 0` and `x ^ 0 = x`. XOR is commutative and associative. Finds single non-repeating number."
+        name: "1. Bit Manipulation Formulas",
+        explanation: "Direct bit arithmetic for checking, setting, and clearing bits.",
+        approach: "Check bit k: `(n & (1 << k)) != 0` | Set bit k: `n | (1 << k)` | Clear bit k: `n & ~(1 << k)` | Clear lowest bit: `n & (n - 1)`.",
+        timeComplexity: "O(1)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Bitmasks, set representation, single number lookup.",
+        whenNotToApply: "Floating point or large multi-precision numbers exceeding bit length."
       }
     ],
     complexities: [
-      { operation: "Bitwise Operators", time: "O(1)", space: "O(1)" },
-      { operation: "Count Set Bits", time: "O(number of set bits)", space: "O(1)" }
+      { operation: "Bitwise Operators", time: "O(1)", space: "O(1)" }
     ],
-    strategy: "Remember operator precedence (`<<` and `>>` have lower precedence than `+` and `-`). Always use parentheses around bitwise expressions."
+    strategy: "Remember operator precedence and always wrap bitwise expressions in parentheses."
   },
 
   7: {
     title: "07. Stack and Queues",
-    summary: "Stack is a Last-In-First-Out (LIFO) structure. Queue is a First-In-First-Out (FIFO) structure.",
+    summary: "Stack (LIFO) and Queue (FIFO) linear data structures.",
     patterns: [
       {
-        name: "Monotonic Stack Pattern",
-        desc: "Maintains elements in strictly increasing or decreasing order. Answers 'Next Greater Element' or 'Next Smaller Element' in O(N) total time."
-      },
-      {
-        name: "Histogram & Rainwater Trapping",
-        desc: "Uses monotonic stack or two-pointer boundary tracking to compute trapped water volume or largest rectangle area."
-      },
-      {
-        name: "LRU Cache Design",
-        desc: "Combines a Hash Map (O(1) key lookups) with a Doubly Linked List (O(1) node removal and insertion at head/tail)."
+        name: "1. Monotonic Stack Pattern",
+        explanation: "Maintains elements in strictly increasing/decreasing order to find Next Greater / Smaller Element in O(N) total time.",
+        approach: "1. Traverse array.\n2. While `stack` not empty and `arr[i] > stack.top()`: Pop element and record `arr[i]` as its next greater element.\n3. Push `arr[i]` to stack.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(N)",
+        whenToApply: "Next Greater Element, Next Smaller Element, Histogram Area, Stock Span.",
+        whenNotToApply: "Random index access problems."
       }
     ],
     complexities: [
-      { operation: "Push / Pop / Top", time: "O(1)", space: "O(N)" },
-      { operation: "Monotonic Stack Pass", time: "O(N)", space: "O(N)" }
+      { operation: "Push / Pop", time: "O(1)", space: "O(N)" }
     ],
-    strategy: "If problem asks for nearest previous/next greater or smaller element, think Monotonic Stack immediately."
+    strategy: "For Next Greater/Smaller Element, use Monotonic Stack immediately."
   },
 
   8: {
-    title: "08. Sliding Window & Two Pointers",
-    summary: "Technique to transform O(N^2) subarray/substring brute-force checks into O(N) linear scans by maintaining a sliding boundary window.",
+    title: "08. Sliding Window",
+    summary: "Transforms O(N^2) subarray checks into O(N) linear scans using expanding and shrinking boundaries.",
     patterns: [
       {
-        name: "Fixed Size Sliding Window",
-        desc: "Maintain window of size `K`. Slide by adding `arr[i]` and removing `arr[i-K]` at each step."
-      },
-      {
-        name: "Variable Size Sliding Window",
-        desc: "Expand `right` pointer to include elements. When condition is violated, shrink `left` pointer until condition is valid again."
-      },
-      {
-        name: "At Most K -> Exactly K Reduction",
-        desc: "`Exactly(K) = AtMost(K) - AtMost(K-1)`. Simplifies counting subarrays with exact conditions."
+        name: "1. Variable Size Sliding Window",
+        explanation: "Expand `right` pointer to include elements, shrink `left` when window condition is violated.",
+        approach: "1. Set `left = 0`.\n2. Loop `right` from 0 to N-1:\n   - Add `arr[right]` to window state.\n   - While window condition invalid: Remove `arr[left]` from state, `left++`.\n   - Update max/min window result.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(1) or O(K)",
+        whenToApply: "Subarray / Substring problems asking for longest/shortest window under constraints.",
+        whenNotToApply: "Arrays containing negative numbers where window sum is non-monotonic (use Hash Map + Prefix Sum)."
       }
     ],
     complexities: [
-      { operation: "Sliding Window Traversal", time: "O(N)", space: "O(1) or O(K) for frequency hash" }
+      { operation: "Window Traversal", time: "O(N)", space: "O(1)" }
     ],
-    strategy: "If problem asks for contiguous subarray/substring with optimal sum, length, or count, use Sliding Window."
+    strategy: "If non-negative elements and subarray condition is monotonic, use Sliding Window."
   },
 
   9: {
-    title: "09. Heaps & Priority Queue",
-    summary: "Tree-based structure allowing O(1) access to minimum (Min-Heap) or maximum (Max-Heap) element, with O(log N) insertion and extraction.",
+    title: "09. Heaps",
+    summary: "Tree structure with O(1) access to min/max and O(log N) insertion/deletion.",
     patterns: [
       {
-        name: "Top K Elements / K-th Largest",
-        desc: "Use a Min-Heap of size `K`. Push elements into heap; if size exceeds `K`, pop the smallest element. Top of heap is K-th largest."
-      },
-      {
-        name: "Two Heaps (Median Finder)",
-        desc: "Maintain a Max-Heap for lower half of numbers and a Min-Heap for upper half. Balance sizes so top elements give median in O(1)."
-      },
-      {
-        name: "K-Way Merge",
-        desc: "Push first element of each of K sorted lists into Min-Heap with pointer. Pop min, push next element from that list."
+        name: "1. Top K Elements Pattern",
+        explanation: "Use Min-Heap of size K to find K largest elements in O(N log K) time.",
+        approach: "1. Maintain Min-Heap.\n2. Push element `x` into heap.\n3. If `heap.size() > K`, pop smallest.\n4. Top of heap holds K-th largest element.",
+        timeComplexity: "O(N log K)",
+        spaceComplexity: "O(K)",
+        whenToApply: "K-th largest/smallest, Top K Frequent elements.",
+        whenNotToApply: "When full array sorting is needed."
       }
     ],
     complexities: [
-      { operation: "Insert / Extract Min-Max", time: "O(log N)", space: "O(N)" },
-      { operation: "Get Min-Max", time: "O(1)", space: "O(N)" },
-      { operation: "Build Heap (Heapify)", time: "O(N)", space: "O(1)" }
+      { operation: "Insert / Extract Min-Max", time: "O(log N)", space: "O(N)" }
     ],
-    strategy: "For K-th smallest, use Max-Heap. For K-th largest, use Min-Heap of size K."
+    strategy: "For K-th largest, use Min-Heap of size K."
   },
 
   10: {
     title: "10. Greedy Approach",
-    summary: "Makes the locally optimal choice at each step with the assumption that local optimums lead to a global optimal solution.",
+    summary: "Makes locally optimal choice at each step hoping for global optimum.",
     patterns: [
       {
-        name: "Sorting + Greedy Choice",
-        desc: "Sort items by key criteria (e.g. finish time, ratio `value/weight`, deadline) then greedily pick items."
-      },
-      {
-        name: "Interval Scheduling / N Meetings",
-        desc: "Sort intervals by end time. Pick meeting if start time >= end time of last picked meeting."
-      },
-      {
-        name: "Jump Game & Reachability",
-        desc: "Maintain `maxReachable` index. Iterate through array updating `maxReachable = max(maxReachable, i + nums[i])`."
+        name: "1. Interval Scheduling",
+        explanation: "Sort by finish times to maximize non-overlapping meetings.",
+        approach: "1. Sort intervals by `end_time`.\n2. Pick first interval.\n3. For next intervals, pick if `start >= last_end_time`.",
+        timeComplexity: "O(N log N)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Activity selection, N meetings in one room.",
+        whenNotToApply: "When local choice compromises global optimum (use DP)."
       }
     ],
     complexities: [
-      { operation: "Greedy Choice + Sorting", time: "O(N log N)", space: "O(1) or O(N)" }
+      { operation: "Greedy Choice + Sorting", time: "O(N log N)", space: "O(1)" }
     ],
-    strategy: "Always verify if greedy choice holds. If counterexamples exist, fallback to Dynamic Programming."
+    strategy: "Verify greedy choice property before applying."
   },
 
   11: {
     title: "11. Binary Trees",
-    summary: "Hierarchical structure where every node has at most two children (`left` and `right`).",
+    summary: "Hierarchical tree structure where nodes have at most 2 children.",
     patterns: [
       {
-        name: "Depth-First Traversals (DFS)",
-        desc: "Preorder (Root-Left-Right), Inorder (Left-Root-Right), Postorder (Left-Right-Root)."
-      },
-      {
-        name: "Breadth-First Traversal (BFS / Level Order)",
-        desc: "Use a Queue to process tree level by level. Ideal for shortest path or level-wise operations."
-      },
-      {
-        name: "Tree Height & Diameter Pattern",
-        desc: "Compute height recursively: `1 + max(height(left), height(right))`. Track maximum `left_height + right_height` for diameter."
-      },
-      {
-        name: "Lowest Common Ancestor (LCA)",
-        desc: "If root matches node `p` or `q`, return root. Recursively search left and right. If both return non-null, root is LCA."
+        name: "1. Tree Height & Diameter Pattern",
+        explanation: "Compute height recursively and track max `left_height + right_height`.",
+        approach: "1. Helper returns height `1 + max(lh, rh)`.\n2. Global `max_diameter = max(max_diameter, lh + rh)`.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(H)",
+        whenToApply: "Tree height, diameter, path sum.",
+        whenNotToApply: "Non-tree graph structures with cycles."
       }
     ],
     complexities: [
-      { operation: "Tree Traversal (DFS/BFS)", time: "O(N)", space: "O(H) recursion stack / O(W) queue" }
+      { operation: "DFS / BFS Traversal", time: "O(N)", space: "O(H)" }
     ],
-    strategy: "Most tree problems are solved using recursion. Ask: 'What information do I need from my left and right subtrees?'"
+    strategy: "Use recursion to ask what left and right subtrees return."
   },
 
   12: {
     title: "12. Binary Search Trees",
-    summary: "Binary Tree property: `left.val < node.val < right.val`. Inorder traversal yields strictly sorted numbers.",
+    summary: "Binary Tree where `left < node < right`. Inorder traversal yields sorted order.",
     patterns: [
       {
-        name: "BST Search & Insertion",
-        desc: "If `val < node.val`, search left. If `val > node.val`, search right. Takes O(H) time."
-      },
-      {
-        name: "BST Validation (Range Check)",
-        desc: "Validate node using `min_val < node.val < max_val`. Pass range down recursively."
-      },
-      {
-        name: "Kth Smallest / Inorder Traversal",
-        desc: "Perform Inorder traversal (Left-Root-Right) and decrement K at each step."
+        name: "1. BST Inorder Sorted Traversal",
+        explanation: "Inorder traversal processes elements in strictly sorted ascending order.",
+        approach: "1. Recurse `inorder(node.left)`.\n2. Process `node`.\n3. Recurse `inorder(node.right)`.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(H)",
+        whenToApply: "Validate BST, Kth smallest in BST, two sum in BST.",
+        whenNotToApply: "Unbalanced trees (AVL/Red-Black needed)."
       }
     ],
     complexities: [
-      { operation: "Search / Insert / Delete in Balanced BST", time: "O(log N)", space: "O(H)" },
-      { operation: "Search / Insert in Skewed BST", time: "O(N)", space: "O(N)" }
+      { operation: "BST Search", time: "O(H) = O(log N) balanced", space: "O(H)" }
     ],
-    strategy: "Leverage the sorted property of Inorder traversal whenever solving BST problems."
+    strategy: "Leverage sorted Inorder property."
   },
 
   13: {
     title: "13. Graphs",
-    summary: "Collection of Vertices (V) connected by Edges (E). Represented as Adjacency Matrix or Adjacency List.",
+    summary: "Vertices and Edges structure representing networks and relationships.",
     patterns: [
       {
-        name: "BFS & Connected Components",
-        desc: "Queue-based traversal. Visits neighbors level by level. Finds shortest path in unweighted graphs."
-      },
-      {
-        name: "DFS & Cycle Detection",
-        desc: "Stack/recursive traversal. Detects cycles using visited & path visited arrays (or color states)."
-      },
-      {
-        name: "Topological Sort (Kahn's Algorithm)",
-        desc: "For Directed Acyclic Graphs (DAG). Track indegrees. Push 0-indegree nodes to Queue. Decrement neighbor indegrees."
-      },
-      {
-        name: "Shortest Path (Dijkstra & Bellman-Ford)",
-        desc: "Dijkstra: Min-Heap for non-negative weights O(E log V). Bellman-Ford: Relaxes all edges V-1 times, handles negative edges."
-      },
-      {
-        name: "Disjoint Set Union (DSU / Union-Find)",
-        desc: "Find parent with Path Compression and Union by Rank/Size in O(alpha(N)) amortized O(1) time."
+        name: "1. Topological Sort (Kahn's Algorithm)",
+        explanation: "Generates linear ordering of vertices in DAG using indegrees and BFS.",
+        approach: "1. Calculate indegree of all vertices.\n2. Push 0-indegree nodes to Queue.\n3. While queue not empty: Pop `u`, add to topo list, decrement indegree of neighbors. If neighbor indegree becomes 0, push to Queue.",
+        timeComplexity: "O(V + E)",
+        spaceComplexity: "O(V)",
+        whenToApply: "Course schedule, task dependency ordering, DAG cycle detection.",
+        whenNotToApply: "Graphs containing cycles (Kahn's detects cycle if result size < V)."
       }
     ],
     complexities: [
-      { operation: "BFS / DFS Traversal", time: "O(V + E)", space: "O(V)" },
-      { operation: "Dijkstra Algorithm", time: "O(E log V)", space: "O(V)" },
-      { operation: "Floyd-Warshall (All Pairs)", time: "O(V^3)", space: "O(V^2)" }
+      { operation: "BFS / DFS", time: "O(V + E)", space: "O(V)" },
+      { operation: "Dijkstra", time: "O(E log V)", space: "O(V)" }
     ],
-    strategy: "Identify graph type (Directed vs Undirected, Weighted vs Unweighted, Cyclic vs DAG). Use DSU for dynamic connectivity."
+    strategy: "Identify graph representation and whether weights/cycles exist."
   },
 
   14: {
     title: "14. Dynamic Programming",
-    summary: "Optimization method for recursive problems possessing (1) Overlapping Subproblems and (2) Optimal Substructure.",
+    summary: "Optimizes recursion by caching solutions to overlapping subproblems.",
     patterns: [
       {
-        name: "1D / 2D Grid DP",
-        desc: "Define `dp[i][j]` as optimal answer for subproblem at grid position `(i, j)`. Build table from base cases."
-      },
-      {
-        name: "Subsets & Knapsack Pattern",
-        desc: "At index `i` with capacity `w`: `dp[i][w] = max(dp[i-1][w], val[i] + dp[i-1][w-wt[i]])`."
-      },
-      {
-        name: "DP on Strings (LCS & Edit Distance)",
-        desc: "If `s1[i] == s2[j]`: `dp[i][j] = 1 + dp[i-1][j-1]`. Else: `max(dp[i-1][j], dp[i][j-1])`."
-      },
-      {
-        name: "Matrix Chain Multiplication (MCM) / Partition DP",
-        desc: "Loop partition index `k` from `i` to `j-1`. Solve `solve(i, k) + solve(k+1, j) + cost`."
+        name: "1. 0/1 Knapsack Pattern",
+        explanation: "Subproblem choice: include or exclude item `i` with remaining capacity `w`.",
+        approach: "1. `dp[i][w] = max(dp[i-1][w], val[i] + dp[i-1][w - wt[i]])`.\n2. Space optimize by iterating capacity backwards in 1D array.",
+        timeComplexity: "O(N * W)",
+        spaceComplexity: "O(W) 1D array",
+        whenToApply: "Subset sum, partition equal subset, target sum, coin change.",
+        whenNotToApply: "When capacity W is non-integer or extremely large (10^9)."
       }
     ],
     complexities: [
-      { operation: "Top-Down Memoization", time: "O(States * Transitions)", space: "O(States) + O(Recursion Depth)" },
-      { operation: "Bottom-Up Tabulation", time: "O(States * Transitions)", space: "O(States) [Can be space-optimized to O(1 row)]" }
+      { operation: "DP Tabulation", time: "O(States * Transitions)", space: "O(States)" }
     ],
-    strategy: "1. Define DP state `dp[i]`. 2. Express base cases. 3. Write transition recurrence relation. 4. Optimize space by storing only previous rows."
+    strategy: "Define state, base cases, and transition equation."
   },
 
   15: {
-    title: "15. Tries (Prefix Trees)",
-    summary: "Tree structure storing characters at nodes. Provides superfast O(L) prefix search and word insertion.",
+    title: "15. Tries",
+    summary: "Tree structure storing character prefixes for fast string lookup.",
     patterns: [
       {
-        name: "Standard Trie Node Structure",
-        desc: "Each node contains `TrieNode* children[26]` and `bool isEndOfWord` (or word count)."
-      },
-      {
-        name: "Prefix Search (startsWith)",
-        desc: "Traverse child pointer for each character. If pointer is null, prefix doesn't exist."
-      },
-      {
-        name: "Bitwise Trie for Maximum XOR",
-        desc: "Store binary representation (31 bits). For each bit of target number, try to traverse opposite bit (`1-bit`) to maximize XOR sum."
+        name: "1. Prefix Tree Search & Insert",
+        explanation: "Store character links in array of size 26 at each node.",
+        approach: "1. `struct TrieNode { TrieNode* child[26]; bool isWord; }`.\n2. Insert: Traverse/create nodes for each character of word.\n3. Search: Traverse nodes; return true if `isWord` is true at end.",
+        timeComplexity: "O(L) where L is word length",
+        spaceComplexity: "O(N * L * 26)",
+        whenToApply: "Autocomplete, prefix matching, word search dictionary.",
+        whenNotToApply: "Simple single string equality checks."
       }
     ],
     complexities: [
-      { operation: "Insert / Search / StartsWith", time: "O(L) where L is string length", space: "O(N * L * 26)" }
+      { operation: "Trie Insert / Search", time: "O(L)", space: "O(N * L * 26)" }
     ],
-    strategy: "Use Tries whenever dealing with prefix lookups, dictionary word autocomplete, or Bitwise Maximum XOR queries."
+    strategy: "Use Tries for prefix-based string searches and Bitwise XOR maximum queries."
   },
 
   16: {
     title: "16. Strings (Hard)",
-    summary: "Advanced string pattern matching and string analysis algorithms.",
+    summary: "Advanced string pattern matching and string transformation algorithms.",
     patterns: [
       {
-        name: "KMP Algorithm (LPS Array)",
-        desc: "Constructs Longest Prefix Suffix (LPS) array in O(M) time. Enables string matching in O(N) time without back-tracking text pointer."
-      },
-      {
-        name: "Z-Algorithm",
-        desc: "Constructs Z-array where `Z[i]` is length of longest substring starting at `i` matching prefix of string. Matches pattern in O(N + M)."
-      },
-      {
-        name: "Rabin-Karp Rolling Hash",
-        desc: "Calculates hash value of pattern and current window substring using modular arithmetic. Avoids character comparison unless hashes match."
+        name: "1. KMP Algorithm (LPS Array)",
+        explanation: "Avoids backtracking text pointer during pattern search by building LPS array.",
+        approach: "1. Build `lps` array for pattern `P`.\n2. Scan text `T`. On mismatch, update `j = lps[j-1]` without rewinding text pointer.",
+        timeComplexity: "O(N + M)",
+        spaceComplexity: "O(M)",
+        whenToApply: "Linear time exact pattern matching.",
+        whenNotToApply: "Simple short string lookups."
       }
     ],
     complexities: [
-      { operation: "KMP Pattern Matching", time: "O(N + M)", space: "O(M) for LPS array" },
-      { operation: "Z-Algorithm Pattern Search", time: "O(N + M)", space: "O(N + M) for Z-array" }
+      { operation: "KMP Pattern Match", time: "O(N + M)", space: "O(M)" }
     ],
-    strategy: "For linear time pattern matching without quadratic worst-case fallback, implement KMP (LPS array) or Z-algorithm."
+    strategy: "Use KMP or Z-algorithm for O(N+M) guaranteed pattern matching."
   }
 }

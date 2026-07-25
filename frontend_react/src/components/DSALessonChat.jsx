@@ -321,25 +321,55 @@ export default function DSALessonChat({
       <div className="dsa-lesson-stream">
         {viewTab === 'theory' ? (
           /* --- TOPIC THEORY & CONCEPT TAB --- */
-          <div className="dsa-theory-card">
+          <div className="dsa-theory-document">
             <div className="dsa-theory-banner">
               <div className="dsa-ai-badge">
                 <IconTheory /> Topic Theory Guide
               </div>
               <h3 className="dsa-theory-title">{theoryData.title} — Comprehensive Concept Guide</h3>
-              <p className="dsa-theory-summary">{theoryData.summary}</p>
+              <div className="dsa-text-content" style={{ marginTop: '0.5rem', lineHeight: '1.6' }}>
+                {renderFormattedMarkdown(theoryData.summary)}
+              </div>
             </div>
 
-            {/* Patterns & Mechanics */}
+            {/* Elaborate Patterns & Mechanics */}
             <div className="dsa-theory-section">
               <h4 className="dsa-theory-section-title">
-                <IconApproach /> Core Patterns & Essential Techniques
+                <IconApproach /> Core Patterns, Step-by-Step Approaches & Trade-offs
               </h4>
-              <div className="dsa-theory-grid">
+
+              <div className="dsa-patterns-list">
                 {theoryData.patterns.map((pat, pIdx) => (
-                  <div key={pIdx} className="dsa-pattern-box">
-                    <span className="dsa-pattern-name">{pat.name}</span>
-                    <p className="dsa-pattern-desc">{pat.desc}</p>
+                  <div key={pIdx} className="dsa-pattern-article">
+                    <h5 className="dsa-pattern-title">{pat.name}</h5>
+                    
+                    <div className="dsa-pattern-subblock">
+                      <span className="dsa-pattern-subhead">💡 Explanation & Core Mechanics:</span>
+                      <p className="dsa-pattern-text">{pat.explanation}</p>
+                    </div>
+
+                    <div className="dsa-pattern-subblock">
+                      <span className="dsa-pattern-subhead">⚙️ Full Algorithmic Approach & Step-by-Step Execution:</span>
+                      <div className="dsa-text-content" style={{ marginTop: '4px' }}>
+                        {renderFormattedMarkdown(pat.approach)}
+                      </div>
+                    </div>
+
+                    <div className="dsa-pattern-complexity-row">
+                      <span className="dsa-comp-pill">⏱️ <strong>Time Complexity:</strong> {pat.timeComplexity}</span>
+                      <span className="dsa-comp-pill">💾 <strong>Space Complexity:</strong> {pat.spaceComplexity}</span>
+                    </div>
+
+                    <div className="dsa-pattern-apply-grid">
+                      <div className="dsa-apply-box apply-yes">
+                        <span className="dsa-apply-head">✅ When to Apply:</span>
+                        <p className="dsa-apply-text">{pat.whenToApply}</p>
+                      </div>
+                      <div className="dsa-apply-box apply-no">
+                        <span className="dsa-apply-head">❌ When NOT to Apply (Pitfalls & Counter-scenarios):</span>
+                        <p className="dsa-apply-text">{pat.whenNotToApply}</p>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -378,7 +408,7 @@ export default function DSALessonChat({
                 <IconAI /> Master Problem-Solving Strategy
               </h4>
               <div className="dsa-strategy-box">
-                {theoryData.strategy}
+                {renderFormattedMarkdown(theoryData.strategy)}
               </div>
             </div>
 
