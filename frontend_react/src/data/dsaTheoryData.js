@@ -26,14 +26,31 @@ export const dsaTheoryData = {
     ],
     patterns: [
       {
-        name: "1. Kadane's Algorithm (Maximum Subarray Sum)",
+        name: "1. Two Pointers Pattern",
+        video: {
+          id: "On03HWe2tZM",
+          title: "Visual introduction Two Pointer Algorithm | Coding Interviews",
+          channel: "Josh's DevBox",
+          duration: "15 mins"
+        },
+        explanation: "Uses two pointer variables (`left` and `right`) traversing array towards each other.",
+        code: "int left = 0, right = n - 1;\nwhile (left < right) {\n    int sum = arr[left] + arr[right];\n    if (sum == target) return {left, right};\n    else if (sum < target) left++;\n    else right--;\n}",
+        codeWalkthrough: "• Advance left if sum too small, decrement right if sum too large.",
+        approach: "1. Two pointer traversal pass.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Sorted arrays, pair sum targets.",
+        whenNotToApply: "Unsorted arrays."
+      },
+      {
+        name: "2. Kadane's Algorithm (Maximum Subarray Sum)",
         video: {
           id: "AHZpyENo7k4",
           title: "Kadane's Algorithm | Maximum Subarray Sum | Finding and Printing",
           channel: "take U forward",
           duration: "20 mins"
         },
-        explanation: "Dynamic programming method that finds maximum subarray sum in O(N) time by deciding at each element whether to extend current sum or reset.",
+        explanation: "Dynamic programming method that finds maximum subarray sum in O(N) time.",
         code: "int max_sum = INT_MIN, curr_sum = 0;\nfor (int i = 0; i < n; i++) {\n    curr_sum += arr[i];\n    max_sum = max(max_sum, curr_sum);\n    if (curr_sum < 0) curr_sum = 0;\n}",
         codeWalkthrough: "• Add current element, update max_sum, reset curr_sum to 0 if negative.",
         approach: "1. Track curr_sum and max_sum.\n2. Reset curr_sum = 0 when negative.",
@@ -64,10 +81,10 @@ export const dsaTheoryData = {
       {
         name: "1. Classic Binary Search Pattern",
         video: {
-          id: "C2apEw9pgtw",
-          title: "2.6.1 Binary Search Iterative Method",
-          channel: "Abdul Bari",
-          duration: "18 mins"
+          id: "s4DPM8ct1pI",
+          title: "Binary Search - Leetcode 704 Explanation",
+          channel: "NeetCode",
+          duration: "12 mins"
         },
         explanation: "Eliminates half of the search space at each step by comparing mid with target.",
         code: "int low = 0, high = n - 1;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] == target) return mid;\n    else if (arr[mid] < target) low = mid + 1;\n    else high = mid - 1;\n}",
@@ -76,6 +93,23 @@ export const dsaTheoryData = {
         timeComplexity: "O(log N)",
         spaceComplexity: "O(1)",
         whenToApply: "Searching in sorted arrays or monotonic search spaces.",
+        whenNotToApply: "Unsorted arrays."
+      },
+      {
+        name: "2. Lower Bound Pattern",
+        video: {
+          id: "j7NodO9HIbk",
+          title: "1 Binary Search Format Introduction",
+          channel: "Aditya Verma",
+          duration: "15 mins"
+        },
+        explanation: "Finds first index where arr[mid] >= target.",
+        code: "int low = 0, high = n - 1, ans = n;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] >= target) {\n        ans = mid;\n        high = mid - 1;\n    } else low = mid + 1;\n}\nreturn ans;",
+        codeWalkthrough: "• Track candidate index ans.",
+        approach: "1. Binary search lower bound.",
+        timeComplexity: "O(log N)",
+        spaceComplexity: "O(1)",
+        whenToApply: "First occurrence or insertion position.",
         whenNotToApply: "Unsorted arrays."
       }
     ],
@@ -88,6 +122,12 @@ export const dsaTheoryData = {
   3: {
     title: "03. Strings",
     summary: "Strings are sequence of characters stored as character arrays. Character matching algorithms optimize string search queries.",
+    topicVideo: {
+      id: "BfUejqd07yo",
+      title: "Rolling Hash Function Tutorial & String Searching Algorithm",
+      channel: "Stable Sort",
+      duration: "20 mins"
+    },
     basics: [],
     patterns: [
       {
@@ -183,6 +223,87 @@ export const dsaTheoryData = {
     strategy: "Identify base cases and state space decision tree."
   },
 
+  6: {
+    title: "06. Bit Manipulation",
+    summary: "Manipulating binary bit representation of integers directly using bitwise AND, OR, XOR, NOT, and bit shifts.",
+    topicVideo: {
+      id: "NLKQEOgBAnw",
+      title: "Algorithms: Bit Manipulation Tutorial",
+      channel: "HackerRank",
+      duration: "25 mins"
+    },
+    basics: [],
+    patterns: [
+      {
+        name: "1. Bitwise Operations & Tricks",
+        video: {
+          id: "ZwU6wSkepBI",
+          title: "L2 | Bit Manipulations | Problem Solving on Bit Manipulations",
+          channel: "take U forward",
+          duration: "20 mins"
+        },
+        explanation: "Direct bitwise operations: Check bit, Set bit, Clear bit, Toggle bit, Power of 2.",
+        code: "bool isKthBitSet(int n, int k) { return (n & (1 << k)) != 0; }\nint setKthBit(int n, int k) { return n | (1 << k); }\nbool isPowerOfTwo(int n) { return n > 0 && (n & (n - 1)) == 0; }",
+        codeWalkthrough: "• Apply bitwise masks in O(1) constant time.",
+        approach: "1. Bitwise mask pass.",
+        timeComplexity: "O(1)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Bit parity, fast subset masks.",
+        whenNotToApply: "Continuous floating point numbers."
+      }
+    ],
+    complexities: [
+      { operation: "Bitwise Operations", time: "O(1)", space: "O(1)" }
+    ],
+    strategy: "Use n & (n - 1) to remove lowest set bit in O(1)."
+  },
+
+  7: {
+    title: "07. Stack and Queues",
+    summary: "Stack (LIFO) and Queue (FIFO) linear data structures.",
+    topicVideo: {
+      id: "GYptUgnIM_I",
+      title: "Implementation of Stack using Arrays",
+      channel: "take U forward",
+      duration: "25 mins"
+    },
+    basics: [],
+    patterns: [],
+    complexities: [
+      { operation: "Push / Pop", time: "O(1)", space: "O(N)" }
+    ],
+    strategy: "For Next Greater/Smaller element, use Monotonic Stack."
+  },
+
+  8: {
+    title: "08. Sliding Window & Two Pointers",
+    summary: "Subarray window optimization over sequential data structures avoiding nested O(N^2) loops.",
+    basics: [],
+    patterns: [
+      {
+        name: "1. Longest Substring Without Repeating Characters",
+        video: {
+          id: "3IETreEybaA",
+          title: "LeetCode Longest Substring Without Repeating Characters Solution Explained",
+          channel: "Nick White",
+          duration: "14 mins"
+        },
+        explanation: "Expands right window boundary until duplicate found, then shrinks left boundary.",
+        code: "unordered_set<char> charSet;\nint left = 0, maxLen = 0;\nfor (int right = 0; right < s.length(); right++) {\n    while (charSet.count(s[right])) charSet.erase(s[left++]);\n    charSet.insert(s[right]);\n    maxLen = max(maxLen, right - left + 1);\n}",
+        codeWalkthrough: "• Window expansion & contraction.",
+        approach: "1. Two pointers window pass.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(K)",
+        whenToApply: "Subarray substring bounds.",
+        whenNotToApply: "Non-contiguous subsets."
+      }
+    ],
+    complexities: [
+      { operation: "Sliding Window Pass", time: "O(N)", space: "O(K)" }
+    ],
+    strategy: "Track left and right window pointers."
+  },
+
   9: {
     title: "09. Heaps & Priority Queue",
     summary: "Complete binary tree maintaining min-heap or max-heap property for fast O(1) top access.",
@@ -193,11 +314,46 @@ export const dsaTheoryData = {
       duration: "35 mins"
     },
     basics: [],
-    patterns: [],
+    patterns: [
+      {
+        name: "1. Heaps Data Structure Pattern",
+        video: {
+          id: "t0Cq6tVNRBA",
+          title: "Data Structures: Heaps Tutorial",
+          channel: "HackerRank",
+          duration: "18 mins"
+        },
+        explanation: "Min-Heap or Max-Heap structure for dynamic order statistics.",
+        code: "priority_queue<int> maxHeap;\nfor (int num : nums) maxHeap.push(num);",
+        codeWalkthrough: "• Heap insert & pop.",
+        approach: "1. Priority Queue operations.",
+        timeComplexity: "O(N log K)",
+        spaceComplexity: "O(K)",
+        whenToApply: "Top K elements, median streaming.",
+        whenNotToApply: "Unordered access."
+      }
+    ],
     complexities: [
       { operation: "Push / Pop", time: "O(log N)", space: "O(N)" }
     ],
     strategy: "Min-Heap for Top-K Largest, Max-Heap for Top-K Smallest."
+  },
+
+  10: {
+    title: "10. Greedy Approach",
+    summary: "Making locally optimal choices at each step to reach a global optimum.",
+    topicVideo: {
+      id: "ARvQcqJ_-NY",
+      title: "3. Greedy Method - Introduction & Applications",
+      channel: "Abdul Bari",
+      duration: "30 mins"
+    },
+    basics: [],
+    patterns: [],
+    complexities: [
+      { operation: "Greedy Sort & Pass", time: "O(N log N)", space: "O(1)" }
+    ],
+    strategy: "Prove greedy choice property before implementing."
   },
 
   11: {
