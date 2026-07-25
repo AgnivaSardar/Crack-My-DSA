@@ -25,6 +25,16 @@ export default function LeetCodeDashboard({
     }
   }, [isOpen, userEmail, guestUser])
 
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape' && isOpen) {
+        if (onClose) onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   async function handleRefreshSync() {
     if (!userEmail) return
     setIsSyncing(true)
@@ -84,7 +94,7 @@ export default function LeetCodeDashboard({
   })
 
   return (
-    <div className="dashboard-overlay" onClick={onClose}>
+    <div className="dashboard-overlay" onClick={() => onClose && onClose()}>
       <div className="dashboard-modal" onClick={e => e.stopPropagation()} id="tour-dashboard-modal">
         {/* Modal Header */}
         <div className="dashboard-header">
@@ -99,7 +109,17 @@ export default function LeetCodeDashboard({
               {guestUser ? 'Guest Mode Account' : `Connected Email: ${userEmail || userName}`}
             </div>
           </div>
-          <button type="button" className="dashboard-close-btn" onClick={onClose} title="Close Dashboard">
+          <button
+            type="button"
+            className="dashboard-close-btn"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              if (onClose) onClose()
+            }}
+            title="Close Dashboard"
+            style={{ cursor: 'pointer', zIndex: 10, position: 'relative' }}
+          >
             ✕
           </button>
         </div>
