@@ -18,38 +18,33 @@ export const dsaTheoryData = {
     ],
     basics: [
       {
-        op: "1. Memory Layout & Index Access",
-        detail: "Elements are placed in contiguous memory locations. Address formula: `Address(i) = BaseAddress + (i * ElementSize)`.",
-        code: "// Accessing element at index i\nint arr[5] = {10, 20, 30, 40, 50};\nint val = arr[2]; // O(1) time direct address lookup (val = 30)"
+        op: "1. Contiguous RAM Layout & Index Math",
+        detail: "Elements are placed sequentially in RAM. Address formula: `Address(i) = BaseAddress + (i * ElementSize)`. Allows O(1) direct read/write access.",
+        code: "// Direct O(1) Index Access\nint arr[5] = {10, 20, 30, 40, 50};\nint element = arr[3]; // Direct lookup offset: Base + 3*4 bytes"
       },
       {
-        op: "2. Linear Traversal",
-        detail: "Iterating through all elements from index 0 to N-1 to read or update values.",
-        code: "// Sequential Traversal\nfor (int i = 0; i < n; i++) {\n    cout << arr[i] << \" \";\n}\n// Time: O(N) | Space: O(1)"
-      },
-      {
-        op: "3. Insertion & Deletion Mechanics",
-        detail: "Inserting or deleting from index k requires shifting all subsequent elements, causing O(N) worst-case time.",
-        code: "// Shift elements right for insertion at index k\nfor (int i = n; i > k; i--) arr[i] = arr[i - 1];\narr[k] = val;"
+        op: "2. Element Shifting on Insertion & Deletion",
+        detail: "Inserting or deleting at index k requires shifting all subsequent elements left/right by 1 position, resulting in O(N) time.",
+        code: "// Shift elements right for insertion at index k\nfor (int i = n; i > k; i--) arr[i] = arr[i - 1];\narr[k] = val; n++;"
       }
     ],
     patterns: [
       {
-        name: "1. Two Pointers Pattern",
+        name: "1. Two Pointers & Two Sum Pattern",
         video: {
           id: "On03HWe2tZM",
           title: "Visual introduction Two Pointer Algorithm",
           channel: "Josh's DevBox",
           duration: "15 mins"
         },
-        explanation: "Uses two pointer variables (`left` and `right`) traversing array towards each other.",
+        explanation: "Uses left and right pointers traversing inward on a sorted array to find pair sums or target constraints in O(N) single pass.",
         code: "int left = 0, right = n - 1;\nwhile (left < right) {\n    int sum = arr[left] + arr[right];\n    if (sum == target) return {left, right};\n    else if (sum < target) left++;\n    else right--;\n}",
-        codeWalkthrough: "• Advance left if sum too small, decrement right if sum too large.",
-        approach: "1. Two pointer traversal pass.",
-        timeComplexity: "O(N)",
-        spaceComplexity: "O(1)",
-        whenToApply: "Sorted arrays, pair sum targets.",
-        whenNotToApply: "Unsorted arrays."
+        codeWalkthrough: "• Advance left pointer if sum is too small; decrement right pointer if sum is too large.",
+        approach: "1. Sort array if not sorted.\n2. Initialize left = 0, right = n - 1.\n3. Adjust pointers based on comparison with target.",
+        timeComplexity: "O(N) after sort",
+        spaceComplexity: "O(1) auxiliary",
+        whenToApply: "Sorted arrays, pair sum targets, reversing arrays in-place.",
+        whenNotToApply: "Unsorted arrays where original indices must be preserved without extra memory."
       },
       {
         name: "2. Kadane's Algorithm (Maximum Subarray Sum)",
@@ -59,26 +54,72 @@ export const dsaTheoryData = {
           channel: "take U forward",
           duration: "20 mins"
         },
-        explanation: "Dynamic programming method that finds maximum subarray sum in O(N) time.",
+        explanation: "Dynamic programming approach that decides at each index whether to add current element to running sum or reset running sum to 0 when negative.",
         code: "int max_sum = INT_MIN, curr_sum = 0;\nfor (int i = 0; i < n; i++) {\n    curr_sum += arr[i];\n    max_sum = max(max_sum, curr_sum);\n    if (curr_sum < 0) curr_sum = 0;\n}",
-        codeWalkthrough: "• Add current element, update max_sum, reset curr_sum to 0 if negative.",
+        codeWalkthrough: "• Add current element to curr_sum, update global max_sum, and reset curr_sum = 0 if negative.",
         approach: "1. Track curr_sum and max_sum.\n2. Reset curr_sum = 0 when negative.",
+        timeComplexity: "O(N) single pass",
+        spaceComplexity: "O(1)",
+        whenToApply: "Maximum/minimum contiguous subarray sum problems.",
+        whenNotToApply: "Non-contiguous subsequences or array products with negative numbers."
+      },
+      {
+        name: "3. Dutch National Flag (3-Way Array Partitioning)",
+        explanation: "Sorts an array containing 0s, 1s, and 2s in a single pass O(N) time and O(1) space using low, mid, high pointers.",
+        code: "int low = 0, mid = 0, high = n - 1;\nwhile (mid <= high) {\n    if (arr[mid] == 0) swap(arr[low++], arr[mid++]);\n    else if (arr[mid] == 1) mid++;\n    else swap(arr[mid], arr[high--]);\n}",
+        codeWalkthrough: "• 0s placed in range [0...low-1], 1s in range [low...mid-1], 2s in range [high+1...n-1].",
+        approach: "1. low = 0, mid = 0, high = n - 1.\n2. Swap arr[mid] to low/high boundaries.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(1) in-place",
+        whenToApply: "Sorting 3 distinct values or 3-way pivot partitioning.",
+        whenNotToApply: "General continuous sorting."
+      },
+      {
+        name: "4. Boyer-Moore Voting Algorithm (Majority Element)",
+        explanation: "Finds the candidate element appearing more than N/2 (or N/3) times in O(N) time and O(1) space using a counter balance mechanism.",
+        code: "int candidate = 0, count = 0;\nfor (int num : nums) {\n    if (count == 0) candidate = num;\n    count += (num == candidate) ? 1 : -1;\n}",
+        codeWalkthrough: "• When count drops to 0, choose current element as candidate. Increment count on match, decrement on mismatch.",
+        approach: "1. Track candidate and count.\n2. Verify candidate frequency in second pass if majority is not guaranteed.",
         timeComplexity: "O(N)",
         spaceComplexity: "O(1)",
-        whenToApply: "Maximum contiguous subarray sum.",
-        whenNotToApply: "Non-contiguous subsequences."
+        whenToApply: "Finding majority elements (> N/2 or > N/3 times).",
+        whenNotToApply: "Arbitrary element frequency queries."
+      },
+      {
+        name: "5. Next Permutation Algorithm",
+        explanation: "Finds lexicographically next greater permutation in O(N) time by finding pivot breakpoint `arr[i] < arr[i+1]`, swapping pivot with next greater, and reversing suffix.",
+        code: "int pivot = -1;\nfor (int i = n - 2; i >= 0; i--) {\n    if (arr[i] < arr[i + 1]) { pivot = i; break; }\n}\nif (pivot == -1) { reverse(arr.begin(), arr.end()); return; }\nfor (int i = n - 1; i > pivot; i--) {\n    if (arr[i] > arr[pivot]) { swap(arr[pivot], arr[i]); break; }\n}\nreverse(arr.begin() + pivot + 1, arr.end());",
+        codeWalkthrough: "• Find rightmost dip (pivot), swap with smallest larger element on right, reverse right suffix.",
+        approach: "1. Find pivot.\n2. Swap pivot.\n3. Reverse suffix.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(1)",
+        whenToApply: "In-place next lexicographical permutation.",
+        whenNotToApply: "Random permutation generation."
+      },
+      {
+        name: "6. Rotate Image / Matrix by 90 Degrees",
+        explanation: "Rotates an N x N matrix 90 degrees clockwise in-place by taking Matrix Transpose `matrix[i][j] <-> matrix[j][i]` and then reversing every row.",
+        code: "// Step 1: Transpose Matrix\nfor (int i = 0; i < n; i++) {\n    for (int j = i + 1; j < n; j++) swap(matrix[i][j], matrix[j][i]);\n}\n// Step 2: Reverse Each Row\nfor (int i = 0; i < n; i++) reverse(matrix[i].begin(), matrix[i].end());",
+        codeWalkthrough: "• Transpose converts rows into columns. Reversing rows flips matrix 90 degrees clockwise.",
+        approach: "1. Transpose matrix.\n2. Reverse each row.",
+        timeComplexity: "O(N^2)",
+        spaceComplexity: "O(1) in-place",
+        whenToApply: "2D Grid matrix rotations (90, 180, 270 degrees).",
+        whenNotToApply: "Non-square M x N matrices without extra memory allocation."
       }
     ],
     complexities: [
-      { operation: "Access by Index", time: "O(1)", space: "O(1)" },
-      { operation: "Linear Search", time: "O(N)", space: "O(1)" }
+      { operation: "Direct Index Access", time: "O(1)", space: "O(1)" },
+      { operation: "Kadane's Subarray Sum", time: "O(N)", space: "O(1)" },
+      { operation: "Boyer-Moore Majority Vote", time: "O(N)", space: "O(1)" },
+      { operation: "Next Permutation", time: "O(N)", space: "O(1)" }
     ],
-    strategy: "Check if array is sorted (Two Pointers/Binary Search) or continuous sub-segment (Kadane/Prefix Sum)."
+    strategy: "Sorted array -> Two Pointers or Binary Search. Subarray sum -> Kadane's or Prefix Sum. Grid Rotation -> Transpose + Reverse."
   },
 
   2: {
     title: "02. Binary Search",
-    summary: "Binary Search is a divide-and-conquer algorithm operating on sorted arrays or monotonic search spaces, achieving O(log N) time.",
+    summary: "Binary Search is a divide-and-conquer algorithm operating on sorted arrays or monotonic search spaces. At each step, it compares target with middle element and eliminates half of the search space in O(log N) time.",
     topicVideos: [
       {
         id: "C2apEw9pgtw",
@@ -93,47 +134,77 @@ export const dsaTheoryData = {
         duration: "15 mins"
       }
     ],
-    basics: [],
+    basics: [
+      {
+        op: "1. Search Space Monotonicity",
+        detail: "Binary Search requires the search space to be monotonic (strictly sorted or YES/NO threshold predicate).",
+        code: "int low = 0, high = n - 1;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] == target) return mid;\n    else if (arr[mid] < target) low = mid + 1;\n    else high = mid - 1;\n}"
+      }
+    ],
     patterns: [
       {
-        name: "1. Classic Binary Search Pattern",
+        name: "1. Classic 1D Binary Search Pattern",
         video: {
           id: "s4DPM8ct1pI",
           title: "Binary Search - LeetCode 704 Explanation",
           channel: "NeetCode",
           duration: "12 mins"
         },
-        explanation: "Eliminates half of the search space at each step by comparing mid with target.",
+        explanation: "Eliminates half the search space at each step by comparing mid with target.",
         code: "int low = 0, high = n - 1;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] == target) return mid;\n    else if (arr[mid] < target) low = mid + 1;\n    else high = mid - 1;\n}",
-        codeWalkthrough: "• Compute mid avoiding overflow, shrink search space by half.",
-        approach: "1. low = 0, high = n - 1.\n2. Adjust boundaries based on comparison.",
+        codeWalkthrough: "• Avoid overflow with `mid = low + (high - low) / 2`. Adjust low or high boundaries.",
+        approach: "1. Set low = 0, high = n - 1.\n2. Recalculate mid and shrink search space.",
         timeComplexity: "O(log N)",
         spaceComplexity: "O(1)",
-        whenToApply: "Searching in sorted arrays or monotonic search spaces.",
+        whenToApply: "Searching target in sorted arrays.",
         whenNotToApply: "Unsorted arrays."
       },
       {
-        name: "2. Lower Bound Pattern",
+        name: "2. Lower Bound & Upper Bound Pattern",
         video: {
           id: "j7NodO9HIbk",
           title: "1 Binary Search Format Introduction",
           channel: "Aditya Verma",
           duration: "15 mins"
         },
-        explanation: "Finds first index where arr[mid] >= target.",
-        code: "int low = 0, high = n - 1, ans = n;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] >= target) {\n        ans = mid;\n        high = mid - 1;\n    } else low = mid + 1;\n}\nreturn ans;",
-        codeWalkthrough: "• Track candidate index ans.",
-        approach: "1. Binary search lower bound.",
+        explanation: "Lower Bound finds first index where `arr[mid] >= target`. Upper Bound finds first index where `arr[mid] > target`.",
+        code: "int low = 0, high = n - 1, ans = n;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] >= target) { ans = mid; high = mid - 1; }\n    else low = mid + 1;\n}\nreturn ans;",
+        codeWalkthrough: "• Save candidate index ans and search left half to find earlier match.",
+        approach: "1. Maintain candidate index ans.\n2. Move high left on match.",
         timeComplexity: "O(log N)",
         spaceComplexity: "O(1)",
-        whenToApply: "First occurrence or insertion position.",
+        whenToApply: "First occurrence, last occurrence, target insertion index.",
         whenNotToApply: "Unsorted arrays."
+      },
+      {
+        name: "3. Search in Rotated Sorted Array",
+        explanation: "Identifies which half (left or right) is sorted (`arr[low] <= arr[mid]`) and checks if target lies within that sorted range.",
+        code: "int low = 0, high = n - 1;\nwhile (low <= high) {\n    int mid = low + (high - low) / 2;\n    if (arr[mid] == target) return mid;\n    if (arr[low] <= arr[mid]) { // Left half sorted\n        if (arr[low] <= target && target < arr[mid]) high = mid - 1;\n        else low = mid + 1;\n    } else { // Right half sorted\n        if (arr[mid] < target && target <= arr[high]) low = mid + 1;\n        else high = mid - 1;\n    }\n}",
+        codeWalkthrough: "• Determine sorted half, check target boundary, discard unsorted half.",
+        approach: "1. Identify sorted half.\n2. Check target range in sorted half.",
+        timeComplexity: "O(log N)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Rotated sorted arrays.",
+        whenNotToApply: "Arrays with duplicate values where arr[low] == arr[mid] == arr[high] (requires O(N) fallback)."
+      },
+      {
+        name: "4. Binary Search on Search Space / Answer (Koko Eating Bananas)",
+        explanation: "Applies Binary Search on hypothetical minimum/maximum answer range `[low, high]` when a predicate function `isValid(mid)` is monotonic.",
+        code: "long long low = 1, high = maxElem, ans = high;\nwhile (low <= high) {\n    long long mid = low + (high - low) / 2;\n    if (checkPossible(mid, piles, h)) {\n        ans = mid; high = mid - 1; // Try smaller eating speed\n    } else low = mid + 1;\n}",
+        codeWalkthrough: "• Define minimum and maximum feasible answer values. If mid is valid, try smaller answer.",
+        approach: "1. Define answer range [low, high].\n2. Write monotonic predicate function checkPossible().\n3. Binary search answer range.",
+        timeComplexity: "O(N log(Range))",
+        spaceComplexity: "O(1)",
+        whenToApply: "Minimizing maximum, maximizing minimum, capacity allocation problems.",
+        whenNotToApply: "Non-monotonic predicate functions."
       }
     ],
     complexities: [
-      { operation: "Binary Search 1D", time: "O(log N)", space: "O(1)" }
+      { operation: "Classic 1D Search", time: "O(log N)", space: "O(1)" },
+      { operation: "Rotated Array Search", time: "O(log N)", space: "O(1)" },
+      { operation: "BS on Search Space", time: "O(N log(Range))", space: "O(1)" }
     ],
-    strategy: "Monotonic search space -> apply Binary Search."
+    strategy: "Monotonic search space or YES/NO predicate -> Apply Binary Search."
   },
 
   3: {
@@ -169,7 +240,7 @@ export const dsaTheoryData = {
       {
         name: "1. Character Frequency & Anagram Hashing Pattern",
         explanation: "Compares frequency vectors of two strings to check for anagram permutation matches in O(N) time.",
-        code: "bool isAnagram(string s, string t) {\n    if (s.length() != t.length()) return false;\n    vector<int> count(26, 0);\n    for (int i = 0; i < s.length(); i++) {\n        count[s[i] - 'a']++;\n        count[t[i] - 'a']--;\n    }\n    for (int val : count) if (val != 0) return false;\n    return true;\n}",
+        code: "bool isAnagram(string s, string t) {\n    if (s.length() != t.length()) return false;\n    vector<int> count(26, 0);\n    for (int i = 0; i < s.length(); i++) {\n        count[s[i] - 'a']++; count[t[i] - 'a']--;\n    }\n    for (int val : count) if (val != 0) return false;\n    return true;\n}",
         codeWalkthrough: "• Increment count for s[i], decrement count for t[i]. All frequencies must sum to zero.",
         approach: "1. Compare frequency vector counts.",
         timeComplexity: "O(N)",
@@ -237,7 +308,13 @@ export const dsaTheoryData = {
         duration: "16 mins"
       }
     ],
-    basics: [],
+    basics: [
+      {
+        op: "1. Node Architecture & Dummy Head Technique",
+        detail: "Nodes consist of data payload and pointer link: `struct Node { int data; Node* next; }`. A dummy head node eliminates null checks when inserting/deleting at head.",
+        code: "Node* dummy = new Node(-1);\ndummy->next = head;"
+      }
+    ],
     patterns: [
       {
         name: "1. Floyd's Cycle Detection (Tortoise and Hare)",
@@ -247,13 +324,13 @@ export const dsaTheoryData = {
           channel: "take U forward",
           duration: "16 mins"
         },
-        explanation: "Detects loops using fast (2 steps) and slow (1 step) pointers.",
+        explanation: "Detects loops using fast (2 steps) and slow (1 step) pointers. Meeting point proves cycle existence.",
         code: "Node *slow = head, *fast = head;\nwhile (fast && fast->next) {\n    slow = slow->next;\n    fast = fast->next->next;\n    if (slow == fast) return true;\n}\nreturn false;",
-        codeWalkthrough: "• Move slow by 1, fast by 2. If they meet, loop exists.",
+        codeWalkthrough: "• Move slow by 1, fast by 2. If slow and fast meet, cycle exists.",
         approach: "1. Fast and slow pointers pass.",
         timeComplexity: "O(N)",
         spaceComplexity: "O(1)",
-        whenToApply: "Cycle detection, finding middle node.",
+        whenToApply: "Cycle detection, finding middle node, starting node of loop.",
         whenNotToApply: "Arrays."
       },
       {
@@ -264,20 +341,33 @@ export const dsaTheoryData = {
           channel: "NeetCode",
           duration: "10 mins"
         },
-        explanation: "Reverses node pointer directions in O(N) time and O(1) space.",
+        explanation: "Reverses node pointer directions in O(N) time and O(1) auxiliary space using 3 pointers (`prev`, `curr`, `nextTemp`).",
         code: "Node* prev = nullptr, *curr = head;\nwhile (curr) {\n    Node* nextTemp = curr->next;\n    curr->next = prev;\n    prev = curr;\n    curr = nextTemp;\n}\nreturn prev;",
-        codeWalkthrough: "• Swap pointer directions iteratively.",
+        codeWalkthrough: "• Save next node, flip curr->next to prev, advance prev and curr pointers.",
         approach: "1. Iterative pointer reversal.",
         timeComplexity: "O(N)",
         spaceComplexity: "O(1)",
-        whenToApply: "Reversing lists or checking palindromes.",
+        whenToApply: "Reversing lists, checking linked list palindromes, reversing in K-groups.",
         whenNotToApply: "Arrays."
+      },
+      {
+        name: "3. Remove N-th Node From End of List",
+        explanation: "Advances `fast` pointer by N steps first, then moves `fast` and `slow` together until `fast` reaches tail node.",
+        code: "Node* dummy = new Node(0, head);\nNode *fast = dummy, *slow = dummy;\nfor (int i = 0; i < n; i++) fast = fast->next;\nwhile (fast->next) {\n    fast = fast->next;\n    slow = slow->next;\n}\nslow->next = slow->next->next;\nreturn dummy->next;",
+        codeWalkthrough: "• Maintain N node gap between fast and slow. When fast reaches end, slow sits right before target node.",
+        approach: "1. Advance fast by N steps.\n2. Move fast and slow together.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Finding or deleting N-th node from tail in single pass.",
+        whenNotToApply: "Double-linked lists where prev pointer exists."
       }
     ],
     complexities: [
-      { operation: "Head Insertion", time: "O(1)", space: "O(1)" }
+      { operation: "Head Insertion / Deletion", time: "O(1)", space: "O(1)" },
+      { operation: "Cycle Detection", time: "O(N)", space: "O(1)" },
+      { operation: "List Reversal", time: "O(N)", space: "O(1)" }
     ],
-    strategy: "Use dummy head node to simplify boundary pointer logic."
+    strategy: "Dummy head node to avoid null checks -> Fast & Slow pointers for cycles/middle."
   },
 
   5: {
@@ -291,24 +381,53 @@ export const dsaTheoryData = {
         duration: "40 mins"
       }
     ],
-    basics: [],
+    basics: [
+      {
+        op: "1. Call Stack Frame & Base Case",
+        detail: "Every recursive call pushes a frame onto the system call stack. Base case guarantees recursion termination preventing StackOverflowError.",
+        code: "void solve(int n) {\n    if (n == 0) return; // Base Case\n    solve(n - 1); // Recursive Call\n}"
+      }
+    ],
     patterns: [
       {
         name: "1. Subsequences Pick / Non-Pick Pattern",
         explanation: "Explores inclusion vs exclusion choice branches for every element generating 2^N total subsets.",
-        code: "void solve(int idx, vector<int>& ds, vector<int>& nums) {\n    if (idx == nums.size()) { print(ds); return; }\n    ds.push_back(nums[idx]); solve(idx + 1, ds, nums);\n    ds.pop_back(); solve(idx + 1, ds, nums);\n}",
+        code: "void solve(int idx, vector<int>& ds, vector<int>& nums) {\n    if (idx == nums.size()) { print(ds); return; }\n    ds.push_back(nums[idx]); solve(idx + 1, ds, nums); // Pick\n    ds.pop_back(); solve(idx + 1, ds, nums); // Non-Pick / Backtrack\n}",
         codeWalkthrough: "• Recurse with element included, backtrack to explore exclusion.",
         approach: "1. Base case when idx == n.\n2. Recurse pick and non-pick branches.",
         timeComplexity: "O(2^N)",
+        spaceComplexity: "O(N) call stack",
+        whenToApply: "Generating all subsets, combinations, permutation decision trees.",
+        whenNotToApply: "Large N where 2^N exceeds time limit."
+      },
+      {
+        name: "2. Subset Sum II (Duplicate Skipping Pattern)",
+        explanation: "Sorts input array first and skips duplicate choices at same recursion depth `if (i > idx && nums[i] == nums[i-1]) continue` to avoid duplicate subsets.",
+        code: "void findSubsets(int idx, vector<int>& nums, vector<int>& ds) {\n    ans.push_back(ds);\n    for (int i = idx; i < nums.size(); i++) {\n        if (i > idx && nums[i] == nums[i - 1]) continue; // Skip duplicates\n        ds.push_back(nums[i]);\n        findSubsets(i + 1, nums, ds);\n        ds.pop_back();\n    }\n}",
+        codeWalkthrough: "• Sort array. Loop skips duplicate element choices at current branch depth.",
+        approach: "1. Sort array.\n2. Skip duplicates `i > idx && nums[i] == nums[i-1]`.",
+        timeComplexity: "O(2^N)",
         spaceComplexity: "O(N)",
-        whenToApply: "Generating all subsets, combinations, permutation trees.",
-        whenNotToApply: "Large N where 2^N exceeds limits."
+        whenToApply: "Subsets/Combinations with duplicate input numbers.",
+        whenNotToApply: "All input elements are distinct."
+      },
+      {
+        name: "3. N-Queens & Backtracking Validation",
+        explanation: "Places Queens row-by-row and uses bitmask or boolean arrays (col, upperDiag, lowerDiag) to check attack collisions in O(1) time.",
+        code: "void solveNQueens(int col, vector<string>& board) {\n    if (col == n) { ans.push_back(board); return; }\n    for (int row = 0; row < n; row++) {\n        if (!leftRow[row] && !lowerDiag[row + col] && !upperDiag[n - 1 + col - row]) {\n            leftRow[row] = lowerDiag[row + col] = upperDiag[n - 1 + col - row] = 1;\n            board[row][col] = 'Q';\n            solveNQueens(col + 1, board);\n            board[row][col] = '.'; // Backtrack\n            leftRow[row] = lowerDiag[row + col] = upperDiag[n - 1 + col - row] = 0;\n        }\n    }\n}",
+        codeWalkthrough: "• Check attack collision using lookup arrays, place Queen, recurse, and clear lookup array on backtrack.",
+        approach: "1. Row/Col placement pass.\n2. Quick attack check using hash vectors.",
+        timeComplexity: "O(N!)",
+        spaceComplexity: "O(N)",
+        whenToApply: "N-Queens, Sudoku Solver, Knight Tour, Grid Backtracking.",
+        whenNotToApply: "Polynomial time solvable problems."
       }
     ],
     complexities: [
-      { operation: "Subsequence Generation", time: "O(2^N)", space: "O(N)" }
+      { operation: "Subset Generation", time: "O(2^N)", space: "O(N)" },
+      { operation: "Permutation Generation", time: "O(N!)", space: "O(N)" }
     ],
-    strategy: "Identify base cases and state space decision tree."
+    strategy: "Identify base cases -> Draw decision tree -> Use hash sets to validate placement."
   },
 
   6: {
@@ -330,34 +449,40 @@ export const dsaTheoryData = {
     ],
     basics: [
       {
-        op: "1. Bitwise Masking Operations",
-        detail: "Check k-th bit (`n & (1 << k)`), Set k-th bit (`n | (1 << k)`), Clear k-th bit (`n & ~(1 << k)`), Power of 2 (`(n & (n-1)) == 0`).",
+        op: "1. Bitwise Operators & Masking",
+        detail: "Check k-th bit (`n & (1 << k)`), Set k-th bit (`n | (1 << k)`), Clear k-th bit (`n & ~(1 << k)`), Toggle k-th bit (`n ^ (1 << k)`), Check Power of 2 (`(n & (n - 1)) == 0`).",
         code: "bool isSet(int n, int k) { return (n & (1 << k)) != 0; }\nint setBit(int n, int k) { return n | (1 << k); }"
       }
     ],
     patterns: [
       {
-        name: "1. Fundamental Bitwise Operations & Tricks",
-        video: {
-          id: "ZwU6wSkepBI",
-          title: "L2 | Bit Manipulations | Problem Solving on Bit Manipulations",
-          channel: "take U forward",
-          duration: "20 mins"
-        },
-        explanation: "Direct bitwise operations in O(1) time.",
-        code: "bool isPowerOfTwo(int n) { return n > 0 && (n & (n - 1)) == 0; }",
-        codeWalkthrough: "• n & (n - 1) removes the lowest set bit in constant time.",
-        approach: "1. Apply bitwise masks.",
-        timeComplexity: "O(1)",
+        name: "1. Single Number & XOR Properties",
+        explanation: "Uses XOR identity `a ^ a = 0` and `a ^ 0 = a` to cancel out pairs in O(N) time and O(1) space.",
+        code: "int singleNumber(vector<int>& nums) {\n    int xorVal = 0;\n    for (int num : nums) xorVal ^= num;\n    return xorVal;\n}",
+        codeWalkthrough: "• Pair elements cancel to 0 under XOR, leaving the unique single number.",
+        approach: "1. XOR all numbers together.",
+        timeComplexity: "O(N)",
         spaceComplexity: "O(1)",
-        whenToApply: "Bit parity, fast subset masks.",
-        whenNotToApply: "Continuous floating point numbers."
+        whenToApply: "Finding single non-duplicate number, missing number.",
+        whenNotToApply: "Elements appear odd number of times."
+      },
+      {
+        name: "2. Brian Kernighan's Algorithm (Set Bit Counting)",
+        explanation: "Counts set bits in O(SetBits) time by repeatedly clearing the rightmost set bit using `n = n & (n - 1)`.",
+        code: "int countSetBits(int n) {\n    int count = 0;\n    while (n > 0) {\n        n = n & (n - 1); // Clears rightmost set bit\n        count++;\n    }\n    return count;\n}",
+        codeWalkthrough: "• `n & (n - 1)` turns off the lowest 1-bit in constant time.",
+        approach: "1. Repeat `n = n & (n - 1)` until n == 0.",
+        timeComplexity: "O(Number of Set Bits)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Counting set bits (Hamming Weight).",
+        whenNotToApply: "Non-integer data types."
       }
     ],
     complexities: [
-      { operation: "Bitwise Masking", time: "O(1)", space: "O(1)" }
+      { operation: "Bit Masking", time: "O(1)", space: "O(1)" },
+      { operation: "Kernighan Bit Count", time: "O(SetBits)", space: "O(1)" }
     ],
-    strategy: "Use n & (n - 1) to clear lowest set bit in O(1)."
+    strategy: "XOR cancels identical numbers -> `n & (n - 1)` clears lowest 1-bit."
   },
 
   7: {
@@ -380,21 +505,33 @@ export const dsaTheoryData = {
     ],
     patterns: [
       {
-        name: "1. Monotonic Stack Pattern",
-        explanation: "Maintains stack elements in strictly increasing or decreasing order for Next Greater Element queries.",
-        code: "stack<int> st;\nfor (int i = 0; i < n; i++) {\n    while (!st.empty() && arr[i] > arr[st.top()]) {\n        ans[st.top()] = arr[i]; st.pop();\n    }\n    st.push(i);\n}",
-        codeWalkthrough: "• Pop elements smaller than current element to maintain monotonic order.",
-        approach: "1. Maintain stack of indices.",
+        name: "1. Monotonic Stack (Next Greater / Smaller Element)",
+        explanation: "Maintains stack elements in strictly increasing or decreasing order. When encountering a larger element, pop elements from stack to assign their next greater element.",
+        code: "stack<int> st;\nvector<int> ans(n, -1);\nfor (int i = 0; i < n; i++) {\n    while (!st.empty() && arr[i] > arr[st.top()]) {\n        ans[st.top()] = arr[i]; st.pop();\n    }\n    st.push(i);\n}",
+        codeWalkthrough: "• Maintain index stack. Current element pops smaller elements from stack.",
+        approach: "1. Maintain monotonic stack of indices.",
         timeComplexity: "O(N)",
         spaceComplexity: "O(N)",
-        whenToApply: "Next Greater / Next Smaller Element, Stock Span.",
-        whenNotToApply: "Random array access."
+        whenToApply: "Next Greater Element I & II, Daily Temperatures, Stock Span.",
+        whenNotToApply: "Random index queries."
+      },
+      {
+        name: "2. Trapping Rainwater (Two Pointers / Stack)",
+        explanation: "Calculates trapped water at index i as `min(leftMax, rightMax) - height[i]` using Two Pointers moving inward.",
+        code: "int l = 0, r = n - 1, leftMax = 0, rightMax = 0, water = 0;\nwhile (l < r) {\n    if (height[l] <= height[r]) {\n        if (height[l] >= leftMax) leftMax = height[l];\n        else water += leftMax - height[l];\n        l++;\n    } else {\n        if (height[r] >= rightMax) rightMax = height[r];\n        else water += rightMax - height[r];\n        r--;\n    }\n}",
+        codeWalkthrough: "• Move smaller height pointer inward while maintaining leftMax and rightMax boundaries.",
+        approach: "1. Two pointers moving inward.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(1)",
+        whenToApply: "Trapping rainwater, container with most water.",
+        whenNotToApply: "2D Grid water trapping."
       }
     ],
     complexities: [
-      { operation: "Push / Pop", time: "O(1)", space: "O(N)" }
+      { operation: "Push / Pop", time: "O(1)", space: "O(N)" },
+      { operation: "Monotonic Stack Pass", time: "O(N)", space: "O(N)" }
     ],
-    strategy: "For Next Greater/Smaller element, use Monotonic Stack."
+    strategy: "Next Greater/Smaller -> Monotonic Stack. Trapping Water -> Two Pointers."
   },
 
   8: {
@@ -417,20 +554,20 @@ export const dsaTheoryData = {
     ],
     patterns: [
       {
-        name: "1. Longest Substring Without Repeating Characters",
+        name: "1. Variable Size Sliding Window (Longest Substring Without Repeating Characters)",
         video: {
           id: "3IETreEybaA",
           title: "LeetCode Longest Substring Without Repeating Characters Solution Explained",
           channel: "Nick White",
           duration: "14 mins"
         },
-        explanation: "Expands right window boundary until duplicate found, then shrinks left boundary.",
+        explanation: "Expands right window boundary until duplicate found, then shrinks left boundary to restore valid window.",
         code: "unordered_set<char> charSet;\nint left = 0, maxLen = 0;\nfor (int right = 0; right < s.length(); right++) {\n    while (charSet.count(s[right])) charSet.erase(s[left++]);\n    charSet.insert(s[right]);\n    maxLen = max(maxLen, right - left + 1);\n}",
-        codeWalkthrough: "• Window expansion & contraction.",
-        approach: "1. Two pointers window pass.",
+        codeWalkthrough: "• Expand right index, shrink left index on duplicate character.",
+        approach: "1. Expand right.\n2. Shrink left on violation.",
         timeComplexity: "O(N)",
         spaceComplexity: "O(K)",
-        whenToApply: "Subarray substring bounds.",
+        whenToApply: "Longest/Shortest subarray with character/sum constraint.",
         whenNotToApply: "Non-contiguous subsets."
       }
     ],
@@ -442,7 +579,7 @@ export const dsaTheoryData = {
 
   9: {
     title: "09. Heaps & Priority Queue",
-    summary: "Complete binary tree maintaining min-heap or max-heap property for fast O(1) top access.",
+    summary: "Complete binary tree maintaining min-heap or max-heap property for fast O(1) top access and O(log N) insert/delete.",
     topicVideos: [
       {
         id: "HqPJF2L5h9U",
@@ -460,21 +597,21 @@ export const dsaTheoryData = {
     basics: [],
     patterns: [
       {
-        name: "1. Heaps Data Structure Pattern",
+        name: "1. Top-K Elements / Min-Heap Pattern",
         video: {
           id: "t0Cq6tVNRBA",
           title: "Data Structures: Heaps Tutorial",
           channel: "HackerRank",
           duration: "18 mins"
         },
-        explanation: "Min-Heap or Max-Heap structure for dynamic order statistics.",
-        code: "priority_queue<int> maxHeap;\nfor (int num : nums) maxHeap.push(num);",
-        codeWalkthrough: "• Heap insert & pop.",
-        approach: "1. Priority Queue operations.",
+        explanation: "Maintains a Min-Heap of size K. If heap size exceeds K, pop top element, leaving K largest elements in heap.",
+        code: "priority_queue<int, vector<int>, greater<int>> minHeap;\nfor (int num : nums) {\n    minHeap.push(num);\n    if (minHeap.size() > k) minHeap.pop();\n}\nreturn minHeap.top();",
+        codeWalkthrough: "• Keep heap size <= K. Top of min-heap gives K-th largest element.",
+        approach: "1. Push elements into min-heap.\n2. Pop when size > K.",
         timeComplexity: "O(N log K)",
         spaceComplexity: "O(K)",
-        whenToApply: "Top K elements, median streaming.",
-        whenNotToApply: "Unordered access."
+        whenToApply: "Top K largest/smallest elements, median streaming.",
+        whenNotToApply: "Entire array sorting required."
       }
     ],
     complexities: [
@@ -532,7 +669,19 @@ export const dsaTheoryData = {
       }
     ],
     basics: [],
-    patterns: [],
+    patterns: [
+      {
+        name: "1. Height & Diameter of Binary Tree",
+        explanation: "Computes tree height recursively `1 + max(lh, rh)` and updates global max diameter (`lh + rh`).",
+        code: "int getHeight(TreeNode* root) {\n    if (!root) return 0;\n    int lh = getHeight(root->left);\n    int rh = getHeight(root->right);\n    maxDiameter = max(maxDiameter, lh + rh);\n    return 1 + max(lh, rh);\n}",
+        codeWalkthrough: "• Calculate left and right subtree heights recursively.",
+        approach: "1. Recurse on left and right subtrees.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(H)",
+        whenToApply: "Tree height, diameter, balance checks.",
+        whenNotToApply: "Graphs with cycles."
+      }
+    ],
     complexities: [
       { operation: "DFS Traversal", time: "O(N)", space: "O(H)" }
     ],
@@ -551,7 +700,19 @@ export const dsaTheoryData = {
       }
     ],
     basics: [],
-    patterns: [],
+    patterns: [
+      {
+        name: "1. Validate Binary Search Tree (Range Check)",
+        explanation: "Validates BST invariant recursively passing valid min and max node value bounds `(minVal < node->val < maxVal)`.",
+        code: "bool isValidBST(TreeNode* root, long long minVal, long long maxVal) {\n    if (!root) return true;\n    if (root->val <= minVal || root->val >= maxVal) return false;\n    return isValidBST(root->left, minVal, root->val) && isValidBST(root->right, root->val, maxVal);\n}",
+        codeWalkthrough: "• Left subtree must be < root->val; Right subtree must be > root->val.",
+        approach: "1. Pass minVal and maxVal bounds.",
+        timeComplexity: "O(N)",
+        spaceComplexity: "O(H)",
+        whenToApply: "Validating BST property.",
+        whenNotToApply: "General binary trees."
+      }
+    ],
     complexities: [
       { operation: "BST Search", time: "O(log N)", space: "O(1)" }
     ],
@@ -613,7 +774,19 @@ export const dsaTheoryData = {
       }
     ],
     basics: [],
-    patterns: [],
+    patterns: [
+      {
+        name: "1. 0/1 Knapsack Pattern",
+        explanation: "At item i with capacity w, choose max of excluding item or including item.",
+        code: "for (int i = 1; i <= n; i++) {\n    for (int w = 0; w <= W; w++) {\n        if (wt[i-1] <= w) {\n            dp[i][w] = max(dp[i-1][w], val[i-1] + dp[i-1][w - wt[i-1]]);\n        } else dp[i][w] = dp[i-1][w];\n    }\n}",
+        codeWalkthrough: "• Max of excluding item or including item.",
+        approach: "1. State dp[i][w].",
+        timeComplexity: "O(N * W)",
+        spaceComplexity: "O(N * W)",
+        whenToApply: "Subset sum, target sum, knapsack.",
+        whenNotToApply: "Fractional items."
+      }
+    ],
     complexities: [
       { operation: "DP Tabulation", time: "O(States)", space: "O(States)" }
     ],
@@ -632,7 +805,25 @@ export const dsaTheoryData = {
       }
     ],
     basics: [],
-    patterns: [],
+    patterns: [
+      {
+        name: "1. Prefix Tree Insert & Search",
+        video: {
+          id: "dBGUmUQhjaM",
+          title: "L1. Implement TRIE | INSERT | SEARCH | STARTSWITH",
+          channel: "take U forward",
+          duration: "35 mins"
+        },
+        explanation: "Traverses character children pointers in O(L) time.",
+        code: "void insert(string word) {\n    TrieNode* curr = root;\n    for (char c : word) {\n        int idx = c - 'a';\n        if (!curr->children[idx]) curr->children[idx] = new TrieNode();\n        curr = curr->children[idx];\n    }\n    curr->isWord = true;\n}",
+        codeWalkthrough: "• Follow or create character child pointer.",
+        approach: "1. Traverse character pointers.",
+        timeComplexity: "O(L)",
+        spaceComplexity: "O(N * L * 26)",
+        whenToApply: "Autocomplete, prefix matching.",
+        whenNotToApply: "Simple string equality."
+      }
+    ],
     complexities: [
       { operation: "Trie Search", time: "O(L)", space: "O(N * L * 26)" }
     ],
