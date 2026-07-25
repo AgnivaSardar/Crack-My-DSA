@@ -67,9 +67,9 @@ export default function Sidebar({
             type="button"
             className="sidebar-collapse-btn"
             onClick={onToggleSidebar}
-            title="Collapse Sidebar"
+            title="Close Sidebar"
           >
-            ◀
+            ✕
           </button>
         </div>
 

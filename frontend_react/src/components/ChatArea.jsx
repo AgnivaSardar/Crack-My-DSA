@@ -152,15 +152,7 @@ export default function ChatArea({
             onClick={onToggleSidebar}
             title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
-            {sidebarCollapsed ? "☰" : "◀"}
-          </button>
-          <button
-            type="button"
-            className="ref-drawer-toggle-btn"
-            onClick={onToggleRefDrawer}
-            title="View Retrieved Problems & Video Tutorials"
-          >
-            📖 {referenceCount > 0 ? `Solutions (${referenceCount})` : 'Solutions'}
+            {sidebarCollapsed ? "☰" : "✕"}
           </button>
           {/* Selects */}
           <select className="filter-select-sm" value={company} onChange={e => setCompany(e.target.value)} title="Target Company">
@@ -191,6 +183,16 @@ export default function ChatArea({
             disabled={isLoading}
           >
             {isLoading ? '…' : 'Search'}
+          </button>
+
+          {/* Solutions Drawer Toggle on Right */}
+          <button
+            type="button"
+            className="ref-drawer-toggle-btn"
+            onClick={onToggleRefDrawer}
+            title="View Retrieved Problems & Video Tutorials"
+          >
+            📖 {referenceCount > 0 ? `Solutions (${referenceCount})` : 'Solutions'}
           </button>
         </div>
       </form>

@@ -634,7 +634,6 @@ code, pre, .mono {
 
 /* Search button */
 .filter-search-btn {
-  margin-left: auto;
   height: 30px;
   padding: 0 0.85rem;
   background: #ffffff;
@@ -1162,6 +1161,7 @@ code, pre, .mono {
    RESPONSIVE BREAKPOINTS (TABLET & MOBILE UI)
    ============================================ */
 .ref-drawer-toggle-btn {
+  margin-left: auto;
   background: rgba(255, 0, 0, 0.12);
   border: 1px solid rgba(255, 0, 0, 0.3);
   color: #ff6b6b;
