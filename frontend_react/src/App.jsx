@@ -1,11 +1,22 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import AuthPortal from './components/AuthPortal'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
 import ReferencePanel from './components/ReferencePanel'
-import { getMetadata, runQuery, saveSession, deleteSession, getUserSessions } from './api/client'
+import LeetCodeDashboard from './components/LeetCodeDashboard'
+import OnboardingTourModal from './components/OnboardingTourModal'
+import {
+  getMetadata,
+  runQuery,
+  saveSession,
+  deleteSession,
+  getUserSessions,
+  getUserSolvedProblems,
+  toggleProblemSolved
+} from './api/client'
 
 const LS_GUEST = 'dsa_cracker_guest_sessions'
+const LS_GUEST_SOLVED = 'dsa_cracker_guest_solved'
 const LS_AUTH = 'dsa_cracker_auth'
 
 function makeId() {
@@ -24,6 +35,16 @@ function persistGuestSessions(sessions) {
 
 function clearGuestSessions() {
   try { localStorage.removeItem(LS_GUEST) } catch {}
+}
+
+function loadGuestSolved() {
+  try {
+    return JSON.parse(localStorage.getItem(LS_GUEST_SOLVED) || '[]')
+  } catch { return [] }
+}
+
+function persistGuestSolved(list) {
+  try { localStorage.setItem(LS_GUEST_SOLVED, JSON.stringify(list)) } catch {}
 }
 
 function loadAuthCache() {
@@ -53,10 +74,24 @@ export default function App() {
   const [currentSessionId, setCurrentSessionId] = useState(null)
   const [messages, setMessages] = useState([])
   const [lastReferences, setLastReferences] = useState([])
+  const [solvedProblems, setSolvedProblems] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [metadata, setMetadata] = useState(null)
 
+  const [dashboardOpen, setDashboardOpen] = useState(false)
+  const [tourOpen, setTourOpen] = useState(false)
+
   const { toasts, addToast } = useToasts()
+
+  // Derive quick title Set for solved questions lookup
+  const solvedTitles = useMemo(() => {
+    const set = new Set()
+    solvedProblems.forEach(p => {
+      const t = p.problem_title || p.title
+      if (t) set.add(t.trim())
+    })
+    return set
+  }, [solvedProblems])
 
   // On mount: check cached auth, load metadata
   useEffect(() => {
@@ -71,6 +106,7 @@ export default function App() {
       if (cached.guestUser) {
         const guestSessions = loadGuestSessions()
         setSessions(guestSessions)
+        setSolvedProblems(loadGuestSolved())
         if (Object.keys(guestSessions).length === 0) {
           createNewSession(guestSessions, true)
         } else {
@@ -80,7 +116,7 @@ export default function App() {
           setLastReferences(guestSessions[firstId]?.lastReferences || [])
         }
       } else {
-        // User account — fetch from server
+        // User account — fetch sessions & solved list from server
         getUserSessions(cached.userEmail).then(userSessions => {
           const sessMap = userSessions || {}
           setSessions(sessMap)
@@ -93,6 +129,7 @@ export default function App() {
             setLastReferences(sessMap[firstId]?.lastReferences || [])
           }
         })
+        getUserSolvedProblems(cached.userEmail).then(setSolvedProblems)
       }
     }
   }, [])
@@ -111,7 +148,7 @@ export default function App() {
     return id
   }
 
-  async function handleAuth({ authenticated, guestUser, userEmail, userName }) {
+  async function handleAuth({ authenticated, guestUser, userEmail, userName, isNewUser }) {
     setAuthenticated(authenticated)
     setGuestUser(guestUser)
     setUserEmail(userEmail)
@@ -122,6 +159,7 @@ export default function App() {
     if (guestUser) {
       const guestSessions = loadGuestSessions()
       setSessions(guestSessions)
+      setSolvedProblems(loadGuestSolved())
       if (Object.keys(guestSessions).length === 0) {
         createNewSession(guestSessions, true)
       } else {
@@ -131,17 +169,22 @@ export default function App() {
         setLastReferences(guestSessions[firstId]?.lastReferences || [])
       }
     } else {
-      // Signed in: migrate any existing guest chats to this account first
+      // Signed in: migrate any existing guest chats & solved problems to this account
       const guestSessions = loadGuestSessions()
       for (const [id, sess] of Object.entries(guestSessions)) {
         if (sess.messages && sess.messages.length > 0) {
           await saveSession(id, userEmail, sess.title, sess.messages, sess.lastReferences || [])
         }
       }
-      // Clear guest sessions so guest account has no chats left
       clearGuestSessions()
 
-      // Load user account sessions from server database
+      const guestSolved = loadGuestSolved()
+      for (const p of guestSolved) {
+        await toggleProblemSolved(userEmail, p, true)
+      }
+      localStorage.removeItem(LS_GUEST_SOLVED)
+
+      // Load user account sessions & solved problems from server database
       const userSessions = (await getUserSessions(userEmail)) || {}
       setSessions(userSessions)
       if (Object.keys(userSessions).length === 0) {
@@ -152,6 +195,14 @@ export default function App() {
         setMessages(userSessions[firstId]?.messages || [])
         setLastReferences(userSessions[firstId]?.lastReferences || [])
       }
+
+      const solvedList = await getUserSolvedProblems(userEmail)
+      setSolvedProblems(solvedList)
+    }
+
+    // Trigger onboarding spotlight tour for new users / signups
+    if (isNewUser) {
+      setTimeout(() => setTourOpen(true), 600)
     }
   }
 
@@ -162,6 +213,7 @@ export default function App() {
   function handleSignOut() {
     localStorage.removeItem(LS_AUTH)
     clearGuestSessions()
+    localStorage.removeItem(LS_GUEST_SOLVED)
     setAuthenticated(false)
     setGuestUser(true)
     setUserEmail(null)
@@ -170,6 +222,7 @@ export default function App() {
     setCurrentSessionId(null)
     setMessages([])
     setLastReferences([])
+    setSolvedProblems([])
   }
 
   function handleNewSession() {
@@ -207,6 +260,37 @@ export default function App() {
       persistGuestSessions(updated)
     } else if (userEmail) {
       deleteSession(id)
+    }
+  }
+
+  async function handleToggleSolved(problem, isSolved) {
+    const targetTitle = (problem.problem_title || problem.title || '').trim()
+    if (!targetTitle) return
+
+    let updatedList = []
+    if (isSolved) {
+      const formatted = {
+        problem_title: targetTitle,
+        title: targetTitle,
+        problem_link: problem.problem_link || problem.link || '',
+        link: problem.problem_link || problem.link || '',
+        company: problem.company || '',
+        difficulty: problem.difficulty || 'Medium',
+        topics: Array.isArray(problem.topics) ? problem.topics.join(', ') : (problem.topics || '')
+      }
+      updatedList = [...solvedProblems.filter(p => (p.problem_title || p.title || '').trim().toLowerCase() !== targetTitle.toLowerCase()), formatted]
+      addToast(`" ${targetTitle} " marked as Solved! 🎉`)
+    } else {
+      updatedList = solvedProblems.filter(p => (p.problem_title || p.title || '').trim().toLowerCase() !== targetTitle.toLowerCase())
+      addToast(`" ${targetTitle} " unmarked.`)
+    }
+
+    setSolvedProblems(updatedList)
+
+    if (guestUser) {
+      persistGuestSolved(updatedList)
+    } else if (userEmail) {
+      await toggleProblemSolved(userEmail, problem, isSolved)
     }
   }
 
@@ -320,6 +404,8 @@ export default function App() {
         onOpenAuth={handleOpenAuth}
         onToggleSidebar={() => setSidebarCollapsed(prev => !prev)}
         onToast={addToast}
+        onOpenDashboard={() => setDashboardOpen(true)}
+        onOpenTour={() => setTourOpen(true)}
       />
 
       <div className="main-content">
@@ -333,15 +419,36 @@ export default function App() {
             sidebarCollapsed={sidebarCollapsed}
             onToggleSidebar={() => setSidebarCollapsed(prev => !prev)}
             onToggleRefDrawer={() => setRefDrawerOpen(prev => !prev)}
+            onOpenDashboard={() => setDashboardOpen(true)}
             referenceCount={lastReferences ? lastReferences.length : 0}
           />
           <ReferencePanel
             references={lastReferences}
             refDrawerOpen={refDrawerOpen}
             onCloseRefDrawer={() => setRefDrawerOpen(false)}
+            solvedTitles={solvedTitles}
+            onToggleSolved={handleToggleSolved}
           />
         </div>
       </div>
+
+      {/* LeetCode & DSA Dashboard Modal */}
+      <LeetCodeDashboard
+        isOpen={dashboardOpen}
+        onClose={() => setDashboardOpen(false)}
+        guestUser={guestUser}
+        userEmail={userEmail}
+        userName={userName}
+        solvedProblems={solvedProblems}
+        onToggleSolved={handleToggleSolved}
+        onOpenAuth={handleOpenAuth}
+      />
+
+      {/* Non-centered Onboarding Tour Modal */}
+      <OnboardingTourModal
+        isOpen={tourOpen}
+        onClose={() => setTourOpen(false)}
+      />
 
       {/* Toast notifications */}
       <div className="toast-container">

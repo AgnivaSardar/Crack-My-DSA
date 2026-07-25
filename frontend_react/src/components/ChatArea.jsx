@@ -67,6 +67,7 @@ export default function ChatArea({
   sidebarCollapsed,
   onToggleSidebar,
   onToggleRefDrawer,
+  onOpenDashboard,
   referenceCount = 0
 }) {
   const [input, setInput] = useState('')
@@ -144,7 +145,7 @@ export default function ChatArea({
     <div className="chat-column">
 
       {/* Filter Panel — FIXED AT TOP, compact single row */}
-      <form className="filter-panel-top" onSubmit={handleSearch}>
+      <form className="filter-panel-top" id="tour-filters" onSubmit={handleSearch}>
         <div className="filter-top-row">
           <button
             type="button"
@@ -183,6 +184,17 @@ export default function ChatArea({
             disabled={isLoading}
           >
             {isLoading ? '…' : 'Search'}
+          </button>
+
+          {/* Dashboard Button */}
+          <button
+            type="button"
+            className="dash-top-btn"
+            id="tour-dashboard-btn"
+            onClick={onOpenDashboard}
+            title="Open LeetCode Analytics Dashboard"
+          >
+            📊 Dashboard
           </button>
 
           {/* Solutions Drawer Toggle on Right */}

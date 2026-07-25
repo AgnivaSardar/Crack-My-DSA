@@ -77,3 +77,19 @@ export async function saveSession(sessionId, userEmail, title, messages, lastRef
 export async function deleteSession(sessionId) {
   return safeFetch(`${API_BASE}/sessions/${sessionId}`, { method: 'DELETE' })
 }
+
+export async function getUserSolvedProblems(email) {
+  return (await safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/solved`)) || []
+}
+
+export async function toggleProblemSolved(email, problem, isSolved) {
+  return safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/solved`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      problem,
+      is_solved: isSolved
+    })
+  })
+}
+

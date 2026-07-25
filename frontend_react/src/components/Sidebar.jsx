@@ -11,7 +11,9 @@ export default function Sidebar({
   onSignOut,
   onOpenAuth,
   onToggleSidebar,
-  onToast
+  onToast,
+  onOpenDashboard,
+  onOpenTour
 }) {
   // { id, x, y } — fixed-positioned popup coords
   const [menu, setMenu] = useState(null)
@@ -59,7 +61,7 @@ export default function Sidebar({
 
   return (
     <>
-      <aside className="sidebar">
+      <aside className="sidebar" id="tour-sidebar">
         {/* Fixed header */}
         <div className="sidebar-header">
           <span className="sidebar-logo">Crack My DSA</span>
@@ -121,17 +123,25 @@ export default function Sidebar({
         {/* Fixed footer */}
         <div className="sidebar-footer">
           <div className="sidebar-user-label">
-            {guestUser ? 'Guest Mode (No Saving)' : `User: ${userName}`}
+            {guestUser ? 'Guest Mode' : `User: ${userName}`}
           </div>
-          {guestUser ? (
-            <button className="btn btn-sm" style={{ width: '100%' }} onClick={onOpenAuth}>
-              Sign In to Save
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.4rem' }}>
+            <button className="btn btn-sm" style={{ width: '100%' }} onClick={onOpenDashboard}>
+              📊 LeetCode Dashboard
             </button>
-          ) : (
-            <button className="btn btn-sm" style={{ width: '100%' }} onClick={onSignOut}>
-              Sign Out
+            <button className="btn btn-sm btn-secondary" style={{ width: '100%' }} onClick={onOpenTour}>
+              ✨ Take Feature Tour
             </button>
-          )}
+            {guestUser ? (
+              <button className="btn btn-sm" style={{ width: '100%', marginTop: '0.2rem' }} onClick={onOpenAuth}>
+                Sign In to Save
+              </button>
+            ) : (
+              <button className="btn btn-sm" style={{ width: '100%', marginTop: '0.2rem' }} onClick={onSignOut}>
+                Sign Out
+              </button>
+            )}
+          </div>
         </div>
       </aside>
 

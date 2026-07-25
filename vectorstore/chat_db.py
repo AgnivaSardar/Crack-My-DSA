@@ -73,6 +73,19 @@ class ChatDatabaseManager:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
                 """)
+                cursor.execute("""
+                CREATE TABLE IF NOT EXISTS user_solved_problems (
+                    id SERIAL PRIMARY KEY,
+                    user_email VARCHAR(255) REFERENCES users(email) ON DELETE CASCADE,
+                    problem_title VARCHAR(255) NOT NULL,
+                    problem_link TEXT,
+                    company VARCHAR(255),
+                    difficulty VARCHAR(50),
+                    topics TEXT,
+                    solved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(user_email, problem_title)
+                );
+                """)
                 self.conn.commit()
         else:
             cursor = self.conn.cursor()
@@ -108,6 +121,20 @@ class ChatDatabaseManager:
                 FOREIGN KEY (session_id) REFERENCES chat_sessions (id) ON DELETE CASCADE
             )
             """)
+            cursor.execute("""
+            CREATE TABLE IF NOT EXISTS user_solved_problems (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_email TEXT NOT NULL,
+                problem_title TEXT NOT NULL,
+                problem_link TEXT,
+                company TEXT,
+                difficulty TEXT,
+                topics TEXT,
+                solved_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_email, problem_title),
+                FOREIGN KEY (user_email) REFERENCES users (email) ON DELETE CASCADE
+            )
+            """)
             self.conn.commit()
 
     def get_or_create_user(self, email: str, name: Optional[str] = None, password: Optional[str] = None) -> Dict[str, Any]:
@@ -129,10 +156,11 @@ class ChatDatabaseManager:
                         cursor.execute("UPDATE users SET password = %s WHERE email = %s", (password, email))
                         self.conn.commit()
                         row_dict["password"] = password
+                    row_dict["is_new_user"] = False
                     return row_dict
                 cursor.execute("INSERT INTO users (email, name, password) VALUES (%s, %s, %s)", (email, name, password))
                 self.conn.commit()
-                return {"email": email, "name": name}
+                return {"email": email, "name": name, "is_new_user": True}
         else:
             cursor = self.conn.cursor()
             cursor.execute("SELECT * FROM users WHERE email = ?", (email,))
@@ -146,10 +174,11 @@ class ChatDatabaseManager:
                     cursor.execute("UPDATE users SET password = ? WHERE email = ?", (password, email))
                     self.conn.commit()
                     row_dict["password"] = password
+                row_dict["is_new_user"] = False
                 return row_dict
             cursor.execute("INSERT INTO users (email, name, password) VALUES (?, ?, ?)", (email, name, password))
             self.conn.commit()
-            return {"email": email, "name": name}
+            return {"email": email, "name": name, "is_new_user": True}
 
     def save_session(self, session_id: str, user_email: Optional[str], title: str, messages: List[Dict[str, Any]], last_references: List[Dict[str, Any]]):
         ref_json = json.dumps(last_references, ensure_ascii=False)
@@ -241,3 +270,58 @@ class ChatDatabaseManager:
             cursor = self.conn.cursor()
             cursor.execute("DELETE FROM chat_sessions WHERE id = ?", (session_id,))
             self.conn.commit()
+
+    def get_user_solved_problems(self, email: str) -> List[Dict[str, Any]]:
+        email = email.strip().lower()
+        if self.is_postgres:
+            import psycopg2.extras
+            with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                cursor.execute("SELECT * FROM user_solved_problems WHERE user_email = %s ORDER BY solved_at DESC", (email,))
+                rows = cursor.fetchall()
+                return [dict(r) for r in rows]
+        else:
+            cursor = self.conn.cursor()
+            cursor.execute("SELECT * FROM user_solved_problems WHERE user_email = ? ORDER BY solved_at DESC", (email,))
+            rows = cursor.fetchall()
+            return [dict(r) for r in rows]
+
+    def toggle_problem_solved(self, email: str, problem: Dict[str, Any], is_solved: bool) -> bool:
+        email = email.strip().lower()
+        title = problem.get("title") or problem.get("problem_title")
+        if not title:
+            return False
+
+        link = problem.get("link") or problem.get("problem_link") or ""
+        company = problem.get("company") or ""
+        difficulty = problem.get("difficulty") or "Medium"
+        topics_val = problem.get("topics")
+        if isinstance(topics_val, list):
+            topics_str = ", ".join(topics_val)
+        else:
+            topics_str = str(topics_val or "")
+
+        self.get_or_create_user(email)
+
+        if self.is_postgres:
+            with self.conn.cursor() as cursor:
+                if is_solved:
+                    cursor.execute("""
+                    INSERT INTO user_solved_problems (user_email, problem_title, problem_link, company, difficulty, topics)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (user_email, problem_title) DO NOTHING;
+                    """, (email, title, link, company, difficulty, topics_str))
+                else:
+                    cursor.execute("DELETE FROM user_solved_problems WHERE user_email = %s AND problem_title = %s", (email, title))
+                self.conn.commit()
+        else:
+            cursor = self.conn.cursor()
+            if is_solved:
+                cursor.execute("""
+                INSERT OR IGNORE INTO user_solved_problems (user_email, problem_title, problem_link, company, difficulty, topics)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """, (email, title, link, company, difficulty, topics_str))
+            else:
+                cursor.execute("DELETE FROM user_solved_problems WHERE user_email = ? AND problem_title = ?", (email, title))
+            self.conn.commit()
+        return is_solved
+

@@ -40,16 +40,33 @@ generator = None
 @app.on_event("startup")
 def startup_event():
     global embedding_manager, chroma_manager, retriever, generator
+    print("Starting up API servers and initializing RAG components...")
+    
     try:
-        print("Starting up API servers and initializing RAG components...")
         embedding_manager = EmbeddingManager()
-        chroma_manager = ChromaManager()
-        retriever = LeetCodeRetriever(embedding_manager, chroma_manager)
-        generator = LeetCodeGenerator()
-        print("All RAG components initialized successfully.")
     except Exception as e:
-        print(f"Error initializing RAG components on startup: {e}")
-        print("Startup warning: Some endpoints will fail if configuration/API keys are missing.")
+        print(f"[Startup Error] EmbeddingManager: {e}")
+        embedding_manager = None
+
+    try:
+        chroma_manager = ChromaManager()
+    except Exception as e:
+        print(f"[Startup Error] ChromaManager: {e}")
+        chroma_manager = None
+
+    try:
+        retriever = LeetCodeRetriever(embedding_manager, chroma_manager)
+    except Exception as e:
+        print(f"[Startup Error] LeetCodeRetriever: {e}")
+        retriever = None
+
+    try:
+        generator = LeetCodeGenerator()
+    except Exception as e:
+        print(f"[Startup Error] LeetCodeGenerator: {e}")
+        generator = None
+
+    print("RAG startup initialization completed.")
 
 @app.get("/")
 async def root_health_check():
@@ -77,11 +94,26 @@ class IngestStatus(BaseModel):
 @app.post("/api/query", response_model=QueryResponse)
 async def query_rag(request: QueryRequest):
     """Submits a query to the RAG pipeline and returns the generated answer and references."""
-    if not retriever or not generator:
-        raise HTTPException(
-            status_code=503, 
-            detail="RAG pipeline is not fully initialized. Check database and API keys."
-        )
+    global embedding_manager, chroma_manager, retriever, generator
+    
+    # Lazy fallback initialization if any component is missing
+    if not retriever:
+        try:
+            if not embedding_manager:
+                embedding_manager = EmbeddingManager()
+            if not chroma_manager:
+                chroma_manager = ChromaManager()
+            retriever = LeetCodeRetriever(embedding_manager, chroma_manager)
+        except Exception as e:
+            print(f"[Query Error] Lazy retriever init fallback: {e}")
+            retriever = LeetCodeRetriever(None, None)
+            
+    if not generator:
+        try:
+            generator = LeetCodeGenerator()
+        except Exception as e:
+            print(f"[Query Error] Lazy generator init fallback: {e}")
+            generator = LeetCodeGenerator()
         
     try:
         # Retrieve relevant questions
@@ -226,6 +258,32 @@ async def delete_session(session_id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class SolvedProblemRequest(BaseModel):
+    problem: Dict[str, Any]
+    is_solved: bool
+
+@app.get("/users/{email}/solved")
+@app.get("/api/users/{email}/solved")
+async def get_user_solved_problems(email: str):
+    try:
+        from vectorstore.chat_db import ChatDatabaseManager
+        db = ChatDatabaseManager()
+        return db.get_user_solved_problems(email)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/users/{email}/solved")
+@app.post("/api/users/{email}/solved")
+async def toggle_user_solved_problem(email: str, request: SolvedProblemRequest):
+    try:
+        from vectorstore.chat_db import ChatDatabaseManager
+        db = ChatDatabaseManager()
+        status = db.toggle_problem_solved(email, request.problem, request.is_solved)
+        return {"status": "success", "is_solved": status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+
