@@ -755,7 +755,7 @@ class ChatDatabaseManager:
                     SELECT p.topic_id, COUNT(*) as completed_count
                     FROM user_dsa_progress up
                     JOIN dsa_roadmap_problems p ON up.problem_id = p.problem_id
-                    WHERE up.user_email = %s AND (up.is_completed = TRUE OR up.is_completed = 1)
+                    WHERE up.user_email = %s AND up.is_completed = TRUE
                     GROUP BY p.topic_id;
                     """, (user_email,))
                     for row in cursor.fetchall():
@@ -803,7 +803,7 @@ class ChatDatabaseManager:
                 if user_email:
                     cursor.execute("""
                     SELECT problem_id FROM user_dsa_progress
-                    WHERE user_email = %s AND (is_completed = TRUE OR is_completed = 1);
+                    WHERE user_email = %s AND is_completed = TRUE;
                     """, (user_email,))
                     completed_set = set(row["problem_id"] for row in cursor.fetchall())
                     
