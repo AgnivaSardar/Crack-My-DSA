@@ -99,11 +99,11 @@ export default function LeetCodeDashboard({
   const hardCount = officialStats?.hard != null ? officialStats.hard : solvedProblems.filter(p => (p.difficulty || '').toLowerCase() === 'hard').length
 
   // HackerRank skill rating logic based on solved count
-  let starRating = '1★ Novice Solver'
-  if (totalSolved >= 30) starRating = '5★ DSA Master'
-  else if (totalSolved >= 20) starRating = '4★ Advanced Solver'
-  else if (totalSolved >= 10) starRating = '3★ Intermediate Solver'
-  else if (totalSolved >= 5) starRating = '2★ Rising Coder'
+  let starRating = 'Novice Solver'
+  if (totalSolved >= 30) starRating = 'DSA Master'
+  else if (totalSolved >= 20) starRating = 'Advanced Solver'
+  else if (totalSolved >= 10) starRating = 'Intermediate Solver'
+  else if (totalSolved >= 5) starRating = 'Rising Coder'
 
   // Company distribution
   const companyCounts = {}
@@ -162,7 +162,9 @@ export default function LeetCodeDashboard({
         {guestUser ? (
           /* Locked State for Guest Users */
           <div className="dashboard-guest-card">
-            <div className="guest-lock-icon">🔒</div>
+            <div className="guest-lock-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
             <h3>LeetCode Analytics Dashboard</h3>
             <p>
               The LeetCode Dashboard is personalized for registered accounts.
@@ -212,9 +214,9 @@ export default function LeetCodeDashboard({
                       type="button"
                       className="btn btn-sm btn-secondary"
                       onClick={() => setIsEditing(true)}
-                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.76rem' }}
+                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.76rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
                     >
-                      ✏️ Change LeetCode ID
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Change LeetCode ID
                     </button>
                   </div>
                 </div>
@@ -396,7 +398,7 @@ export default function LeetCodeDashboard({
                                 onClick={() => onToggleSolved(p, false)}
                                 title="Unmark problem"
                               >
-                                ✓ Solved
+                                Solved
                               </button>
                             </td>
                           </tr>

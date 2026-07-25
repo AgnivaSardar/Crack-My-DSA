@@ -85,12 +85,12 @@ export default function ReferencePanel({
             </a>
           )}
           <a
-            className="ref-card-yt-link"
             href={ytUrl}
+            className="yt-card-btn"
             target="_blank"
             rel="noopener noreferrer"
           >
-            ▶ Solution
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: '4px' }}><polygon points="5 3 19 12 5 21 5 3"/></svg> Solution
           </a>
           <button
             type="button"
@@ -98,7 +98,7 @@ export default function ReferencePanel({
             onClick={() => onToggleSolved && onToggleSolved(q, !isDone)}
             title={isDone ? 'Mark as Unsolved' : 'Mark as Solved'}
           >
-            {isDone ? '✓ Solved' : '+ Mark Solved'}
+            {isDone ? 'Solved' : '+ Mark Solved'}
           </button>
         </div>
       </div>

@@ -148,7 +148,7 @@ export default function OnboardingTourModal({ isOpen, onClose }) {
               </button>
             )}
             <button className="btn btn-primary btn-sm" onClick={handleNext}>
-              {isLastStep ? 'Finish Tour ✓' : 'Continue →'}
+              {isLastStep ? 'Finish Tour' : 'Continue →'}
             </button>
           </div>
         </div>

@@ -38,7 +38,7 @@ function CodeBlock({ code, language }) {
       <div className="code-block-header">
         <span className="code-lang">{lang}</span>
         <button className="code-copy-btn" onClick={handleCopy}>
-          {copied ? '✓ Copied' : 'Copy'}
+          {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
       <SyntaxHighlighter

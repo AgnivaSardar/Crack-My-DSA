@@ -48,7 +48,7 @@ class LeetCodeGenerator:
             "Your objective is to help the user prepare for coding interviews by answering their queries precisely and concisely.\n\n"
             "Guidelines:\n"
             "1. ONLY answer exactly what is asked. Do not add unsolicited strategies, complexities, or code solutions unless explicitly requested.\n"
-            "2. If the user asks for a list of questions, output a clean Markdown table containing EXACTLY the questions provided in the 'Retrieved Company Question Context'. Format the Markdown table with columns: | LeetCode # | Problem Title | Difficulty | Frequency Score | Topics |. In the 'LeetCode #' column, place the exact LeetCode question number (e.g. #1, #15, #22, #79, or Premium/SQL). In the 'Problem Title' column, place the problem title AND right next to it, append a YouTube solution link e.g. '[▶ Solution](https://www.youtube.com/results?search_query=LeetCode+<Title>+<Company>+solution)'. Match the exact Titles, Company, Difficulty, Frequency, and Topics from the context. Do NOT invent, substitute, or replace questions outside of the provided context.\n"
+            "2. If the user asks for a list of questions, output a clean Markdown table containing EXACTLY the questions provided in the 'Retrieved Company Question Context'. Format the Markdown table with columns: | LeetCode # | Problem Title | Difficulty | Frequency Score | Topics |. In the 'LeetCode #' column, place the exact LeetCode question number (e.g. #1, #15, #22, #79, or Premium/SQL). In the 'Problem Title' column, place the problem title AND right next to it, append a YouTube solution link e.g. '[Solution](https://www.youtube.com/results?search_query=LeetCode+<Title>+<Company>+solution)'. Match the exact Titles, Company, Difficulty, Frequency, and Topics from the context. Do NOT invent, substitute, or replace questions outside of the provided context.\n"
             "3. If the user asks about a specific question or asks 'how to implement' a problem, DO NOT output code solutions immediately. First, ask the candidate which programming language they prefer (Java, Python, C, or C++). Once they specify the language in the next turn, provide the clean code implementation and complexity analysis ONLY in that selected language.\n"
             "4. At the end of every response, provide 2-3 dynamic, highly relevant recommended follow-up questions/suggestions for what they should ask next, based on their previous questions and current progress.\n"
             "5. If a question number is not standard (e.g., SQL/Database or custom premium), represent it as 'SQL' or 'Premium'."
@@ -68,7 +68,7 @@ class LeetCodeGenerator:
             yt_link = f"https://www.youtube.com/results?search_query={yt_query}"
             
             q_str = (
-                f"{idx + 1}. Title: {title} [▶ Solution]({yt_link})\n"
+                f"{idx + 1}. Title: {title} [Solution]({yt_link})\n"
                 f"   Company: {company}\n"
                 f"   Difficulty: {q['difficulty']}\n"
                 f"   Frequency Score: {q['frequency']:.1f}\n"
@@ -84,14 +84,14 @@ class LeetCodeGenerator:
         """Generates a high-quality response offline using static rules and template databases."""
         if not retrieved_questions:
             return (
-                "### 🛰️ Offline Mode: No problems retrieved\n\n"
+                "### [Offline Mode] No problems retrieved\n\n"
                 "I am currently operating in **Local/Offline Mode** because the Gemini API is unreachable or network access is disabled.\n\n"
                 "I couldn't find any questions matching your query in the local metadata database. Please try a different query or expand your search filters."
             )
             
         import urllib.parse
         response = [
-            "### 🛰️ Crack My DSA (Local/Offline Fallback Mode)\n",
+            "### Crack My DSA (Local/Offline Fallback Mode)\n",
             "> **Note**: The Gemini LLM API is unreachable (likely due to sandbox network restrictions or missing API keys). I am serving this request using local data templates.\n",
             f"Here are the **Top {len(retrieved_questions)}** questions matching your search:\n"
         ]
@@ -102,13 +102,13 @@ class LeetCodeGenerator:
         for idx, q in enumerate(retrieved_questions):
             link_md = f"[Solve ↗]({q['link']})" if q['link'] else "No Link"
             yt_query = urllib.parse.quote_plus(f"LeetCode {q['title']} {q['company']} solution")
-            yt_md = f"[▶ YouTube Solution](https://www.youtube.com/results?search_query={yt_query})"
+            yt_md = f"[YouTube Solution](https://www.youtube.com/results?search_query={yt_query})"
             response.append(f"| #{idx+1} | **{q['company']}** | **{q['title']}** | `{q['difficulty']}` | {q['frequency']:.1f}% | {link_md} · {yt_md} |")
             
         response.append("\n---\n")
         
         # 2. Add algorithmic details for top 1-2 questions
-        response.append("### 💡 Problem Explanations & Implementations\n")
+        response.append("### Problem Explanations & Implementations\n")
         
         for idx, q in enumerate(retrieved_questions[:2]):
             title_slug = q['title'].lower().replace(" ", "-")
@@ -121,13 +121,13 @@ class LeetCodeGenerator:
                 response.append(f"**Optimal Algorithmic Strategy:**\n{cache['strategy']}\n")
                 response.append(f"**Complexity Analysis:**\n`{cache['complexity']}`\n")
                 
-                response.append("##### 🐍 Python Solution")
+                response.append("##### Python Solution")
                 response.append(f"```python\n{cache['python']}\n```\n")
                 
-                response.append("##### ☕ Java Solution")
+                response.append("##### Java Solution")
                 response.append(f"```java\n{cache['java']}\n```\n")
                 
-                response.append("##### 💻 C++ Solution")
+                response.append("##### C++ Solution")
                 response.append(f"```cpp\n{cache['cpp']}\n```\n")
             else:
                 # Dynamic default template based on topics
@@ -151,18 +151,18 @@ class LeetCodeGenerator:
                 response.append(f"**Optimal Algorithmic Strategy:**\n{strategy}\n")
                 response.append(f"**Complexity Analysis:**\n`{complexity}`\n")
                 
-                response.append("##### 🐍 Python Template")
+                response.append("##### Python Template")
                 response.append(f"```python\n# [Offline Mode Template]\ndef solveProblem(data):\n    # TODO: Implement optimal {q['topics']} approach\n    pass\n```\n")
                 
-                response.append("##### ☕ Java Template")
+                response.append("##### Java Template")
                 response.append(f"```java\n// [Offline Mode Template]\nclass Solution {{\n    public void solve(Object data) {{\n        // TODO: Implement optimal {q['topics']} approach\n    }}\n}}\n```\n")
                 
-                response.append("##### 💻 C++ Template")
+                response.append("##### C++ Template")
                 response.append(f"```cpp\n// [Offline Mode Template]\nclass Solution {{\npublic:\n    void solve(auto data) {{\n        // TODO: Implement optimal {q['topics']} approach\n    }}\n}};\n```\n")
                 
             response.append("\n---\n")
             
-        response.append("💡 *Tip: Connect this machine to the internet and input a valid API key in your .env to see full dynamic AI explanations and code dry-runs.*")
+        response.append("Tip: Connect this machine to the internet and input a valid API key in your .env to see full dynamic AI explanations and code dry-runs.")
         return "\n".join(response)
 
     def generate_response(self, query: str, retrieved_questions: List[Dict[str, Any]], chat_history: Optional[List[Dict[str, str]]] = None, solved_titles: Optional[List[str]] = None) -> str:
