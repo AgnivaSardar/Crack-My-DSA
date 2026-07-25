@@ -13,7 +13,7 @@ class GeminiClient:
         if not config.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY is not set in environment variables.")
         self.client = genai.Client(api_key=config.GEMINI_API_KEY)
-        self.model = "gemini-3.5-flash-lite" # Default standard fast model
+        self.model = "gemini-2.5-flash" # Standard fast Gemini model
 
     def generate_text(self, prompt: str, system_instruction: Optional[str] = None) -> str:
         """Generates standard text output from a prompt."""
