@@ -102,3 +102,9 @@ export async function syncLeetCodeUser(email, username) {
   })
 }
 
+export async function autoSyncUserLeetCodeByEmail(email) {
+  return safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/auto-sync`, {
+    method: 'POST'
+  })
+}
+

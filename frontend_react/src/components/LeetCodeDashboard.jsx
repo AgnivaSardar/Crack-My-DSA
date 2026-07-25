@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { syncLeetCodeUser } from '../api/client'
+import { useState, useEffect } from 'react'
+import { autoSyncUserLeetCodeByEmail } from '../api/client'
 
 export default function LeetCodeDashboard({
   isOpen,
@@ -15,33 +15,33 @@ export default function LeetCodeDashboard({
   const [searchTerm, setSearchTerm] = useState('')
   const [diffFilter, setDiffFilter] = useState('All')
   const [companyFilter, setCompanyFilter] = useState('All')
-  const [lcUsername, setLcUsername] = useState('')
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
   const [officialStats, setOfficialStats] = useState(null)
 
-  if (!isOpen) return null
+  useEffect(() => {
+    if (isOpen && userEmail && !guestUser) {
+      handleRefreshSync()
+    }
+  }, [isOpen, userEmail, guestUser])
 
-  async function handleSyncLeetCode(e) {
-    e.preventDefault()
-    if (!lcUsername.trim() || !userEmail) return
+  async function handleRefreshSync() {
+    if (!userEmail) return
     setIsSyncing(true)
-    setSyncMsg('Connecting to LeetCode API...')
+    setSyncMsg('Refreshing sync with LeetCode...')
     try {
-      const res = await syncLeetCodeUser(userEmail, lcUsername.trim())
+      const res = await autoSyncUserLeetCodeByEmail(userEmail)
       if (res) {
         if (res.stats) {
           setOfficialStats(res.stats)
         }
         if (res.solved_problems) {
-          setSyncMsg(`Successfully synced profile from LeetCode! Total Solved: ${res.stats?.total || res.synced_count}`)
+          setSyncMsg(`Synced with registered email! Total Solved: ${res.stats?.total || res.solved_problems.length}`)
           if (onSyncSuccess) onSyncSuccess(res.solved_problems)
         }
-      } else {
-        setSyncMsg('Profile synced.')
       }
     } catch {
-      setSyncMsg('Failed to sync. Please verify LeetCode username.')
+      setSyncMsg('Failed to sync. Please try again.')
     } finally {
       setIsSyncing(false)
     }
@@ -128,35 +128,29 @@ export default function LeetCodeDashboard({
           /* Full Dashboard View for Signed-In Users */
           <div className="dashboard-body">
             {/* LeetCode Sync Bar */}
-            <form className="dash-company-section" onSubmit={handleSyncLeetCode} style={{ background: 'rgba(56, 189, 248, 0.05)', borderColor: 'rgba(56, 189, 248, 0.2)' }}>
-              <div className="dash-section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#38bdf8' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                Sync with your LeetCode Account
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                <input
-                  type="text"
-                  className="dash-search-input"
-                  placeholder="Enter LeetCode Username (e.g. neetcode)"
-                  value={lcUsername}
-                  onChange={e => setLcUsername(e.target.value)}
-                  style={{ flex: 1, minWidth: '200px' }}
-                />
-                <button
-                  type="submit"
-                  className="btn btn-sm btn-primary"
-                  disabled={isSyncing || !lcUsername.trim()}
-                  style={{ padding: '0.35rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                >
-                  {isSyncing ? 'Syncing...' : 'Auto-Import Solved Questions'}
-                </button>
-              </div>
-              {syncMsg && (
-                <div style={{ fontSize: '0.76rem', color: syncMsg.includes('Failed') ? '#fca5a5' : '#34d399', marginTop: '0.4rem' }}>
-                  {syncMsg}
+            <div className="dash-company-section" style={{ background: 'rgba(56, 189, 248, 0.05)', borderColor: 'rgba(56, 189, 248, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+              <div>
+                <div className="dash-section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#38bdf8', margin: 0 }}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                  Automatic LeetCode Sync (Connected: {userEmail})
                 </div>
-              )}
-            </form>
+                {syncMsg && (
+                  <div style={{ fontSize: '0.76rem', color: syncMsg.includes('Failed') ? '#fca5a5' : '#34d399', marginTop: '0.25rem' }}>
+                    {syncMsg}
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                className="btn btn-sm btn-primary"
+                onClick={handleRefreshSync}
+                disabled={isSyncing}
+                style={{ padding: '0.4rem 1.1rem', display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }}><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                {isSyncing ? 'Syncing...' : 'Refresh Sync'}
+              </button>
+            </div>
 
             {/* Top Stat Cards Grid */}
             <div className="dashboard-stats-grid">
