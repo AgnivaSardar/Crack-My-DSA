@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { syncLeetCodeUser } from '../api/client'
 
 export default function LeetCodeDashboard({
   isOpen,
@@ -8,13 +9,37 @@ export default function LeetCodeDashboard({
   userName,
   solvedProblems = [],
   onToggleSolved,
-  onOpenAuth
+  onOpenAuth,
+  onSyncSuccess
 }) {
   const [searchTerm, setSearchTerm] = useState('')
   const [diffFilter, setDiffFilter] = useState('All')
   const [companyFilter, setCompanyFilter] = useState('All')
+  const [lcUsername, setLcUsername] = useState('')
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState('')
 
   if (!isOpen) return null
+
+  async function handleSyncLeetCode(e) {
+    e.preventDefault()
+    if (!lcUsername.trim() || !userEmail) return
+    setIsSyncing(true)
+    setSyncMsg('Connecting to LeetCode API...')
+    try {
+      const res = await syncLeetCodeUser(userEmail, lcUsername.trim())
+      if (res && res.solved_problems) {
+        setSyncMsg(`Successfully synced ${res.synced_count || 0} accepted problems from LeetCode!`)
+        if (onSyncSuccess) onSyncSuccess(res.solved_problems)
+      } else {
+        setSyncMsg('Profile synced.')
+      }
+    } catch {
+      setSyncMsg('Failed to sync. Please verify LeetCode username.')
+    } finally {
+      setIsSyncing(false)
+    }
+  }
 
   // Calculate statistics
   const totalSolved = solvedProblems.length
@@ -96,6 +121,37 @@ export default function LeetCodeDashboard({
         ) : (
           /* Full Dashboard View for Signed-In Users */
           <div className="dashboard-body">
+            {/* LeetCode Sync Bar */}
+            <form className="dash-company-section" onSubmit={handleSyncLeetCode} style={{ background: 'rgba(56, 189, 248, 0.05)', borderColor: 'rgba(56, 189, 248, 0.2)' }}>
+              <div className="dash-section-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#38bdf8' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                Sync with your LeetCode Account
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  className="dash-search-input"
+                  placeholder="Enter LeetCode Username (e.g. neetcode)"
+                  value={lcUsername}
+                  onChange={e => setLcUsername(e.target.value)}
+                  style={{ flex: 1, minWidth: '200px' }}
+                />
+                <button
+                  type="submit"
+                  className="btn btn-sm btn-primary"
+                  disabled={isSyncing || !lcUsername.trim()}
+                  style={{ padding: '0.35rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                >
+                  {isSyncing ? 'Syncing...' : 'Auto-Import Solved Questions'}
+                </button>
+              </div>
+              {syncMsg && (
+                <div style={{ fontSize: '0.76rem', color: syncMsg.includes('Failed') ? '#fca5a5' : '#34d399', marginTop: '0.4rem' }}>
+                  {syncMsg}
+                </div>
+              )}
+            </form>
+
             {/* Top Stat Cards Grid */}
             <div className="dashboard-stats-grid">
               <div className="dash-stat-card total">

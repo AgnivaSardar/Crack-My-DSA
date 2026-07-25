@@ -193,8 +193,10 @@ export default function ChatArea({
             id="tour-dashboard-btn"
             onClick={onOpenDashboard}
             title="Open LeetCode Analytics Dashboard"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
           >
-            📊 Dashboard
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+            Dashboard
           </button>
 
           {/* Solutions Drawer Toggle on Right */}
@@ -203,8 +205,10 @@ export default function ChatArea({
             className="ref-drawer-toggle-btn"
             onClick={onToggleRefDrawer}
             title="View Retrieved Problems & Video Tutorials"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
           >
-            📖 {referenceCount > 0 ? `Solutions (${referenceCount})` : 'Solutions'}
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            {referenceCount > 0 ? `Solutions (${referenceCount})` : 'Solutions'}
           </button>
         </div>
       </form>

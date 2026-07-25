@@ -442,6 +442,7 @@ export default function App() {
         solvedProblems={solvedProblems}
         onToggleSolved={handleToggleSolved}
         onOpenAuth={handleOpenAuth}
+        onSyncSuccess={(newList) => setSolvedProblems(newList)}
       />
 
       {/* Non-centered Onboarding Tour Modal */}

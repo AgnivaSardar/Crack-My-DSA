@@ -262,6 +262,9 @@ class SolvedProblemRequest(BaseModel):
     problem: Dict[str, Any]
     is_solved: bool
 
+class LeetCodeSyncRequest(BaseModel):
+    username: str
+
 @app.get("/users/{email}/solved")
 @app.get("/api/users/{email}/solved")
 async def get_user_solved_problems(email: str):
@@ -280,6 +283,18 @@ async def toggle_user_solved_problem(email: str, request: SolvedProblemRequest):
         db = ChatDatabaseManager()
         status = db.toggle_problem_solved(email, request.problem, request.is_solved)
         return {"status": "success", "is_solved": status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/users/{email}/sync-leetcode")
+@app.post("/api/users/{email}/sync-leetcode")
+async def sync_user_leetcode(email: str, request: LeetCodeSyncRequest):
+    try:
+        from vectorstore.chat_db import ChatDatabaseManager
+        db = ChatDatabaseManager()
+        count = db.sync_leetcode_solved(email, request.username)
+        solved = db.get_user_solved_problems(email)
+        return {"status": "success", "synced_count": count, "solved_problems": solved}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

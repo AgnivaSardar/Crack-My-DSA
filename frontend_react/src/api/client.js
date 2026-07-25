@@ -93,3 +93,11 @@ export async function toggleProblemSolved(email, problem, isSolved) {
   })
 }
 
+export async function syncLeetCodeUser(email, username) {
+  return safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/sync-leetcode`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username })
+  })
+}
+

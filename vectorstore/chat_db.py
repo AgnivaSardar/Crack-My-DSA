@@ -325,3 +325,71 @@ class ChatDatabaseManager:
             self.conn.commit()
         return is_solved
 
+    def update_leetcode_username(self, email: str, username: str) -> bool:
+        email = email.strip().lower()
+        username = username.strip()
+        self.get_or_create_user(email)
+        if self.is_postgres:
+            with self.conn.cursor() as cursor:
+                try:
+                    cursor.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS leetcode_username VARCHAR(255);")
+                except Exception:
+                    pass
+                cursor.execute("UPDATE users SET leetcode_username = %s WHERE email = %s", (username, email))
+                self.conn.commit()
+        else:
+            cursor = self.conn.cursor()
+            try:
+                cursor.execute("ALTER TABLE users ADD COLUMN leetcode_username TEXT;")
+            except Exception:
+                pass
+            cursor.execute("UPDATE users SET leetcode_username = ? WHERE email = ?", (username, email))
+            self.conn.commit()
+        return True
+
+    def sync_leetcode_solved(self, email: str, username: str) -> int:
+        import urllib.request
+        import json
+
+        email = email.strip().lower()
+        username = username.strip()
+        if not username:
+            return 0
+
+        self.update_leetcode_username(email, username)
+
+        url = "https://leetcode.com/graphql"
+        query = """
+        query getACSubmissions($username: String!) {
+          recentAcSubmissionList(username: $username, limit: 100) {
+            title
+            titleSlug
+          }
+        }
+        """
+        payload = json.dumps({"query": query, "variables": {"username": username}}).encode("utf-8")
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Referer": "https://leetcode.com"
+        }
+
+        synced_count = 0
+        try:
+            req = urllib.request.Request(url, data=payload, headers=headers)
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                subs = data.get("data", {}).get("recentAcSubmissionList") or []
+                for s in subs:
+                    title = s.get("title")
+                    slug = s.get("titleSlug")
+                    if title:
+                        link = f"https://leetcode.com/problems/{slug}/" if slug else ""
+                        prob = {"title": title, "link": link, "company": "LeetCode", "difficulty": "Medium", "topics": "DSA"}
+                        self.toggle_problem_solved(email, prob, True)
+                        synced_count += 1
+        except Exception as e:
+            print(f"[LeetCode Sync Error] {e}")
+
+        return synced_count
+

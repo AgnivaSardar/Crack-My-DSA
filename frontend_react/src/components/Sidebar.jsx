@@ -126,11 +126,13 @@ export default function Sidebar({
             {guestUser ? 'Guest Mode' : `User: ${userName}`}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.4rem' }}>
-            <button className="btn btn-sm" style={{ width: '100%' }} onClick={onOpenDashboard}>
-              📊 LeetCode Dashboard
+            <button className="btn btn-sm" style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={onOpenDashboard}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="3" y="12" width="4" height="9" rx="1"/><rect x="10" y="7" width="4" height="14" rx="1"/><rect x="17" y="3" width="4" height="18" rx="1"/></svg>
+              LeetCode Dashboard
             </button>
-            <button className="btn btn-sm btn-secondary" style={{ width: '100%' }} onClick={onOpenTour}>
-              ✨ Take Feature Tour
+            <button className="btn btn-sm btn-secondary" style={{ width: '100%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} onClick={onOpenTour}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Take Feature Tour
             </button>
             {guestUser ? (
               <button className="btn btn-sm" style={{ width: '100%', marginTop: '0.2rem' }} onClick={onOpenAuth}>

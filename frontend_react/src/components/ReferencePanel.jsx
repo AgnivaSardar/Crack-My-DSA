@@ -139,12 +139,15 @@ export default function ReferencePanel({
               {/* TOP TABLE: Recommended Todo Questions */}
               <div className="ref-table-section">
                 <div className="ref-table-header todo">
-                  <span className="ref-table-title">🎯 Recommended Todo Questions</span>
+                  <span className="ref-table-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    Recommended Todo Questions
+                  </span>
                   <span className="ref-table-count">{todoQuestions.length}</span>
                 </div>
                 {todoQuestions.length === 0 ? (
                   <div className="ref-section-empty">
-                    Great job! All retrieved questions in this query have already been completed by you! 🎉
+                    All retrieved questions in this query have been completed by you!
                   </div>
                 ) : (
                   todoQuestions.map((q, idx) => renderProblemCard(q, idx, false))
@@ -154,7 +157,10 @@ export default function ReferencePanel({
               {/* BOTTOM TABLE: Already Done Questions */}
               <div className="ref-table-section" style={{ marginTop: '1.25rem' }}>
                 <div className="ref-table-header done">
-                  <span className="ref-table-title">✓ Already Done Questions</span>
+                  <span className="ref-table-title" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    Already Done Questions
+                  </span>
                   <span className="ref-table-count">{alreadyDoneQuestions.length}</span>
                 </div>
                 {alreadyDoneQuestions.length === 0 ? (
@@ -172,7 +178,7 @@ export default function ReferencePanel({
         {ytLinks.length > 0 && (
           <div className="yt-section">
             <div className="yt-section-title">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="#FF0000" style={{ marginRight: '6px' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#FF0000" style={{ marginRight: '6px' }}>
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
               </svg>
               Topic Learning Tutorials
@@ -185,8 +191,10 @@ export default function ReferencePanel({
                   href={searchUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 >
-                  ▶ Learn {topic} on YouTube
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="#FF0000"><path d="M8 5v14l11-7z"/></svg>
+                  Learn {topic} on YouTube
                 </a>
               ))}
             </div>
