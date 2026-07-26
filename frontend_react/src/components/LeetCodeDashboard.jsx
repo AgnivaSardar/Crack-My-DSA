@@ -211,13 +211,13 @@ export default function LeetCodeDashboard({
                       </div>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexShrink: 0 }}>
                     <button
                       type="button"
                       className="btn btn-sm btn-primary"
                       onClick={handleRefreshSync}
                       disabled={isSyncing}
-                      style={{ padding: '0.4rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                      style={{ padding: '0.45rem 1rem', fontSize: '0.8rem', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '6px', height: '36px' }}
                     >
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }}><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
                       {isSyncing ? 'Syncing...' : 'Refresh Sync'}
@@ -226,9 +226,9 @@ export default function LeetCodeDashboard({
                       type="button"
                       className="btn btn-sm btn-secondary"
                       onClick={() => setIsEditing(true)}
-                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.76rem', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                      style={{ padding: '0.45rem 1rem', fontSize: '0.8rem', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '6px', height: '36px' }}
                     >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Change LeetCode ID
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Change LeetCode ID
                     </button>
                   </div>
                 </div>
@@ -418,22 +418,22 @@ export default function LeetCodeDashboard({
                     </table>
 
                     {/* Pagination Bar */}
-                    <div className="dash-pagination-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', marginTop: '0.5rem', borderRadius: '0 0 8px 8px' }}>
-                      <div style={{ fontSize: '0.8rem', color: '#888' }}>
+                    <div className="dash-pagination-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', marginTop: '0.5rem', borderRadius: '0 0 8px 8px', flexWrap: 'wrap', gap: '0.6rem' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#888', whiteSpace: 'nowrap' }}>
                         Showing <strong>{startIndex + 1}</strong> - <strong>{Math.min(startIndex + ITEMS_PER_PAGE, filteredProblems.length)}</strong> of <strong>{filteredProblems.length}</strong> solved problems
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
                         <button
                           type="button"
                           className="btn btn-secondary btn-sm"
                           onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                           disabled={currentPage === 1}
-                          style={{ padding: '0.35rem 0.75rem', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', height: '34px' }}
                         >
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
                           Previous
                         </button>
-                        <span style={{ fontSize: '0.8rem', color: '#ccc', fontWeight: 600 }}>
+                        <span style={{ fontSize: '0.82rem', color: '#fff', fontWeight: 600, whiteSpace: 'nowrap', minWidth: '85px', textAlign: 'center', display: 'inline-block' }}>
                           Page {currentPage} of {totalPages}
                         </span>
                         <button
@@ -441,7 +441,7 @@ export default function LeetCodeDashboard({
                           className="btn btn-secondary btn-sm"
                           onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                           disabled={currentPage === totalPages}
-                          style={{ padding: '0.35rem 0.75rem', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                          style={{ padding: '0.4rem 0.85rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', height: '34px' }}
                         >
                           Next
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
