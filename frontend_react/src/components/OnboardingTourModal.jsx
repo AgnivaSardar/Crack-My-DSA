@@ -9,24 +9,24 @@ const TOUR_STEPS = [
     actionKey: 'past_chats'
   },
   {
-    targetId: 'tour-filters',
+    targetId: 'tour-chat-area',
     title: '2. Target Company & Topic Filters',
     text: 'Watch filters in action! Selecting Google, Array, and All Time automatically searches top matching LeetCode questions.',
-    position: 'bottom',
+    position: 'chat-area',
     actionKey: 'demo_filter'
   },
   {
-    targetId: 'tour-chat-input',
+    targetId: 'tour-chat-area',
     title: '3. AI Assistant Query Demo',
     text: 'Watch how asking questions works! Typing custom prompts like "give me top 10 questions on dynamic programming for microsoft" generates tailored AI responses.',
-    position: 'top',
+    position: 'chat-area',
     actionKey: 'demo_prompt1'
   },
   {
-    targetId: 'tour-chat-input',
+    targetId: 'tour-chat-area',
     title: '4. Follow-up Explanation with Code',
     text: 'Ask follow-up prompts like "explain the first topic with code in java" to get step-by-step explanations and code implementations.',
-    position: 'top',
+    position: 'chat-area',
     actionKey: 'demo_prompt2'
   },
   {
@@ -118,6 +118,9 @@ export default function OnboardingTourModal({ isOpen, onClose, onStepChange, isL
       } else if (step.position === 'top') {
         top = Math.max(20, rect.top - 230)
         left = Math.min(window.innerWidth - 340, Math.max(20, rect.left))
+      } else if (step.position === 'chat-area') {
+        top = Math.max(30, rect.bottom - 245)
+        left = Math.max(30, rect.left + 24)
       } else if (step.position === 'top-modal') {
         top = Math.max(30, rect.bottom + 12)
         left = Math.max(30, rect.left + 16)

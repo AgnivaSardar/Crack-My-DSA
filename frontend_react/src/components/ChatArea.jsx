@@ -197,7 +197,7 @@ export default function ChatArea({
   }
 
   return (
-    <div className="chat-column">
+    <div className="chat-column" id="tour-chat-area">
 
       {/* Filter Panel — FIXED AT TOP, compact single row */}
       <form className="filter-panel-top" id="tour-filters" onSubmit={handleSearch}>
