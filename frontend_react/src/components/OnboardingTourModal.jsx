@@ -44,10 +44,10 @@ const TOUR_STEPS = [
     actionKey: 'references'
   },
   {
-    targetId: 'tour-dashboard-btn',
+    targetId: 'tour-dashboard-header',
     title: '7. LeetCode Analytics Dashboard',
     text: 'Sync your LeetCode profile, track total solved metrics, Easy/Medium/Hard breakdown, and company progress.',
-    position: 'bottom',
+    position: 'top-modal',
     actionKey: 'dashboard'
   }
 ]
@@ -101,6 +101,9 @@ export default function OnboardingTourModal({ isOpen, onClose, onStepChange }) {
       } else if (step.position === 'bottom') {
         top = rect.bottom + 14
         left = Math.min(window.innerWidth - 340, Math.max(20, rect.left))
+      } else if (step.position === 'top-modal') {
+        top = Math.max(30, rect.bottom + 12)
+        left = Math.max(30, rect.left + 16)
       }
 
       // Constrain within viewport boundaries
@@ -172,7 +175,12 @@ export default function OnboardingTourModal({ isOpen, onClose, onStepChange }) {
       >
         <div className="tour-popover-header">
           <span className="tour-step-badge">Step {currentStepIndex + 1} of {TOUR_STEPS.length}</span>
-          <button className="tour-close-btn" onClick={onClose} title="Skip Tour">✕</button>
+          <button className="tour-close-btn" onClick={onClose} title="Skip Tour">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
         </div>
 
         <h4 className="tour-title">{step.title}</h4>

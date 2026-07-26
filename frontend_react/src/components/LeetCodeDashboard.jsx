@@ -133,7 +133,7 @@ export default function LeetCodeDashboard({
     <div className="dashboard-overlay" onClick={() => onClose && onClose()}>
       <div className="dashboard-modal" onClick={e => e.stopPropagation()} id="tour-dashboard-modal">
         {/* Modal Header */}
-        <div className="dashboard-header">
+        <div className="dashboard-header" id="tour-dashboard-header">
           <div>
             <div className="dashboard-title-row">
               <span className="dashboard-title">LeetCode & DSA Dashboard</span>
