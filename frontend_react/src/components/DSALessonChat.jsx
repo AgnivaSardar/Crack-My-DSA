@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { askDSADoubt } from '../api/client'
 import { dsaTheoryData } from '../data/dsaTheoryData'
 import { DSADiagram } from './DSADiagrams'
+import DSACodingLab from './DSACodingLab'
 
 // Minimalist Monochrome SVG Icons (No Unicode Emojis)
 const IconBack = () => (
@@ -423,7 +424,14 @@ export default function DSALessonChat({
           >
             <IconProblems /> Problems & Solutions ({totalProblems})
           </button>
+          <button
+            className={`dsa-subtab-btn ${viewTab === 'lab' ? 'active' : ''}`}
+            onClick={() => setViewTab('lab')}
+          >
+            <IconTerminal /> Interactive Lab & Practice IDE
+          </button>
         </div>
+
 
         {/* Progress & Language Toggle */}
         <div className="dsa-header-right">
@@ -706,9 +714,20 @@ export default function DSALessonChat({
               </button>
             </div>
           </div>
+        ) : viewTab === 'lab' ? (
+          /* --- INTERACTIVE CODING LAB TAB --- */
+          <DSACodingLab
+            topic={topic}
+            problems={problems}
+            userEmail={userEmail}
+            guestUser={guestUser}
+            onToggleProblemProgress={onToggleProblemProgress}
+            onToast={onToast}
+          />
         ) : (
           /* --- PROBLEMS & SOLUTIONS CODE STREAM TAB --- */
           <>
+
             <div className="dsa-ai-instructor-intro">
               <div className="dsa-ai-badge">
                 <IconAI /> AI Instructor

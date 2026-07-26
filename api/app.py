@@ -448,7 +448,127 @@ async def ask_dsa_doubt(request: DSADoubtRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+class DSARunCodeRequest(BaseModel):
+    language: str # 'cpp', 'java', 'c', 'python'
+    code: str
+    stdin: Optional[str] = ""
+    problem_id: Optional[str] = None
+    problem_title: Optional[str] = None
+
+class DSASubmitCodeRequest(BaseModel):
+    language: str
+    code: str
+    problem_id: str
+    problem_title: str
+    user_email: Optional[str] = None
+
+@app.post("/dsa/run_code")
+@app.post("/api/dsa/run_code")
+async def run_dsa_code(request: DSARunCodeRequest):
+    try:
+        from api.code_runner import execute_user_code, get_problem_test_cases
+        exec_res = execute_user_code(request.language, request.code, request.stdin or "")
+        
+        # Run public sample test cases if problem_title supplied
+        test_suite = get_problem_test_cases(request.problem_title or "")
+        public_results = []
+        
+        for case in test_suite.get("public", []):
+            c_res = execute_user_code(request.language, request.code, case["input"])
+            actual_out = (c_res.get("stdout") or "").strip()
+            expected_out = case["expected"].strip()
+            passed = (c_res.get("status") == "Success") and (actual_out == expected_out or expected_out in actual_out)
+            
+            public_results.append({
+                "id": case["id"],
+                "description": case["description"],
+                "input": case["input"],
+                "expected": case["expected"],
+                "actual": actual_out if c_res.get("status") == "Success" else (c_res.get("stderr") or c_res.get("status")),
+                "passed": passed
+            })
+            
+        return {
+            "status": exec_res["status"],
+            "stdout": exec_res["stdout"],
+            "stderr": exec_res["stderr"],
+            "execution_time_ms": exec_res["execution_time_ms"],
+            "public_test_results": public_results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/dsa/submit_code")
+@app.post("/api/dsa/submit_code")
+async def submit_dsa_code(request: DSASubmitCodeRequest):
+    try:
+        from api.code_runner import execute_user_code, get_problem_test_cases
+        test_suite = get_problem_test_cases(request.problem_title)
+        all_cases = test_suite.get("public", []) + test_suite.get("private", [])
+        
+        results = []
+        all_passed = True
+        overall_status = "Accepted"
+        total_time_ms = 0
+        
+        for case in all_cases:
+            c_res = execute_user_code(request.language, request.code, case["input"])
+            total_time_ms += c_res.get("execution_time_ms", 0)
+            
+            if c_res.get("status") == "Compilation Error":
+                return {
+                    "status": "Compilation Error",
+                    "passed_count": 0,
+                    "total_count": len(all_cases),
+                    "stderr": c_res.get("stderr"),
+                    "execution_time_ms": 0,
+                    "test_results": []
+                }
+                
+            actual_out = (c_res.get("stdout") or "").strip()
+            expected_out = case["expected"].strip()
+            passed = (c_res.get("status") == "Success") and (actual_out == expected_out or expected_out in actual_out)
+            
+            if not passed:
+                all_passed = False
+                if c_res.get("status") != "Success":
+                    overall_status = c_res.get("status")
+                elif overall_status == "Accepted":
+                    overall_status = "Wrong Answer"
+                    
+            results.append({
+                "id": case["id"],
+                "is_private": case["is_private"],
+                "description": case.get("description", f"Test Case {case['id']}"),
+                "input": "Hidden" if case["is_private"] else case["input"],
+                "expected": "Hidden" if case["is_private"] else case["expected"],
+                "actual": "Hidden" if case["is_private"] else actual_out,
+                "passed": passed
+            })
+            
+        passed_count = sum(1 for r in results if r["passed"])
+        
+        # Mark problem completed if all passed
+        if all_passed and request.user_email and request.user_email != "guest@local":
+            try:
+                from vectorstore.chat_db import ChatDatabaseManager
+                db = ChatDatabaseManager()
+                db.toggle_dsa_progress(request.user_email, request.problem_id, True)
+            except Exception as ex:
+                print(f"[Submit Progress Sync Error] {ex}")
+
+        return {
+            "status": "Accepted" if all_passed else overall_status,
+            "passed_count": passed_count,
+            "total_count": len(all_cases),
+            "execution_time_ms": total_time_ms,
+            "test_results": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+
 

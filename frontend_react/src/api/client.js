@@ -152,4 +152,34 @@ export async function askDSADoubt(userEmail, problemId, problemTitle, codeContex
   })
 }
 
+export async function runDSACode(language, code, stdin = '', problemId = null, problemTitle = null) {
+
+  return safeFetch(`${API_BASE}/dsa/run_code`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      language,
+      code,
+      stdin,
+      problem_id: problemId,
+      problem_title: problemTitle
+    })
+  })
+}
+
+export async function submitDSACode(language, code, problemId, problemTitle, userEmail = null) {
+  return safeFetch(`${API_BASE}/dsa/submit_code`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      language,
+      code,
+      problem_id: problemId,
+      problem_title: problemTitle,
+      user_email: userEmail
+    })
+  })
+}
+
+
 
