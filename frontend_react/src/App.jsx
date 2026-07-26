@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import AuthPortal from './components/AuthPortal'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
