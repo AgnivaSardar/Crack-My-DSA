@@ -1885,15 +1885,24 @@ code, pre, .mono {
 
 .tour-popover .btn {
   display: inline-flex !important;
+  flex-direction: row !important;
   align-items: center !important;
   justify-content: center !important;
   white-space: nowrap !important;
-  height: 32px !important;
-  padding: 0 0.85rem !important;
-  font-size: 0.8rem !important;
+  height: 36px !important;
+  min-width: 88px !important;
+  padding: 0 1rem !important;
+  font-size: 0.82rem !important;
   font-weight: 600 !important;
   line-height: 1 !important;
   gap: 6px !important;
+  box-sizing: border-box !important;
+  border-radius: 6px !important;
+}
+
+.tour-popover .btn svg {
+  flex-shrink: 0 !important;
+  display: inline-block !important;
 }
 
 /* ============================================

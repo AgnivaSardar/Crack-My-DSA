@@ -2,23 +2,23 @@ import { useState, useEffect, useCallback } from 'react'
 
 const TOUR_STEPS = [
   {
-    targetId: 'tour-sidebar',
+    targetId: 'tour-sidebar-tab-chats',
     title: '1. Past Chats & Saved Conversations',
-    text: 'Manage all your past company DSA prep conversations here. Start new chats or switch between sessions anytime.',
+    text: 'Manage all your past company DSA prep conversations here. Start new chats or switch between saved sessions anytime.',
     position: 'right',
     actionKey: 'past_chats'
   },
   {
-    targetId: 'tour-sidebar',
+    targetId: 'tour-sidebar-tab-dsa',
     title: '2. 16 Core DSA Roadmap Topics',
-    text: 'Access 16 comprehensive topics from Strivers A2Z DSA Sheet. Switch between C++ and Java code streams anytime and track overall progress.',
+    text: 'Click the DSA Roadmap tab to access 16 comprehensive topics from Strivers A2Z DSA Sheet. Select any topic to open its theory guide and problem sheet.',
     position: 'right',
     actionKey: 'dsa_roadmap'
   },
   {
     targetId: 'tour-dsa-theory',
     title: '3. Topic Theory & YouTube Tutorials',
-    text: 'Study foundational theory, algorithmic patterns, complexity benchmarks, visual diagrams, and watch top YouTube video recommendations.',
+    text: 'Study foundational theory, time and space complexity benchmarks, visual diagrams, and top YouTube video recommendations.',
     position: 'bottom',
     actionKey: 'dsa_theory'
   },
@@ -191,19 +191,19 @@ export default function OnboardingTourModal({ isOpen, onClose, onStepChange }) {
             Skip Tour
           </button>
 
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
             {currentStepIndex > 0 && (
               <button className="btn btn-secondary btn-sm" onClick={handleBack}>
                 Back
               </button>
             )}
-            <button className="btn btn-primary btn-sm" onClick={handleNext} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+            <button className="btn btn-primary btn-sm" onClick={handleNext}>
               {isLastStep ? (
-                'Finish Tour'
+                'Finish'
               ) : (
                 <>
                   <span>Continue</span>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                     <line x1="5" y1="12" x2="19" y2="12"/>
                     <polyline points="12 5 19 12 12 19"/>
                   </svg>

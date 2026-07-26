@@ -100,12 +100,14 @@ export default function Sidebar({
         {/* Dual Tab Navigation Bar */}
         <div className="sidebar-tab-bar">
           <button
+            id="tour-sidebar-tab-chats"
             className={`sidebar-tab-btn ${activeTab === 'past_chats' ? 'active' : ''}`}
             onClick={() => onTabChange('past_chats')}
           >
             <IconChat /> Past Chats
           </button>
           <button
+            id="tour-sidebar-tab-dsa"
             className={`sidebar-tab-btn ${activeTab === 'dsa_roadmap' ? 'active' : ''}`}
             onClick={() => onTabChange('dsa_roadmap')}
           >
