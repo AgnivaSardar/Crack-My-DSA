@@ -18,12 +18,19 @@ export default function LeetCodeDashboard({
   const [searchTerm, setSearchTerm] = useState('')
   const [diffFilter, setDiffFilter] = useState('All')
   const [companyFilter, setCompanyFilter] = useState('All')
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 20
+
   const [lcUsernameInput, setLcUsernameInput] = useState('')
   const [linkedUsername, setLinkedUsername] = useState('')
   const [isEditing, setIsEditing] = useState(false)
   const [isSyncing, setIsSyncing] = useState(false)
   const [syncMsg, setSyncMsg] = useState('')
   const [officialStats, setOfficialStats] = useState(null)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, diffFilter, companyFilter])
 
   useEffect(() => {
     if (isOpen && userEmail && !guestUser) {
@@ -128,6 +135,10 @@ export default function LeetCodeDashboard({
     const matchesComp = companyFilter === 'All' || comp.includes(companyFilter.toLowerCase())
     return matchesSearch && matchesDiff && matchesComp
   })
+
+  const totalPages = Math.max(1, Math.ceil(filteredProblems.length / ITEMS_PER_PAGE))
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const paginatedProblems = filteredProblems.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   return (
     <div className="dashboard-overlay" onClick={() => onClose && onClose()}>
@@ -353,57 +364,91 @@ export default function LeetCodeDashboard({
                       : 'No solved problems match your current search filter.'}
                   </div>
                 ) : (
-                  <table className="dash-table">
-                    <thead>
-                      <tr>
-                        <th>Problem Title</th>
-                        <th>Difficulty</th>
-                        <th>Company</th>
-                        <th>Topics</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredProblems.map((p, idx) => {
-                        const title = p.problem_title || p.title || 'Unknown'
-                        const diff = p.difficulty || 'Medium'
-                        const comp = p.company || '—'
-                        const rawLink = p.problem_link || p.link
-                        const link = getValidLeetCodeLink(title, rawLink)
-                        const topics = p.topics || '—'
+                  <>
+                    <table className="dash-table">
+                      <thead>
+                        <tr>
+                          <th>Problem Title</th>
+                          <th>Difficulty</th>
+                          <th>Company</th>
+                          <th>Topics</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {paginatedProblems.map((p, idx) => {
+                          const title = p.problem_title || p.title || 'Unknown'
+                          const diff = p.difficulty || 'Medium'
+                          const comp = p.company || '—'
+                          const rawLink = p.problem_link || p.link
+                          const link = getValidLeetCodeLink(title, rawLink)
+                          const topics = p.topics || '—'
 
-                        return (
-                          <tr key={idx}>
-                            <td className="dash-title-td">
-                              <a
-                                href={link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="dash-problem-link"
-                              >
-                                {title} ↗
-                              </a>
-                            </td>
-                            <td>
-                              <span className={`diff-badge ${diff.toLowerCase()}`}>{diff}</span>
-                            </td>
-                            <td>{comp}</td>
-                            <td className="dash-topics-td">{topics}</td>
-                            <td>
-                              <button
-                                type="button"
-                                className="dash-unmark-btn"
-                                onClick={() => onToggleSolved(p, false)}
-                                title="Unmark problem"
-                              >
-                                Solved
-                              </button>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+                          return (
+                            <tr key={idx}>
+                              <td className="dash-title-td">
+                                <a
+                                  href={link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="dash-problem-link"
+                                >
+                                  {title} ↗
+                                </a>
+                              </td>
+                              <td>
+                                <span className={`diff-badge ${diff.toLowerCase()}`}>{diff}</span>
+                              </td>
+                              <td>{comp}</td>
+                              <td className="dash-topics-td">{topics}</td>
+                              <td>
+                                <button
+                                  type="button"
+                                  className="dash-unmark-btn"
+                                  onClick={() => onToggleSolved(p, false)}
+                                  title="Unmark problem"
+                                >
+                                  Solved
+                                </button>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+
+                    {/* Pagination Bar */}
+                    <div className="dash-pagination-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.02)', marginTop: '0.5rem', borderRadius: '0 0 8px 8px' }}>
+                      <div style={{ fontSize: '0.8rem', color: '#888' }}>
+                        Showing <strong>{startIndex + 1}</strong> - <strong>{Math.min(startIndex + ITEMS_PER_PAGE, filteredProblems.length)}</strong> of <strong>{filteredProblems.length}</strong> solved problems
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                          disabled={currentPage === 1}
+                          style={{ padding: '0.35rem 0.75rem', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+                          Previous
+                        </button>
+                        <span style={{ fontSize: '0.8rem', color: '#ccc', fontWeight: 600 }}>
+                          Page {currentPage} of {totalPages}
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                          disabled={currentPage === totalPages}
+                          style={{ padding: '0.35rem 0.75rem', fontSize: '0.78rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          Next
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             </div>
