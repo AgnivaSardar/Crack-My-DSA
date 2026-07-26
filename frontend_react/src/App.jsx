@@ -375,7 +375,7 @@ export default function App() {
         topics: Array.isArray(problem.topics) ? problem.topics.join(', ') : (problem.topics || '')
       }
       updatedList = [...solvedProblems.filter(p => (p.problem_title || p.title || '').trim().toLowerCase() !== targetTitle.toLowerCase()), formatted]
-      addToast(`" ${targetTitle} " marked as Solved! 🎉`)
+      addToast(`" ${targetTitle} " marked as Solved!`)
     } else {
       updatedList = solvedProblems.filter(p => (p.problem_title || p.title || '').trim().toLowerCase() !== targetTitle.toLowerCase())
       addToast(`" ${targetTitle} " unmarked.`)

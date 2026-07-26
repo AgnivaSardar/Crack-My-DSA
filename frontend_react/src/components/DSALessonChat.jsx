@@ -33,6 +33,21 @@ const IconTerminal = () => (
   </svg>
 )
 
+const IconLock = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+  </svg>
+)
+
+const IconConstruction = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+    <line x1="12" y1="9" x2="12" y2="13"/>
+    <line x1="12" y1="17" x2="12.01" y2="17"/>
+  </svg>
+)
+
 const IconAI = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="11" width="18" height="10" rx="2" />
@@ -137,19 +152,13 @@ const IconLayers = () => (
 
 const IconVideo = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-    <line x1="7" y1="2" x2="7" y2="22" />
-    <line x1="17" y1="2" x2="17" y2="22" />
-    <line x1="2" y1="12" x2="22" y2="12" />
-    <line x1="2" y1="7" x2="7" y2="7" />
-    <line x1="2" y1="17" x2="7" y2="17" />
-    <line x1="17" y1="17" x2="22" y2="17" />
-    <line x1="17" y1="7" x2="22" y2="7" />
+    <polygon points="23 7 16 12 23 17 23 7" />
+    <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
   </svg>
 )
 
 const IconWarning = () => (
-  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
     <line x1="12" y1="9" x2="12" y2="13" />
     <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -300,9 +309,19 @@ export default function DSALessonChat({
   guestUser,
   onToggleProblemProgress,
   onBackToRoadmap,
-  onToast
+  onToast,
+  activeSubtab = null,
+  onSubtabChange = null
 }) {
-  const [viewTab, setViewTab] = useState('theory')
+  const [internalViewTab, setInternalViewTab] = useState('theory')
+  const viewTab = activeSubtab || internalViewTab
+  const setViewTab = (tab) => {
+    setInternalViewTab(tab)
+    if (onSubtabChange) onSubtabChange(tab)
+  }
+
+  const isAdmin = !guestUser && userEmail && userEmail.toLowerCase() === 'agniva.sardar@gmail.com'
+
   const [openDoubts, setOpenDoubts] = useState({})
   const [doubtInputs, setDoubtInputs] = useState({})
   const [doubtLoading, setDoubtLoading] = useState({})
@@ -315,7 +334,9 @@ export default function DSALessonChat({
 
   useEffect(() => {
     setLocalProblems(problems)
-    setViewTab('theory')
+    if (!activeSubtab) {
+      setInternalViewTab('theory')
+    }
     setTheoryDoubts([])
   }, [topic, problems])
 
@@ -436,7 +457,7 @@ export default function DSALessonChat({
             className={`dsa-subtab-btn ${viewTab === 'lab' ? 'active' : ''}`}
             onClick={() => setViewTab('lab')}
           >
-            <IconTerminal /> {isAdmin ? 'Interactive Lab & Practice IDE' : '🔒 Interactive Lab IDE (Under Construction)'}
+            <IconTerminal /> {isAdmin ? 'Interactive Lab & Practice IDE' : <><IconLock /> Interactive Lab IDE (Under Construction)</>}
           </button>
         </div>
 
