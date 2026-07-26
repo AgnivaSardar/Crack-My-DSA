@@ -480,6 +480,54 @@ export default function App() {
     }
   }
 
+const TOUR_DEMO_REFERENCES = [
+  {
+    title: "Two Sum",
+    problem_title: "Two Sum",
+    difficulty: "Easy",
+    frequency: 100.0,
+    company: "Google",
+    topics: "Array, Hash Table",
+    link: "https://leetcode.com/problems/two-sum/"
+  },
+  {
+    title: "Climbing Stairs",
+    problem_title: "Climbing Stairs",
+    difficulty: "Easy",
+    frequency: 92.5,
+    company: "Microsoft",
+    topics: "Dynamic Programming, Math",
+    link: "https://leetcode.com/problems/climbing-stairs/"
+  },
+  {
+    title: "Coin Change",
+    problem_title: "Coin Change",
+    difficulty: "Medium",
+    frequency: 88.0,
+    company: "Microsoft",
+    topics: "Dynamic Programming, Breadth-First Search",
+    link: "https://leetcode.com/problems/coin-change/"
+  },
+  {
+    title: "Longest Common Subsequence",
+    problem_title: "Longest Common Subsequence",
+    difficulty: "Medium",
+    frequency: 84.2,
+    company: "Microsoft",
+    topics: "Dynamic Programming, String",
+    link: "https://leetcode.com/problems/longest-common-subsequence/"
+  },
+  {
+    title: "Trapping Rain Water",
+    problem_title: "Trapping Rain Water",
+    difficulty: "Hard",
+    frequency: 78.9,
+    company: "Google",
+    topics: "Array, Two Pointers, Dynamic Programming",
+    link: "https://leetcode.com/problems/trapping-rain-water/"
+  }
+]
+
   const [tourActionKey, setTourActionKey] = useState(null)
 
   const handleStartTour = useCallback(() => {
@@ -487,9 +535,9 @@ export default function App() {
     setRefDrawerOpen(false)
     setSidebarTab('past_chats')
 
-    // Always start tour in a brand-new, clean chat session
+    // Always start tour in a brand-new, clean chat session populated with demo references
     const newId = makeId()
-    const newSession = { title: 'Tour Demonstration', messages: [], lastReferences: [] }
+    const newSession = { title: 'Tour Demonstration', messages: [], lastReferences: TOUR_DEMO_REFERENCES }
     setSessions(prev => {
       const updated = { ...prev, [newId]: newSession }
       if (guestUser) {
@@ -499,7 +547,7 @@ export default function App() {
     })
     setCurrentSessionId(newId)
     setMessages([])
-    setLastReferences([])
+    setLastReferences(TOUR_DEMO_REFERENCES)
 
     setTourActionKey('past_chats')
     setTourOpen(true)
@@ -553,6 +601,7 @@ export default function App() {
   const handleDemoMessage = useCallback((userQuery, assistantContent) => {
     const userMsg = { role: 'user', content: userQuery }
     const assistantMsg = { role: 'assistant', content: assistantContent }
+    setLastReferences(TOUR_DEMO_REFERENCES)
     setMessages(prev => {
       const updated = [...prev, userMsg, assistantMsg]
       setSessions(sPrev => ({
@@ -560,7 +609,7 @@ export default function App() {
         [currentSessionId]: {
           title: 'Tour Demonstration',
           messages: updated,
-          lastReferences: sPrev[currentSessionId]?.lastReferences || []
+          lastReferences: TOUR_DEMO_REFERENCES
         }
       }))
       return updated
