@@ -63,22 +63,13 @@ const IconClock = () => (
   </svg>
 )
 
-// Default Starter Code Templates
-const STARTER_TEMPLATES = {
+// Blank Starter Code Templates for Practice Playground
+const PRACTICE_BLANK_TEMPLATES = {
   cpp: `#include <iostream>
-#include <vector>
-#include <algorithm>
-#include <string>
 using namespace std;
 
 int main() {
-    // Write your solution here
-    int n;
-    if (cin >> n) {
-        cout << "Input received: " << n << endl;
-    } else {
-        cout << "Interactive C++ Lab Ready!" << endl;
-    }
+    // Write your code here
     return 0;
 }`,
 
@@ -86,41 +77,19 @@ int main() {
 
 public class Solution {
     public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        if (sc.hasNextInt()) {
-            int n = sc.nextInt();
-            System.out.println("Input received: " + n);
-        } else {
-            System.out.println("Interactive Java Lab Ready!");
-        }
+        // Write your code here
     }
 }`,
 
   c: `#include <stdio.h>
-#include <stdlib.h>
 
 int main() {
-    int n;
-    if (scanf("%d", &n) == 1) {
-        printf("Input received: %d\\n", n);
-    } else {
-        printf("Interactive C Lab Ready!\\n");
-    }
+    // Write your code here
     return 0;
 }`,
 
-  python: `import sys
-
-def main():
-    # Read input from standard input (stdin)
-    input_data = sys.stdin.read().split()
-    if input_data:
-        print("Input received:", input_data[0])
-    else:
-        print("Interactive Python Lab Ready!")
-
-if __name__ == "__main__":
-    main()`
+  python: `# Write your code here
+`
 }
 
 export default function DSACodingLab({
@@ -134,7 +103,7 @@ export default function DSACodingLab({
   const [selectedProblemId, setSelectedProblemId] = useState('practice')
   const [labLanguage, setLabLanguage] = useState('cpp')
   const [code, setCode] = useState('')
-  const [stdinInput, setStdinInput] = useState('5\n1 2 3 4 5')
+  const [stdinInput, setStdinInput] = useState('')
   const [terminalTab, setTerminalTab] = useState('testcases') // 'stdin', 'stdout', 'testcases'
 
   const [isRunning, setIsRunning] = useState(false)
@@ -153,18 +122,20 @@ export default function DSACodingLab({
 
     if (saved) {
       setCode(saved)
-    } else if (currentProblem) {
+    } else if (currentProblem && selectedProblemId !== 'practice') {
       const defaultCode = labLanguage === 'java'
-        ? (currentProblem.java_code || STARTER_TEMPLATES.java)
-        : (currentProblem.cpp_code || STARTER_TEMPLATES[labLanguage] || STARTER_TEMPLATES.cpp)
+        ? (currentProblem.java_code || PRACTICE_BLANK_TEMPLATES.java)
+        : (currentProblem.cpp_code || PRACTICE_BLANK_TEMPLATES[labLanguage] || PRACTICE_BLANK_TEMPLATES.cpp)
       setCode(defaultCode)
     } else {
-      setCode(STARTER_TEMPLATES[labLanguage] || STARTER_TEMPLATES.cpp)
+      // Clean blank template for Practice Playground
+      setCode(PRACTICE_BLANK_TEMPLATES[labLanguage] || '')
     }
 
     setExecutionResult(null)
     setSubmissionResult(null)
   }, [selectedProblemId, labLanguage, currentProblem])
+
 
   // Save code to LocalStorage on change
   function handleCodeChange(newCode) {
@@ -267,12 +238,15 @@ export default function DSACodingLab({
   }
 
   function handleResetTemplate() {
-    const defaultCode = STARTER_TEMPLATES[labLanguage] || STARTER_TEMPLATES.cpp
+    const defaultCode = (currentProblem && selectedProblemId !== 'practice')
+      ? (labLanguage === 'java' ? (currentProblem.java_code || PRACTICE_BLANK_TEMPLATES.java) : (currentProblem.cpp_code || PRACTICE_BLANK_TEMPLATES[labLanguage]))
+      : (PRACTICE_BLANK_TEMPLATES[labLanguage] || '')
     setCode(defaultCode)
     const storageKey = `dsa_lab_code_${selectedProblemId}_${labLanguage}`
     localStorage.removeItem(storageKey)
-    if (onToast) onToast('Reset to default code template!')
+    if (onToast) onToast('Reset code template!')
   }
+
 
   const lineCount = (code.match(/\n/g) || []).length + 1
 
