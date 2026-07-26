@@ -507,44 +507,45 @@ export default function App() {
 
   const handleTourStepChange = useCallback((actionKey) => {
     setTourActionKey(actionKey)
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
 
     if (actionKey === 'past_chats') {
-      setSidebarCollapsed(false) // Expand sidebar so Step 1 tab is highlighted
+      if (isMobile) setSidebarCollapsed(false)
       setSidebarTab('past_chats')
       setDashboardOpen(false)
       setRefDrawerOpen(false)
     } else if (actionKey === 'demo_filter' || actionKey === 'demo_prompt1' || actionKey === 'demo_prompt2') {
-      setSidebarCollapsed(true) // Collapse sidebar for Chat demo steps
+      if (isMobile) setSidebarCollapsed(true) // Collapse sidebar strictly on mobile UI
       setSidebarTab('past_chats')
       setDashboardOpen(false)
       setRefDrawerOpen(false)
     } else if (actionKey === 'dsa_roadmap') {
-      setSidebarCollapsed(false) // Expand sidebar so Step 5 tab is highlighted
+      if (isMobile) setSidebarCollapsed(false)
       setSidebarTab('dsa_roadmap')
       setDashboardOpen(false)
       setRefDrawerOpen(false)
       if (!selectedTopicId) setSelectedTopicId(1)
     } else if (actionKey === 'dsa_theory') {
-      setSidebarCollapsed(true) // Collapse sidebar for Theory step
+      if (isMobile) setSidebarCollapsed(true)
       setSidebarTab('dsa_roadmap')
       setDashboardOpen(false)
       setRefDrawerOpen(false)
       if (!selectedTopicId) setSelectedTopicId(1)
       setDsaSubtab('theory')
     } else if (actionKey === 'dsa_problems') {
-      setSidebarCollapsed(true) // Collapse sidebar for Problems step
+      if (isMobile) setSidebarCollapsed(true)
       setSidebarTab('dsa_roadmap')
       setDashboardOpen(false)
       setRefDrawerOpen(false)
       if (!selectedTopicId) setSelectedTopicId(1)
       setDsaSubtab('problems')
     } else if (actionKey === 'references') {
-      setSidebarCollapsed(true) // Collapse sidebar for References step
+      if (isMobile) setSidebarCollapsed(true)
       setSidebarTab('past_chats')
       setDashboardOpen(false)
       setRefDrawerOpen(true)
     } else if (actionKey === 'dashboard') {
-      setSidebarCollapsed(true) // Collapse sidebar for Dashboard step
+      if (isMobile) setSidebarCollapsed(true)
       setDashboardOpen(true)
     }
   }, [setSidebarTab, selectedTopicId, setSelectedTopicId, setDsaSubtab])
