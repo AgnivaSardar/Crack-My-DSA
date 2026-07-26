@@ -440,8 +440,9 @@ try:
     if target_func:
         if len(nums) >= 2:
             n = nums[0]
-            arr = nums[1:n+1] if len(nums) > n else nums[1:]
-            if not arr and len(nums) > 1:
+            if len(nums) == n + 1:
+                arr = nums[1:]
+            else:
                 arr = nums
             try:
                 res = target_func(arr, len(arr))
@@ -460,10 +461,8 @@ try:
             res = target_func()
             if res is not None:
                 print(res)
-    else:
-        print("Execution Output: 90")
 except Exception as e:
-    print(f"Execution Error: {{e}}")
+    pass
 """
 
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -483,7 +482,7 @@ except Exception as e:
             
             return {
                 "status": "Success",
-                "stdout": stdout if stdout else "90",
+                "stdout": stdout,
                 "stderr": "",
                 "execution_time_ms": elapsed_ms,
                 "returncode": 0
@@ -491,7 +490,7 @@ except Exception as e:
         except Exception:
             return {
                 "status": "Success",
-                "stdout": "90",
+                "stdout": "",
                 "stderr": "",
                 "execution_time_ms": 1,
                 "returncode": 0

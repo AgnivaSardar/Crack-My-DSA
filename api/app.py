@@ -467,14 +467,14 @@ class DSASubmitCodeRequest(BaseModel):
 async def run_dsa_code(request: DSARunCodeRequest):
     try:
         from api.code_runner import execute_user_code, get_problem_test_cases
-        exec_res = execute_user_code(request.language, request.code, request.stdin or "")
+        exec_res = execute_user_code(request.language, request.code, request.stdin or "", request.problem_title or "")
         
         # Run public sample test cases if problem_title supplied
         test_suite = get_problem_test_cases(request.problem_title or "")
         public_results = []
         
         for case in test_suite.get("public", []):
-            c_res = execute_user_code(request.language, request.code, case["input"])
+            c_res = execute_user_code(request.language, request.code, case["input"], request.problem_title or "")
             actual_out = (c_res.get("stdout") or "").strip()
             expected_out = case["expected"].strip()
             passed = (c_res.get("status") == "Success") and (actual_out == expected_out or expected_out in actual_out)
@@ -488,15 +488,37 @@ async def run_dsa_code(request: DSARunCodeRequest):
                 "passed": passed
             })
             
+        # Format rich stdout output showing all public test cases + custom input
+        stdout_sections = []
+        
+        if request.stdin and request.stdin.strip():
+            custom_out = (exec_res.get("stdout") or "").strip()
+            stdout_sections.append(f"=== Custom Stdin Input ===\nInput:\n{request.stdin.strip()}\nOutput:\n{custom_out}\n")
+            
+        if public_results:
+            stdout_sections.append("=== Public Sample Test Cases Output ===")
+            for res in public_results:
+                status_str = "PASSED" if res["passed"] else "FAILED"
+                stdout_sections.append(
+                    f"[Public Test Case #{res['id']}] - {res['description']}\n"
+                    f"Input:           {res['input']}\n"
+                    f"Expected Output: {res['expected']}\n"
+                    f"Your Output:     {res['actual']}\n"
+                    f"Status:          {status_str}\n"
+                )
+                
+        rich_stdout = "\n".join(stdout_sections) if stdout_sections else (exec_res.get("stdout") or "").strip()
+
         return {
             "status": exec_res["status"],
-            "stdout": exec_res["stdout"],
+            "stdout": rich_stdout,
             "stderr": exec_res["stderr"],
             "execution_time_ms": exec_res["execution_time_ms"],
             "public_test_results": public_results
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/dsa/submit_code")
 @app.post("/api/dsa/submit_code")
