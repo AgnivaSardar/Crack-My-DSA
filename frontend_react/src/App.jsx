@@ -23,6 +23,10 @@ const LS_GUEST = 'dsa_cracker_guest_sessions'
 const LS_GUEST_SOLVED = 'dsa_cracker_guest_solved'
 const LS_AUTH = 'dsa_cracker_auth'
 const LS_LANG = 'dsa_cracker_language'
+const LS_ACTIVE_TAB = 'dsa_cracker_active_tab'
+const LS_SELECTED_TOPIC = 'dsa_cracker_selected_topic'
+const LS_DSA_SUBTAB = 'dsa_cracker_dsa_subtab'
+const LS_SESSION_ID = 'dsa_cracker_session_id'
 
 function makeId() {
   return String(Date.now())
@@ -76,7 +80,7 @@ export default function App() {
   const [userName, setUserName] = useState('Guest')
 
   const [sessions, setSessions] = useState({})
-  const [currentSessionId, setCurrentSessionId] = useState(null)
+  const [currentSessionId, setCurrentSessionIdState] = useState(null)
   const [messages, setMessages] = useState([])
   const [lastReferences, setLastReferences] = useState([])
   const [solvedProblems, setSolvedProblems] = useState([])
@@ -86,12 +90,42 @@ export default function App() {
   const [dashboardOpen, setDashboardOpen] = useState(false)
   const [tourOpen, setTourOpen] = useState(false)
 
-  // DSA Roadmap States
-  const [sidebarTab, setSidebarTab] = useState('past_chats') // 'past_chats' | 'dsa_roadmap'
-  const [language, setLanguage] = useState(() => localStorage.getItem(LS_LANG) || 'cpp') // 'cpp' | 'java'
+  // DSA Roadmap States with LocalStorage Persistence
+  const [sidebarTab, setSidebarTabState] = useState(() => localStorage.getItem(LS_ACTIVE_TAB) || 'past_chats')
+  const [language, setLanguage] = useState(() => localStorage.getItem(LS_LANG) || 'cpp')
   const [dsaTopics, setDsaTopics] = useState([])
-  const [selectedTopicId, setSelectedTopicId] = useState(null)
+  const [selectedTopicId, setSelectedTopicIdState] = useState(() => {
+    const saved = localStorage.getItem(LS_SELECTED_TOPIC)
+    return saved !== null ? Number(saved) : null
+  })
+  const [dsaSubtab, setDsaSubtabState] = useState(() => localStorage.getItem(LS_DSA_SUBTAB) || 'theory')
   const [topicProblems, setTopicProblems] = useState([])
+
+  const setSidebarTab = useCallback((tab) => {
+    setSidebarTabState(tab)
+    try { localStorage.setItem(LS_ACTIVE_TAB, tab) } catch {}
+  }, [])
+
+  const setSelectedTopicId = useCallback((tId) => {
+    setSelectedTopicIdState(tId)
+    if (tId !== null) {
+      try { localStorage.setItem(LS_SELECTED_TOPIC, String(tId)) } catch {}
+    } else {
+      try { localStorage.removeItem(LS_SELECTED_TOPIC) } catch {}
+    }
+  }, [])
+
+  const setDsaSubtab = useCallback((subtab) => {
+    setDsaSubtabState(subtab)
+    try { localStorage.setItem(LS_DSA_SUBTAB, subtab) } catch {}
+  }, [])
+
+  const setCurrentSessionId = useCallback((sId) => {
+    setCurrentSessionIdState(sId)
+    if (sId) {
+      try { localStorage.setItem(LS_SESSION_ID, sId) } catch {}
+    }
+  }, [])
 
   const { toasts, addToast } = useToasts()
 
@@ -115,6 +149,8 @@ export default function App() {
       setUserEmail(cached.userEmail)
       setUserName(cached.userName)
 
+      const savedSessId = localStorage.getItem(LS_SESSION_ID)
+
       if (cached.guestUser) {
         const guestSessions = loadGuestSessions()
         setSessions(guestSessions)
@@ -122,10 +158,12 @@ export default function App() {
         if (Object.keys(guestSessions).length === 0) {
           createNewSession(guestSessions, true)
         } else {
-          const firstId = Object.keys(guestSessions).sort().reverse()[0]
-          setCurrentSessionId(firstId)
-          setMessages(guestSessions[firstId]?.messages || [])
-          setLastReferences(guestSessions[firstId]?.lastReferences || [])
+          const targetId = savedSessId && guestSessions[savedSessId]
+            ? savedSessId
+            : Object.keys(guestSessions).sort().reverse()[0]
+          setCurrentSessionId(targetId)
+          setMessages(guestSessions[targetId]?.messages || [])
+          setLastReferences(guestSessions[targetId]?.lastReferences || [])
         }
       } else {
         // User account — fetch sessions & solved list from server
@@ -135,16 +173,18 @@ export default function App() {
           if (Object.keys(sessMap).length === 0) {
             createNewSession(sessMap, false)
           } else {
-            const firstId = Object.keys(sessMap).sort().reverse()[0]
-            setCurrentSessionId(firstId)
-            setMessages(sessMap[firstId]?.messages || [])
-            setLastReferences(sessMap[firstId]?.lastReferences || [])
+            const targetId = savedSessId && sessMap[savedSessId]
+              ? savedSessId
+              : Object.keys(sessMap).sort().reverse()[0]
+            setCurrentSessionId(targetId)
+            setMessages(sessMap[targetId]?.messages || [])
+            setLastReferences(sessMap[targetId]?.lastReferences || [])
           }
         })
         getUserSolvedProblems(cached.userEmail).then(setSolvedProblems)
       }
     }
-  }, [])
+  }, [setCurrentSessionId])
 
   // Load DSA Roadmap topics when tab changes or email changes
   useEffect(() => {
@@ -435,6 +475,48 @@ export default function App() {
     }
   }
 
+  const handleStartTour = useCallback(() => {
+    setDashboardOpen(false)
+    setRefDrawerOpen(false)
+    setSidebarTab('past_chats')
+    setTourOpen(true)
+  }, [setSidebarTab])
+
+  const handleTourStepChange = useCallback((actionKey) => {
+    if (actionKey === 'past_chats') {
+      setSidebarTab('past_chats')
+      setDashboardOpen(false)
+      setRefDrawerOpen(false)
+    } else if (actionKey === 'dsa_roadmap') {
+      setSidebarTab('dsa_roadmap')
+      setDashboardOpen(false)
+      setRefDrawerOpen(false)
+      if (!selectedTopicId) setSelectedTopicId(1)
+    } else if (actionKey === 'dsa_theory') {
+      setSidebarTab('dsa_roadmap')
+      setDashboardOpen(false)
+      setRefDrawerOpen(false)
+      if (!selectedTopicId) setSelectedTopicId(1)
+      setDsaSubtab('theory')
+    } else if (actionKey === 'dsa_problems') {
+      setSidebarTab('dsa_roadmap')
+      setDashboardOpen(false)
+      setRefDrawerOpen(false)
+      if (!selectedTopicId) setSelectedTopicId(1)
+      setDsaSubtab('problems')
+    } else if (actionKey === 'ai_assistant') {
+      setSidebarTab('past_chats')
+      setDashboardOpen(false)
+      setRefDrawerOpen(false)
+    } else if (actionKey === 'references') {
+      setSidebarTab('past_chats')
+      setDashboardOpen(false)
+      setRefDrawerOpen(true)
+    } else if (actionKey === 'dashboard') {
+      setDashboardOpen(true)
+    }
+  }, [setSidebarTab, selectedTopicId, setSelectedTopicId, setDsaSubtab])
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768)
   const [refDrawerOpen, setRefDrawerOpen] = useState(false)
 
@@ -463,7 +545,7 @@ export default function App() {
         onToggleSidebar={() => setSidebarCollapsed(prev => !prev)}
         onToast={addToast}
         onOpenDashboard={() => setDashboardOpen(true)}
-        onOpenTour={() => setTourOpen(true)}
+        onOpenTour={handleStartTour}
         activeTab={sidebarTab}
         onTabChange={setSidebarTab}
         dsaTopics={dsaTopics}
@@ -485,6 +567,8 @@ export default function App() {
             onToggleProblemProgress={handleToggleDSAProgress}
             onBackToRoadmap={() => setSidebarTab('past_chats')}
             onToast={addToast}
+            activeSubtab={dsaSubtab}
+            onSubtabChange={setDsaSubtab}
           />
         ) : (
           <div className="main-inner">
@@ -528,6 +612,7 @@ export default function App() {
       <OnboardingTourModal
         isOpen={tourOpen}
         onClose={() => setTourOpen(false)}
+        onStepChange={handleTourStepChange}
       />
 
       {/* Toast notifications */}

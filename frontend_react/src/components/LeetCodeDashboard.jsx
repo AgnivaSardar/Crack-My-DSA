@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { syncLeetCodeUser, autoSyncUserLeetCodeByEmail, getUserProfile } from '../api/client'
+import { getValidLeetCodeLink } from '../utils/leetcodeLinks'
 
 export default function LeetCodeDashboard({
   isOpen,
@@ -367,24 +368,21 @@ export default function LeetCodeDashboard({
                         const title = p.problem_title || p.title || 'Unknown'
                         const diff = p.difficulty || 'Medium'
                         const comp = p.company || '—'
-                        const link = p.problem_link || p.link
+                        const rawLink = p.problem_link || p.link
+                        const link = getValidLeetCodeLink(title, rawLink)
                         const topics = p.topics || '—'
 
                         return (
                           <tr key={idx}>
                             <td className="dash-title-td">
-                              {link && link !== '#' ? (
-                                <a
-                                  href={link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="dash-problem-link"
-                                >
-                                  {title} ↗
-                                </a>
-                              ) : (
-                                <span>{title}</span>
-                              )}
+                              <a
+                                href={link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="dash-problem-link"
+                              >
+                                {title} ↗
+                              </a>
                             </td>
                             <td>
                               <span className={`diff-badge ${diff.toLowerCase()}`}>{diff}</span>

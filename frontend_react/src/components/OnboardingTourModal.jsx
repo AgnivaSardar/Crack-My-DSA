@@ -3,34 +3,75 @@ import { useState, useEffect, useCallback } from 'react'
 const TOUR_STEPS = [
   {
     targetId: 'tour-sidebar',
-    title: 'Sidebar & Chat History',
+    title: '1. Past Chats & Saved Conversations',
     text: 'Manage all your past company DSA prep conversations here. Start new chats or switch between sessions anytime.',
-    position: 'right'
+    position: 'right',
+    actionKey: 'past_chats'
+  },
+  {
+    targetId: 'tour-sidebar',
+    title: '2. 16 Core DSA Roadmap Topics',
+    text: 'Access 16 comprehensive topics from Strivers A2Z DSA Sheet. Switch between C++ and Java code streams anytime and track overall progress.',
+    position: 'right',
+    actionKey: 'dsa_roadmap'
+  },
+  {
+    targetId: 'tour-dsa-theory',
+    title: '3. Topic Theory & YouTube Tutorials',
+    text: 'Study foundational theory, algorithmic patterns, complexity benchmarks, visual diagrams, and watch top YouTube video recommendations.',
+    position: 'bottom',
+    actionKey: 'dsa_theory'
+  },
+  {
+    targetId: 'tour-dsa-problems',
+    title: '4. Core Problems & Solutions Stream',
+    text: 'Master core problems with AI intuition, step-by-step approach, complexity, C++/Java solution code, private AI doubt asking, and solved checkmarks.',
+    position: 'bottom',
+    actionKey: 'dsa_problems'
   },
   {
     targetId: 'tour-filters',
-    title: 'Company & Topic Filters',
-    text: 'Filter LeetCode questions by Company (Google, Meta, Amazon, etc.), Topic (DP, Graphs, Trees), Recency, and Difficulty.',
-    position: 'bottom'
+    title: '5. Company & Topic AI Assistant',
+    text: 'Filter questions by top tech companies (Google, Meta, Amazon, Microsoft, etc.), topic, difficulty, or ask custom RAG queries in AI chat.',
+    position: 'bottom',
+    actionKey: 'ai_assistant'
   },
   {
     targetId: 'tour-references',
-    title: 'Todo & Already Done Questions',
+    title: '6. Reference Problems & Solved Tracking',
     text: 'Retrieved LeetCode problems are split into two tables: Unsolved Todo questions at top, and Already Done questions beneath!',
-    position: 'bottom-right'
+    position: 'bottom-right',
+    actionKey: 'references'
   },
   {
     targetId: 'tour-dashboard-btn',
-    title: 'LeetCode Analytics Dashboard',
-    text: 'Click here anytime to view your personal LeetCode dashboard, total solved metrics, Easy/Medium/Hard breakdown, and target company progress.',
-    position: 'bottom'
+    title: '7. LeetCode Analytics Dashboard',
+    text: 'Sync your LeetCode profile, track total solved metrics, Easy/Medium/Hard breakdown, and company progress.',
+    position: 'bottom',
+    actionKey: 'dashboard'
   }
 ]
 
-export default function OnboardingTourModal({ isOpen, onClose }) {
+export default function OnboardingTourModal({ isOpen, onClose, onStepChange }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [coords, setCoords] = useState(null)
   const [spotlightStyle, setSpotlightStyle] = useState(null)
+
+  // Reset to step 0 when tour opens
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentStepIndex(0)
+      if (onStepChange) onStepChange(TOUR_STEPS[0].actionKey, 0)
+    }
+  }, [isOpen])
+
+  // Trigger action on step change
+  const handleStepIndexChange = useCallback((newIndex) => {
+    setCurrentStepIndex(newIndex)
+    if (onStepChange && TOUR_STEPS[newIndex]) {
+      onStepChange(TOUR_STEPS[newIndex].actionKey, newIndex)
+    }
+  }, [onStepChange])
 
   const updatePosition = useCallback(() => {
     if (!isOpen) return
@@ -63,9 +104,9 @@ export default function OnboardingTourModal({ isOpen, onClose }) {
       }
 
       // Constrain within viewport boundaries
-      if (left + 320 > window.innerWidth) left = window.innerWidth - 340
+      if (left + 340 > window.innerWidth) left = window.innerWidth - 350
       if (left < 10) left = 10
-      if (top + 200 > window.innerHeight) top = window.innerHeight - 220
+      if (top + 220 > window.innerHeight) top = window.innerHeight - 230
 
       setCoords({ top, left })
     } else {
@@ -76,10 +117,12 @@ export default function OnboardingTourModal({ isOpen, onClose }) {
   }, [isOpen, currentStepIndex])
 
   useEffect(() => {
-    updatePosition()
+    // Delay position update slightly so layout finishes rendering tab changes
+    const timer = setTimeout(updatePosition, 150)
     window.addEventListener('resize', updatePosition)
     window.addEventListener('scroll', updatePosition, true)
     return () => {
+      clearTimeout(timer)
       window.removeEventListener('resize', updatePosition)
       window.removeEventListener('scroll', updatePosition, true)
     }
@@ -93,15 +136,14 @@ export default function OnboardingTourModal({ isOpen, onClose }) {
   function handleNext() {
     if (isLastStep) {
       onClose()
-      setCurrentStepIndex(0)
     } else {
-      setCurrentStepIndex(prev => prev + 1)
+      handleStepIndexChange(currentStepIndex + 1)
     }
   }
 
   function handleBack() {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(prev => prev - 1)
+      handleStepIndexChange(currentStepIndex - 1)
     }
   }
 
@@ -156,3 +198,4 @@ export default function OnboardingTourModal({ isOpen, onClose }) {
     </div>
   )
 }
+

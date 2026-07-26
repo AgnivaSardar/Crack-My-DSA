@@ -1,3 +1,5 @@
+import { getValidLeetCodeLink } from '../utils/leetcodeLinks'
+
 export default function ReferencePanel({
   references = [],
   refDrawerOpen,
@@ -45,7 +47,8 @@ export default function ReferencePanel({
     const freq = typeof q.frequency === 'number' ? q.frequency.toFixed(1) : '—'
     const ytQuery = encodeURIComponent(`LeetCode ${title} ${q.company || ''} solution`)
     const ytUrl = `https://www.youtube.com/results?search_query=${ytQuery}`
-    const link = q.link || q.problem_link
+    const rawLink = q.link || q.problem_link
+    const link = getValidLeetCodeLink(title, rawLink)
 
     return (
       <div key={idx} className={`ref-card ${isDone ? 'ref-card-done' : ''}`}>
@@ -61,20 +64,14 @@ export default function ReferencePanel({
         </div>
 
         <div className="ref-card-actions">
-          {link && link !== '#' ? (
-            <a
-              className="ref-action-btn"
-              href={link}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              LeetCode
-            </a>
-          ) : (
-            <button type="button" className="ref-action-btn disabled" disabled>
-              LeetCode
-            </button>
-          )}
+          <a
+            className="ref-action-btn"
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            LeetCode
+          </a>
 
           <a
             href={ytUrl}

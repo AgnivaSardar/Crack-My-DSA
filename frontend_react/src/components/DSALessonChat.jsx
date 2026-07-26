@@ -3,6 +3,7 @@ import { askDSADoubt } from '../api/client'
 import { dsaTheoryData } from '../data/dsaTheoryData'
 import { DSADiagram } from './DSADiagrams'
 import DSACodingLab from './DSACodingLab'
+import { getValidLeetCodeLink } from '../utils/leetcodeLinks'
 
 // Minimalist Monochrome SVG Icons (No Unicode Emojis)
 const IconBack = () => (
@@ -31,7 +32,6 @@ const IconTerminal = () => (
     <line x1="12" y1="19" x2="20" y2="19" />
   </svg>
 )
-
 
 const IconAI = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -436,7 +436,7 @@ export default function DSALessonChat({
             className={`dsa-subtab-btn ${viewTab === 'lab' ? 'active' : ''}`}
             onClick={() => setViewTab('lab')}
           >
-            <IconTerminal /> Interactive Lab & Practice IDE
+            <IconTerminal /> {isAdmin ? 'Interactive Lab & Practice IDE' : '🔒 Interactive Lab IDE (Under Construction)'}
           </button>
         </div>
 
@@ -471,7 +471,7 @@ export default function DSALessonChat({
       <div className="dsa-lesson-stream">
         {viewTab === 'theory' ? (
           /* --- TOPIC THEORY & CONCEPT TAB --- */
-          <div className="dsa-theory-document">
+          <div className="dsa-theory-document" id="tour-dsa-theory">
             <div className="dsa-theory-banner">
               <div className="dsa-ai-badge">
                 <IconTheory /> Topic Theory Guide
@@ -678,63 +678,35 @@ export default function DSALessonChat({
                 ))}
               </div>
             </div>
-
-            {/* Complexity Operations Cheat Sheet */}
-            <div className="dsa-theory-section">
-              <h4 className="dsa-theory-section-title">
-                <IconClock /> Operation Complexity Cheat Sheet
-              </h4>
-              <div className="dsa-complexity-table-wrap">
-                <table className="dsa-complexity-table">
-                  <thead>
-                    <tr>
-                      <th>Operation / Sub-type</th>
-                      <th>Time Complexity</th>
-                      <th>Space Complexity</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {theoryData.complexities.map((row, cIdx) => (
-                      <tr key={cIdx}>
-                        <td>{row.operation}</td>
-                        <td><code className="dsa-code-tag">{row.time}</code></td>
-                        <td><code className="dsa-code-tag">{row.space}</code></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Master Strategy */}
-            <div className="dsa-theory-section">
-              <h4 className="dsa-theory-section-title">
-                <IconAI /> Master Problem-Solving Strategy
-              </h4>
-              <div className="dsa-strategy-box">
-                {renderFormattedMarkdown(theoryData.strategy)}
-              </div>
-            </div>
-
-            <div className="dsa-theory-footer-action">
-              <button className="dsa-btn-action solid" onClick={() => setViewTab('problems')}>
-                Start Solving {totalProblems} Problems in {topic?.title} →
-              </button>
-            </div>
           </div>
         ) : viewTab === 'lab' ? (
           /* --- INTERACTIVE CODING LAB TAB --- */
-          <DSACodingLab
-            topic={topic}
-            problems={problems}
-            userEmail={userEmail}
-            guestUser={guestUser}
-            onToggleProblemProgress={onToggleProblemProgress}
-            onToast={onToast}
-          />
+          isAdmin ? (
+            <DSACodingLab
+              topic={topic}
+              problems={problems}
+              userEmail={userEmail}
+              guestUser={guestUser}
+              onToggleProblemProgress={onToggleProblemProgress}
+              onToast={onToast}
+            />
+          ) : (
+            <div className="dsa-locked-container" style={{ padding: '3rem 1.5rem', textAlign: 'center', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)', margin: '1.5rem 0' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🚧 🔒</div>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: 600, color: '#fff', marginBottom: '0.5rem' }}>
+                Interactive Lab & Practice IDE — Under Construction
+              </h3>
+              <p style={{ color: '#aaa', fontSize: '0.9rem', maxWidth: '520px', margin: '0 auto 1.5rem', lineHeight: '1.6' }}>
+                This feature is currently under construction and available for testing exclusively for authorized developer accounts (<strong>agniva.sardar@gmail.com</strong>).
+              </p>
+              <button className="dsa-btn-action solid" onClick={() => setViewTab('problems')}>
+                ← Back to Problems & Solutions
+              </button>
+            </div>
+          )
         ) : (
           /* --- PROBLEMS & SOLUTIONS CODE STREAM TAB --- */
-          <>
+          <div id="tour-dsa-problems">
 
             <div className="dsa-ai-instructor-intro">
               <div className="dsa-ai-badge">
@@ -753,6 +725,7 @@ export default function DSALessonChat({
               const doubtsList = prob.user_doubts || []
               const isDoubtOpen = !!openDoubts[prob.problem_id]
               const isAsking = !!doubtLoading[prob.problem_id]
+              const lcLink = getValidLeetCodeLink(prob.title, prob.leetcode_link)
 
               return (
                 <div key={prob.problem_id || index} className={`dsa-problem-card ${isDone ? 'completed-card' : ''}`}>
@@ -773,17 +746,15 @@ export default function DSALessonChat({
                     </div>
 
                     <div className="dsa-card-header-right">
-                      {prob.leetcode_link && (
-                        <a
-                          href={prob.leetcode_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="dsa-btn-action ghost"
-                          title="Open on LeetCode"
-                        >
-                          LeetCode <IconExternal />
-                        </a>
-                      )}
+                      <a
+                        href={lcLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="dsa-btn-action ghost"
+                        title="Open on LeetCode"
+                      >
+                        LeetCode <IconExternal />
+                      </a>
                       <button
                         className={`dsa-btn-action ${isDone ? 'solid' : 'ghost'}`}
                         onClick={() => handleCheckToggle(prob.problem_id, isDone)}
@@ -906,7 +877,7 @@ export default function DSALessonChat({
                 </div>
               )
             })}
-          </>
+          </div>
         )}
       </div>
     </div>
