@@ -68,7 +68,8 @@ export default function ChatArea({
   onToggleSidebar,
   onToggleRefDrawer,
   onOpenDashboard,
-  referenceCount = 0
+  referenceCount = 0,
+  tourActionKey = null
 }) {
   const [input, setInput] = useState('')
   const [company, setCompany] = useState('All Companies')
@@ -79,6 +80,7 @@ export default function ChatArea({
   const [hardOn, setHardOn] = useState(true)
   const chatMessagesRef = useRef(null)
   const textareaRef = useRef(null)
+  const executedTourActionsRef = useRef({})
 
   const companies = metadata?.companies || COMPANIES_FALLBACK
   const topics = metadata?.topics || TOPICS_FALLBACK
@@ -91,6 +93,59 @@ export default function ChatArea({
       })
     }
   }, [messages, isLoading])
+
+  // Tour Automated Typing & Filter Demonstration Handler
+  useEffect(() => {
+    if (!tourActionKey || isLoading) return
+
+    if (tourActionKey === 'demo_filter' && !executedTourActionsRef.current['demo_filter']) {
+      executedTourActionsRef.current['demo_filter'] = true
+      setCompany('Google')
+      setTopic('Array')
+      setRecency('All Time')
+      const query = "give top questions for Google on Array (focusing strictly at Google and rated Easy, Medium, Hard and about Array)"
+      const userDisplay = "Search: Google | Array | Difficulty: Easy, Medium, Hard | Recency: All Time"
+      onNewMessage(query, userDisplay)
+    }
+
+    if (tourActionKey === 'demo_prompt1' && !executedTourActionsRef.current['demo_prompt1']) {
+      executedTourActionsRef.current['demo_prompt1'] = true
+      const targetText = "give me top 10 questions on dynamic programming for microsoft"
+      let idx = 0
+      setInput('')
+      const interval = setInterval(() => {
+        if (idx < targetText.length) {
+          setInput(targetText.slice(0, idx + 1))
+          idx++
+        } else {
+          clearInterval(interval)
+          setTimeout(() => {
+            setInput('')
+            onNewMessage(targetText)
+          }, 350)
+        }
+      }, 25)
+    }
+
+    if (tourActionKey === 'demo_prompt2' && !executedTourActionsRef.current['demo_prompt2']) {
+      executedTourActionsRef.current['demo_prompt2'] = true
+      const targetText = "explain the first topic with code in java"
+      let idx = 0
+      setInput('')
+      const interval = setInterval(() => {
+        if (idx < targetText.length) {
+          setInput(targetText.slice(0, idx + 1))
+          idx++
+        } else {
+          clearInterval(interval)
+          setTimeout(() => {
+            setInput('')
+            onNewMessage(targetText)
+          }, 350)
+        }
+      }, 25)
+    }
+  }, [tourActionKey, isLoading, onNewMessage])
 
   function autoResize(e) {
     const el = e.target
@@ -271,7 +326,7 @@ export default function ChatArea({
       </div>
 
       {/* Chat input — pinned at bottom */}
-      <div className="chat-input-wrap">
+      <div className="chat-input-wrap" id="tour-chat-input">
         <textarea
           ref={textareaRef}
           className="chat-input"

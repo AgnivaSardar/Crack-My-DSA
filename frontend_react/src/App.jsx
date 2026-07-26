@@ -475,15 +475,20 @@ export default function App() {
     }
   }
 
+  const [tourActionKey, setTourActionKey] = useState(null)
+
   const handleStartTour = useCallback(() => {
     setDashboardOpen(false)
     setRefDrawerOpen(false)
     setSidebarTab('past_chats')
+    setTourActionKey('past_chats')
     setTourOpen(true)
   }, [setSidebarTab])
 
   const handleTourStepChange = useCallback((actionKey) => {
-    if (actionKey === 'past_chats') {
+    setTourActionKey(actionKey)
+
+    if (actionKey === 'past_chats' || actionKey === 'demo_filter' || actionKey === 'demo_prompt1' || actionKey === 'demo_prompt2') {
       setSidebarTab('past_chats')
       setDashboardOpen(false)
       setRefDrawerOpen(false)
@@ -504,10 +509,6 @@ export default function App() {
       setRefDrawerOpen(false)
       if (!selectedTopicId) setSelectedTopicId(1)
       setDsaSubtab('problems')
-    } else if (actionKey === 'ai_assistant') {
-      setSidebarTab('past_chats')
-      setDashboardOpen(false)
-      setRefDrawerOpen(false)
     } else if (actionKey === 'references') {
       setSidebarTab('past_chats')
       setDashboardOpen(false)
@@ -583,6 +584,7 @@ export default function App() {
               onToggleRefDrawer={() => setRefDrawerOpen(prev => !prev)}
               onOpenDashboard={() => setDashboardOpen(true)}
               referenceCount={lastReferences ? lastReferences.length : 0}
+              tourActionKey={tourActionKey}
             />
             <ReferencePanel
               references={lastReferences}
@@ -613,6 +615,7 @@ export default function App() {
         isOpen={tourOpen}
         onClose={() => setTourOpen(false)}
         onStepChange={handleTourStepChange}
+        isLoading={isLoading}
       />
 
       {/* Toast notifications */}

@@ -9,50 +9,64 @@ const TOUR_STEPS = [
     actionKey: 'past_chats'
   },
   {
+    targetId: 'tour-filters',
+    title: '2. Target Company & Topic Filters',
+    text: 'Watch filters in action! Selecting Google, Array, and All Time automatically searches top matching LeetCode questions.',
+    position: 'bottom',
+    actionKey: 'demo_filter'
+  },
+  {
+    targetId: 'tour-chat-input',
+    title: '3. AI Assistant Query Demo',
+    text: 'Watch how asking questions works! Typing custom prompts like "give me top 10 questions on dynamic programming for microsoft" generates tailored AI responses.',
+    position: 'top',
+    actionKey: 'demo_prompt1'
+  },
+  {
+    targetId: 'tour-chat-input',
+    title: '4. Follow-up Explanation with Code',
+    text: 'Ask follow-up prompts like "explain the first topic with code in java" to get step-by-step explanations and code implementations.',
+    position: 'top',
+    actionKey: 'demo_prompt2'
+  },
+  {
     targetId: 'tour-sidebar-tab-dsa',
-    title: '2. 16 Core DSA Roadmap Topics',
-    text: 'Click the DSA Roadmap tab to access 16 comprehensive topics from Strivers A2Z DSA Sheet. Select any topic to open its theory guide and problem sheet.',
+    title: '5. 16 Core DSA Roadmap Topics',
+    text: 'Click the DSA Roadmap tab to access 16 comprehensive topics from Strivers A2Z DSA Sheet. Select any topic to open its guide and problem sheet.',
     position: 'right',
     actionKey: 'dsa_roadmap'
   },
   {
     targetId: 'tour-dsa-theory',
-    title: '3. Topic Theory & YouTube Tutorials',
+    title: '6. Topic Theory & YouTube Tutorials',
     text: 'Study foundational theory, time and space complexity benchmarks, visual diagrams, and top YouTube video recommendations.',
     position: 'bottom',
     actionKey: 'dsa_theory'
   },
   {
     targetId: 'tour-dsa-problems',
-    title: '4. Core Problems & Solutions Stream',
+    title: '7. Core Problems & Solutions Stream',
     text: 'Master core problems with AI intuition, step-by-step approach, complexity, C++/Java solution code, private AI doubt asking, and solved checkmarks.',
     position: 'bottom',
     actionKey: 'dsa_problems'
   },
   {
-    targetId: 'tour-filters',
-    title: '5. Company & Topic AI Assistant',
-    text: 'Filter questions by top tech companies (Google, Meta, Amazon, Microsoft, etc.), topic, difficulty, or ask custom RAG queries in AI chat.',
-    position: 'bottom',
-    actionKey: 'ai_assistant'
-  },
-  {
     targetId: 'tour-references',
-    title: '6. Reference Problems & Solved Tracking',
-    text: 'Retrieved LeetCode problems are split into two tables: Unsolved Todo questions at top, and Already Done questions beneath!',
+    title: '8. Reference Problems & Solved Tracking',
+    text: 'Retrieved LeetCode problems are split into two tables: Unsolved Todo questions at top, and Already Done questions beneath.',
     position: 'bottom-right',
     actionKey: 'references'
   },
   {
     targetId: 'tour-dashboard-header',
-    title: '7. LeetCode Analytics Dashboard',
+    title: '9. LeetCode Analytics Dashboard',
     text: 'Sync your LeetCode profile, track total solved metrics, Easy/Medium/Hard breakdown, and company progress.',
     position: 'top-modal',
     actionKey: 'dashboard'
   }
 ]
 
-export default function OnboardingTourModal({ isOpen, onClose, onStepChange }) {
+export default function OnboardingTourModal({ isOpen, onClose, onStepChange, isLoading = false }) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [coords, setCoords] = useState(null)
   const [spotlightStyle, setSpotlightStyle] = useState(null)
@@ -101,6 +115,9 @@ export default function OnboardingTourModal({ isOpen, onClose, onStepChange }) {
       } else if (step.position === 'bottom') {
         top = rect.bottom + 14
         left = Math.min(window.innerWidth - 340, Math.max(20, rect.left))
+      } else if (step.position === 'top') {
+        top = Math.max(20, rect.top - 230)
+        left = Math.min(window.innerWidth - 340, Math.max(20, rect.left))
       } else if (step.position === 'top-modal') {
         top = Math.max(30, rect.bottom + 12)
         left = Math.max(30, rect.left + 16)
@@ -137,6 +154,7 @@ export default function OnboardingTourModal({ isOpen, onClose, onStepChange }) {
   const isLastStep = currentStepIndex === TOUR_STEPS.length - 1
 
   function handleNext() {
+    if (isLoading) return
     if (isLastStep) {
       onClose()
     } else {
@@ -193,12 +211,17 @@ export default function OnboardingTourModal({ isOpen, onClose, onStepChange }) {
 
           <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
             {currentStepIndex > 0 && (
-              <button className="btn btn-secondary btn-sm" onClick={handleBack}>
+              <button className="btn btn-secondary btn-sm" onClick={handleBack} disabled={isLoading}>
                 Back
               </button>
             )}
-            <button className="btn btn-primary btn-sm" onClick={handleNext}>
-              {isLastStep ? (
+            <button className="btn btn-primary btn-sm" onClick={handleNext} disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'spin 1s linear infinite', flexShrink: 0 }}><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                  <span>Waiting...</span>
+                </>
+              ) : isLastStep ? (
                 'Finish'
               ) : (
                 <>
