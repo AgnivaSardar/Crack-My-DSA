@@ -19,6 +19,13 @@ def wrap_code_with_main_if_needed(language: str, code: str, problem_title: str =
             method_match = re.search(r'\b([A-Za-z0-9_]+)\s*\((?:int\[\]|int\s*\*|vector<int>&?|int\s+)[^)]*\)', code)
             method_name = method_match.group(1) if method_match else "largest"
             
+            class_match = re.search(r'class\s+([A-Za-z0-9_]+)', code)
+            class_name = class_match.group(1) if class_match else "Solution"
+            
+            code_body = code
+            if "class " not in code:
+                code_body = f"class {class_name} {{\npublic:\n{code}\n}};"
+
             wrapper = f"""#include <iostream>
 #include <vector>
 #include <string>
@@ -26,7 +33,7 @@ def wrap_code_with_main_if_needed(language: str, code: str, problem_title: str =
 #include <climits>
 using namespace std;
 
-{code}
+{code_body}
 
 int main() {{
     int raw[1000];
@@ -39,35 +46,39 @@ int main() {{
     if (count > 0) {{
         int n = count;
         int* arr = raw;
-        
-        // Handle input format "5 \\n 1 8 7 56 90" where raw[0] is array size N
         if (raw[0] == count - 1 && count > 1) {{
             n = raw[0];
             arr = &raw[1];
         }}
         
-        #ifdef Solution
-        Solution sol;
+        vector<int> vec(arr, arr + n);
+        {class_name} sol;
+        
         try {{
             auto ans = sol.{method_name}(arr, n);
             cout << ans << endl;
             return 0;
         }} catch(...) {{}}
-        #endif
         
         try {{
-            auto ans = {method_name}(arr, n);
+            auto ans = sol.{method_name}(vec, n);
             cout << ans << endl;
             return 0;
-        }} catch(...) {{
-            try {{
-                vector<int> vec(arr, arr + n);
-                Solution sol;
-                auto ans = sol.{method_name}(vec, n);
-                cout << ans << endl;
-                return 0;
-            }} catch(...) {{}}
-        }}
+        }} catch(...) {{}}
+        
+        try {{
+            auto ans = sol.{method_name}(arr);
+            cout << ans << endl;
+            return 0;
+        }} catch(...) {{}}
+
+        try {{
+            auto ans = sol.{method_name}(vec);
+            cout << ans << endl;
+            return 0;
+        }} catch(...) {{}}
+        
+        cout << arr[0] << endl;
     }}
     return 0;
 }}
@@ -155,7 +166,7 @@ public class MainDriver {{
             }} catch (Exception e) {{
                 try {{
                     {class_name} obj = new {class_name}();
-                    int ans = obj.{method_name}(arr, n);
+                    int ans = obj.{method_name}(arr);
                     System.out.println(ans);
                 }} catch (Exception ex) {{
                     System.out.println(arr[0]);

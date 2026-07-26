@@ -436,16 +436,53 @@ export default function DSACodingLab({
                       <pre className="dsa-term-pre">{executionResult.stderr}</pre>
                     </div>
                   )}
-                  <span className="dsa-term-label">Standard Output (stdout):</span>
-                  <pre className="dsa-term-pre">{executionResult.stdout || '(No output returned)'}</pre>
+
+                  {/* Public Sample Test Cases Rendered with Sleek Color Coding */}
+                  {executionResult.public_test_results && executionResult.public_test_results.length > 0 ? (
+                    <div className="dsa-submission-results">
+                      <span className="dsa-term-label">Sample Test Cases Execution:</span>
+                      <div className="dsa-test-cards-grid" style={{ marginTop: '0.4rem' }}>
+                        {executionResult.public_test_results.map((tCase, tcIdx) => (
+                          <div key={tcIdx} className={`dsa-test-card ${tCase.passed ? 'pass' : 'fail'}`}>
+                            <div className="dsa-test-card-head">
+                              <span className="dsa-test-tag">Test Case #{tCase.id}</span>
+                              <span className={`dsa-pass-badge ${tCase.passed ? 'pass' : 'fail'}`}>
+                                {tCase.passed ? <><IconCheck /> Passed</> : <><IconX /> Failed</>}
+                              </span>
+                            </div>
+                            <div className="dsa-test-details">
+                              <div className="dsa-test-field">
+                                <span className="field-lbl">Input:</span>
+                                <code>{tCase.input}</code>
+                              </div>
+                              <div className="dsa-test-field">
+                                <span className="field-lbl">Your Output:</span>
+                                <code className={tCase.passed ? 'ok' : 'err'}>{tCase.actual || 'No output'}</code>
+                              </div>
+                              <div className="dsa-test-field">
+                                <span className="field-lbl">Expected Output:</span>
+                                <code>{tCase.expected}</code>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="dsa-term-label">Standard Output (stdout):</span>
+                      <pre className="dsa-term-pre">{executionResult.stdout || '(No output returned)'}</pre>
+                    </>
+                  )}
                 </>
               ) : (
                 <div className="dsa-term-empty-msg">
-                  Click "Run Code" above to execute your solution against custom stdin input.
+                  Click "Run Code" above to execute your solution against sample test cases.
                 </div>
               )}
             </div>
           )}
+
 
           {terminalTab === 'testcases' && (
             <div className="dsa-testcases-wrap">
