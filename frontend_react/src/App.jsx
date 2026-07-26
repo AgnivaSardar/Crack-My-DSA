@@ -538,6 +538,23 @@ export default function App() {
     }
   }, [setSidebarTab, selectedTopicId, setSelectedTopicId, setDsaSubtab])
 
+  const handleDemoMessage = useCallback((userQuery, assistantContent) => {
+    const userMsg = { role: 'user', content: userQuery }
+    const assistantMsg = { role: 'assistant', content: assistantContent }
+    setMessages(prev => {
+      const updated = [...prev, userMsg, assistantMsg]
+      setSessions(sPrev => ({
+        ...sPrev,
+        [currentSessionId]: {
+          title: 'Tour Demonstration',
+          messages: updated,
+          lastReferences: sPrev[currentSessionId]?.lastReferences || []
+        }
+      }))
+      return updated
+    })
+  }, [currentSessionId])
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 768)
   const [refDrawerOpen, setRefDrawerOpen] = useState(false)
 
@@ -596,6 +613,7 @@ export default function App() {
             <ChatArea
               messages={messages}
               onNewMessage={handleNewMessage}
+              onDemoMessage={handleDemoMessage}
               onRegenerate={handleRegenerate}
               metadata={metadata}
               isLoading={isLoading}

@@ -91,6 +91,7 @@ export default function OnboardingTourModal({ isOpen, onClose, onStepChange, isL
     if (!isOpen) return
     const step = TOUR_STEPS[currentStepIndex]
     const el = document.getElementById(step.targetId)
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
 
     if (el) {
       const rect = el.getBoundingClientRect()
@@ -102,40 +103,54 @@ export default function OnboardingTourModal({ isOpen, onClose, onStepChange, isL
         height: rect.height + 12
       })
 
-      // Non-centered popover coordinates (beside the feature)
+      // Non-centered popover coordinates
       let top = rect.bottom + 14
       let left = rect.left
 
-      if (step.position === 'right') {
-        top = Math.max(20, rect.top + 20)
-        left = Math.min(window.innerWidth - 340, rect.right + 16)
-      } else if (step.position === 'bottom-right') {
-        top = rect.bottom + 14
-        left = Math.max(20, rect.right - 320)
-      } else if (step.position === 'bottom') {
-        top = rect.bottom + 14
-        left = Math.min(window.innerWidth - 340, Math.max(20, rect.left))
-      } else if (step.position === 'top') {
-        top = Math.max(20, rect.top - 230)
-        left = Math.min(window.innerWidth - 340, Math.max(20, rect.left))
-      } else if (step.position === 'chat-area') {
-        top = Math.max(80, Math.min(window.innerHeight - 240, rect.top + 80))
-        left = Math.max(10, rect.left - 335)
-      } else if (step.position === 'top-modal') {
-        top = Math.max(30, rect.bottom + 12)
-        left = Math.max(30, rect.left + 16)
-      }
+      if (isMobile) {
+        // Mobile UI positioning
+        left = 12
+        if (step.position === 'chat-area') {
+          top = Math.max(50, window.innerHeight - 210)
+        } else if (rect.bottom + 210 > window.innerHeight) {
+          top = Math.max(15, rect.top - 190)
+        } else {
+          top = Math.min(window.innerHeight - 210, rect.bottom + 12)
+        }
+      } else {
+        // Desktop UI positioning
+        if (step.position === 'right') {
+          top = Math.max(20, rect.top + 20)
+          left = Math.min(window.innerWidth - 340, rect.right + 16)
+        } else if (step.position === 'bottom-right') {
+          top = rect.bottom + 14
+          left = Math.max(20, rect.right - 320)
+        } else if (step.position === 'bottom') {
+          top = rect.bottom + 14
+          left = Math.min(window.innerWidth - 340, Math.max(20, rect.left))
+        } else if (step.position === 'top') {
+          top = Math.max(20, rect.top - 230)
+          left = Math.min(window.innerWidth - 340, Math.max(20, rect.left))
+        } else if (step.position === 'chat-area') {
+          top = Math.max(80, Math.min(window.innerHeight - 240, rect.top + 80))
+          left = Math.max(10, rect.left - 335)
+        } else if (step.position === 'top-modal') {
+          top = Math.max(30, rect.bottom + 12)
+          left = Math.max(30, rect.left + 16)
+        }
 
-      // Constrain within viewport boundaries
-      if (left + 340 > window.innerWidth) left = window.innerWidth - 350
-      if (left < 10) left = 10
-      if (top + 220 > window.innerHeight) top = window.innerHeight - 230
+        // Constrain within desktop viewport boundaries
+        if (left + 340 > window.innerWidth) left = window.innerWidth - 350
+        if (left < 10) left = 10
+        if (top + 220 > window.innerHeight) top = window.innerHeight - 230
+      }
 
       setCoords({ top, left })
     } else {
       // Fallback position if element is collapsed/not visible yet
       setSpotlightStyle(null)
-      setCoords({ top: 120, left: Math.max(20, window.innerWidth / 2 - 160) })
+      const fallbackLeft = isMobile ? 12 : Math.max(20, window.innerWidth / 2 - 160)
+      setCoords({ top: 120, left: fallbackLeft })
     }
   }, [isOpen, currentStepIndex])
 

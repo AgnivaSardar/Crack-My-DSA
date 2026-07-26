@@ -58,9 +58,65 @@ function CodeBlock({ code, language }) {
   )
 }
 
+const TOUR_DEMO_RESPONSES = {
+  demo_filter: `### Top Google Questions on Array (All Time)
+
+Here are top LeetCode questions for **Google** under **Array**:
+
+1. **Two Sum (LeetCode #1)** — *Array, Hash Table*
+2. **Median of Two Sorted Arrays (LeetCode #4)** — *Array, Binary Search, Divide and Conquer*
+3. **Trapping Rain Water (LeetCode #42)** — *Array, Two Pointers, Dynamic Programming*
+4. **Best Time to Buy and Sell Stock (LeetCode #121)** — *Array, Dynamic Programming*
+5. **Container With Most Water (LeetCode #11)** — *Array, Two Pointers, Greedy*`,
+
+  demo_prompt1: `### Top 10 Dynamic Programming Questions for Microsoft
+
+Here are the most frequently asked Dynamic Programming questions in Microsoft technical interviews:
+
+1. **Climbing Stairs (LeetCode #70)** — *1D DP / Fibonacci Pattern*
+2. **Coin Change (LeetCode #322)** — *Unbounded Knapsack Pattern*
+3. **Longest Common Subsequence (LeetCode #1143)** — *String DP Grid*
+4. **House Robber (LeetCode #198)** — *Non-Adjacent Max Sum*
+5. **Edit Distance (LeetCode #72)** — *String Transformation Matrix*
+6. **Unique Paths (LeetCode #62)** — *2D Grid Traversal*
+7. **Longest Increasing Subsequence (LeetCode #300)** — *Subsequence Optimization*
+8. **Word Break (LeetCode #139)** — *Partition DP*
+9. **Partition Equal Subset Sum (LeetCode #416)** — *0/1 Knapsack Pattern*
+10. **Maximum Subarray (LeetCode #53)** — *Kadane's DP Algorithm*`,
+
+  demo_prompt2: `### 1. Climbing Stairs (LeetCode #70) — Java Solution & Walkthrough
+
+#### Intuition & Approach
+To reach step \`n\`, you can take a single step from \`n - 1\` or a double step from \`n - 2\`. Thus, total ways is \`dp[n] = dp[n - 1] + dp[n - 2]\`.
+
+\`\`\`java
+class Solution {
+    public int climbStairs(int n) {
+        if (n <= 2) return n;
+        
+        int prev2 = 1; // dp[i-2]
+        int prev1 = 2; // dp[i-1]
+        
+        for (int i = 3; i <= n; i++) {
+            int current = prev1 + prev2;
+            prev2 = prev1;
+            prev1 = current;
+        }
+        
+        return prev1;
+    }
+}
+\`\`\`
+
+#### Complexity Analysis:
+- **Time Complexity:** $O(N)$ single loop pass.
+- **Space Complexity:** $O(1)$ constant memory.`
+}
+
 export default function ChatArea({ 
   messages, 
   onNewMessage, 
+  onDemoMessage,
   onRegenerate, 
   metadata, 
   isLoading,
@@ -94,18 +150,19 @@ export default function ChatArea({
     }
   }, [messages, isLoading])
 
-  // Tour Automated Typing & Filter Demonstration Handler
+  // Tour Automated Typing & Instant Demo Response Handler (Zero LLM API Calls)
   useEffect(() => {
-    if (!tourActionKey || isLoading) return
+    if (!tourActionKey) return
 
     if (tourActionKey === 'demo_filter' && !executedTourActionsRef.current['demo_filter']) {
       executedTourActionsRef.current['demo_filter'] = true
       setCompany('Google')
       setTopic('Array')
       setRecency('All Time')
-      const query = "give top questions for Google on Array (focusing strictly at Google and rated Easy, Medium, Hard and about Array)"
       const userDisplay = "Search: Google | Array | Difficulty: Easy, Medium, Hard | Recency: All Time"
-      onNewMessage(query, userDisplay)
+      if (onDemoMessage) {
+        onDemoMessage(userDisplay, TOUR_DEMO_RESPONSES.demo_filter)
+      }
     }
 
     if (tourActionKey === 'demo_prompt1' && !executedTourActionsRef.current['demo_prompt1']) {
@@ -121,10 +178,12 @@ export default function ChatArea({
           clearInterval(interval)
           setTimeout(() => {
             setInput('')
-            onNewMessage(targetText)
-          }, 350)
+            if (onDemoMessage) {
+              onDemoMessage(targetText, TOUR_DEMO_RESPONSES.demo_prompt1)
+            }
+          }, 250)
         }
-      }, 25)
+      }, 20)
     }
 
     if (tourActionKey === 'demo_prompt2' && !executedTourActionsRef.current['demo_prompt2']) {
@@ -140,12 +199,14 @@ export default function ChatArea({
           clearInterval(interval)
           setTimeout(() => {
             setInput('')
-            onNewMessage(targetText)
-          }, 350)
+            if (onDemoMessage) {
+              onDemoMessage(targetText, TOUR_DEMO_RESPONSES.demo_prompt2)
+            }
+          }, 250)
         }
-      }, 25)
+      }, 20)
     }
-  }, [tourActionKey, isLoading, onNewMessage])
+  }, [tourActionKey, onDemoMessage])
 
   function autoResize(e) {
     const el = e.target
