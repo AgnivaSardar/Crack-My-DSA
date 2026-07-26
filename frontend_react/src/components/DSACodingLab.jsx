@@ -229,7 +229,8 @@ export default function DSACodingLab({
           if (currentProblem && onToggleProblemProgress) {
             onToggleProblemProgress(currentProblem.problem_id, true)
           }
-          if (onToast) onToast('🎉 Accepted! All public and private test cases passed!')
+          if (onToast) onToast('Accepted! All public and private test cases passed!')
+
         } else {
           if (onToast) onToast(`Submission Status: ${res.status}`)
         }
@@ -286,7 +287,8 @@ export default function DSACodingLab({
             value={selectedProblemId}
             onChange={(e) => setSelectedProblemId(e.target.value)}
           >
-            <option value="practice">⚡ Practice Playground & Custom IDE</option>
+            <option value="practice">Practice Playground & Custom IDE</option>
+
             {problems.map((p, idx) => (
               <option key={p.problem_id || idx} value={p.problem_id}>
                 #{idx + 1}. {p.title} {p.is_completed ? ' (Solved)' : ''}
@@ -477,7 +479,7 @@ export default function DSACodingLab({
                 <div className="dsa-submission-results">
                   <div className="dsa-results-summary-banner">
                     <h5 className="dsa-results-title">
-                      {submissionResult.status === 'Accepted' ? '🎉 All Test Cases Passed!' : `⚠️ Submission Result: ${submissionResult.status}`}
+                      {submissionResult.status === 'Accepted' ? 'All Test Cases Passed!' : `Submission Result: ${submissionResult.status}`}
                     </h5>
                     <span className="dsa-results-sub">
                       Evaluation score: {submissionResult.passed_count} of {submissionResult.total_count} test cases passed.
@@ -489,7 +491,7 @@ export default function DSACodingLab({
                       <div key={tcIdx} className={`dsa-test-card ${tCase.passed ? 'pass' : 'fail'}`}>
                         <div className="dsa-test-card-head">
                           <span className="dsa-test-tag">
-                            {tCase.is_private ? '🔒 Private Test Case' : '🔓 Public Test Case'} #{tCase.id}
+                            {tCase.is_private ? '[Private] Test Case' : '[Public] Test Case'} #{tCase.id}
                           </span>
                           <span className={`dsa-pass-badge ${tCase.passed ? 'pass' : 'fail'}`}>
                             {tCase.passed ? <><IconCheck /> Passed</> : <><IconX /> Failed</>}
@@ -523,7 +525,8 @@ export default function DSACodingLab({
                     {executionResult.public_test_results.map((tCase, tcIdx) => (
                       <div key={tcIdx} className={`dsa-test-card ${tCase.passed ? 'pass' : 'fail'}`}>
                         <div className="dsa-test-card-head">
-                          <span className="dsa-test-tag">🔓 Public Test Case #{tCase.id}</span>
+                          <span className="dsa-test-tag">[Public] Test Case #{tCase.id}</span>
+
                           <span className={`dsa-pass-badge ${tCase.passed ? 'pass' : 'fail'}`}>
                             {tCase.passed ? <><IconCheck /> Passed</> : <><IconX /> Failed</>}
                           </span>
