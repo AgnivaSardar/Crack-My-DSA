@@ -508,32 +508,43 @@ export default function App() {
   const handleTourStepChange = useCallback((actionKey) => {
     setTourActionKey(actionKey)
 
-    if (actionKey === 'past_chats' || actionKey === 'demo_filter' || actionKey === 'demo_prompt1' || actionKey === 'demo_prompt2') {
+    if (actionKey === 'past_chats') {
+      setSidebarCollapsed(false) // Expand sidebar so Step 1 tab is highlighted
+      setSidebarTab('past_chats')
+      setDashboardOpen(false)
+      setRefDrawerOpen(false)
+    } else if (actionKey === 'demo_filter' || actionKey === 'demo_prompt1' || actionKey === 'demo_prompt2') {
+      setSidebarCollapsed(true) // Collapse sidebar for Chat demo steps
       setSidebarTab('past_chats')
       setDashboardOpen(false)
       setRefDrawerOpen(false)
     } else if (actionKey === 'dsa_roadmap') {
+      setSidebarCollapsed(false) // Expand sidebar so Step 5 tab is highlighted
       setSidebarTab('dsa_roadmap')
       setDashboardOpen(false)
       setRefDrawerOpen(false)
       if (!selectedTopicId) setSelectedTopicId(1)
     } else if (actionKey === 'dsa_theory') {
+      setSidebarCollapsed(true) // Collapse sidebar for Theory step
       setSidebarTab('dsa_roadmap')
       setDashboardOpen(false)
       setRefDrawerOpen(false)
       if (!selectedTopicId) setSelectedTopicId(1)
       setDsaSubtab('theory')
     } else if (actionKey === 'dsa_problems') {
+      setSidebarCollapsed(true) // Collapse sidebar for Problems step
       setSidebarTab('dsa_roadmap')
       setDashboardOpen(false)
       setRefDrawerOpen(false)
       if (!selectedTopicId) setSelectedTopicId(1)
       setDsaSubtab('problems')
     } else if (actionKey === 'references') {
+      setSidebarCollapsed(true) // Collapse sidebar for References step
       setSidebarTab('past_chats')
       setDashboardOpen(false)
       setRefDrawerOpen(true)
     } else if (actionKey === 'dashboard') {
+      setSidebarCollapsed(true) // Collapse sidebar for Dashboard step
       setDashboardOpen(true)
     }
   }, [setSidebarTab, selectedTopicId, setSelectedTopicId, setDsaSubtab])

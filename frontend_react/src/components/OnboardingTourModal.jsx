@@ -132,8 +132,8 @@ export default function OnboardingTourModal({ isOpen, onClose, onStepChange, isL
           top = Math.max(20, rect.top - 230)
           left = Math.min(window.innerWidth - 340, Math.max(20, rect.left))
         } else if (step.position === 'chat-area') {
-          top = Math.max(80, Math.min(window.innerHeight - 240, rect.top + 80))
-          left = Math.max(10, rect.left - 335)
+          top = Math.max(70, rect.top + 70)
+          left = Math.min(window.innerWidth - 350, Math.max(20, rect.left + 24))
         } else if (step.position === 'top-modal') {
           top = Math.max(30, rect.bottom + 12)
           left = Math.max(30, rect.left + 16)
