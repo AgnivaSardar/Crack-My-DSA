@@ -197,8 +197,18 @@ export default function OnboardingTourModal({ isOpen, onClose, onStepChange }) {
                 Back
               </button>
             )}
-            <button className="btn btn-primary btn-sm" onClick={handleNext}>
-              {isLastStep ? 'Finish Tour' : 'Continue →'}
+            <button className="btn btn-primary btn-sm" onClick={handleNext} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+              {isLastStep ? (
+                'Finish Tour'
+              ) : (
+                <>
+                  <span>Continue</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </>
+              )}
             </button>
           </div>
         </div>

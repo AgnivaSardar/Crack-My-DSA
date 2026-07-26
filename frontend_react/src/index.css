@@ -1867,6 +1867,8 @@ code, pre, .mono {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
 }
 
 .tour-skip-btn {
@@ -1876,9 +1878,23 @@ code, pre, .mono {
   font-size: 0.76rem;
   cursor: pointer;
   text-decoration: underline;
+  white-space: nowrap;
 }
 
 .tour-skip-btn:hover { color: #aaa; }
+
+.tour-popover .btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  height: 32px !important;
+  padding: 0 0.85rem !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  gap: 6px !important;
+}
 
 /* ============================================
    DSA ROADMAP & LESSONS (COMPACT MONOCHROME)
