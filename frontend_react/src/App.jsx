@@ -528,15 +528,16 @@ const TOUR_DEMO_REFERENCES = [
   }
 ]
 
-  const [tourActionKey, setTourActionKey] = useState(null)
+  const tourSessionIdRef = useRef(null)
 
   const handleStartTour = useCallback(() => {
     setDashboardOpen(false)
     setRefDrawerOpen(false)
     setSidebarTab('past_chats')
 
-    // Always start tour in a brand-new, clean chat session populated with demo references
+    // Always start tour in a brand-new, temporary chat session populated with demo references
     const newId = makeId()
+    tourSessionIdRef.current = newId
     const newSession = { title: 'Tour Demonstration', messages: [], lastReferences: TOUR_DEMO_REFERENCES }
     setSessions(prev => {
       const updated = { ...prev, [newId]: newSession }
@@ -597,6 +598,18 @@ const TOUR_DEMO_REFERENCES = [
       setDashboardOpen(true)
     }
   }, [setSidebarTab, selectedTopicId, setSelectedTopicId, setDsaSubtab])
+
+  const handleCloseTour = useCallback(() => {
+    setTourOpen(false)
+    setTourActionKey(null)
+
+    // Delete the temporary tour demonstration chat session when tour ends or is skipped
+    if (tourSessionIdRef.current) {
+      const idToDelete = tourSessionIdRef.current
+      tourSessionIdRef.current = null
+      handleDeleteSession(idToDelete)
+    }
+  }, [handleDeleteSession])
 
   const handleDemoMessage = useCallback((userQuery, assistantContent) => {
     const userMsg = { role: 'user', content: userQuery }
@@ -712,7 +725,7 @@ const TOUR_DEMO_REFERENCES = [
       {/* Onboarding Tour Modal */}
       <OnboardingTourModal
         isOpen={tourOpen}
-        onClose={() => setTourOpen(false)}
+        onClose={handleCloseTour}
         onStepChange={handleTourStepChange}
         isLoading={isLoading}
       />
