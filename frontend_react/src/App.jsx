@@ -528,6 +528,7 @@ const TOUR_DEMO_REFERENCES = [
   }
 ]
 
+  const [tourActionKey, setTourActionKey] = useState(null)
   const tourSessionIdRef = useRef(null)
 
   const handleStartTour = useCallback(() => {
