@@ -3,8 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>Crack My DSA - LeetCode Company Interview Assistant</title>
     <meta name="description" content="AI-powered LeetCode company interview preparation assistant with RAG-based question retrieval." />
+    <script>
+      window.addEventListener('error', function(e) {
+        if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
+          var key = 'dsa_asset_reload_retry';
+          var last = sessionStorage.getItem(key);
+          var now = Date.now();
+          if (!last || (now - parseInt(last, 10)) > 10000) {
+            sessionStorage.setItem(key, String(now));
+            window.location.reload(true);
+          }
+        }
+      }, true);
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
