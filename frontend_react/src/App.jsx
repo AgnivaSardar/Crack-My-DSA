@@ -295,6 +295,11 @@ export default function App() {
       setSolvedProblems(solvedList)
     }
 
+    // Auto-launch feature tour on new guest login / sign in
+    setTimeout(() => {
+      handleStartTour()
+    }, 400)
+
     if (isNewUser) {
       setTimeout(() => setTourOpen(true), 600)
     }
@@ -481,9 +486,24 @@ export default function App() {
     setDashboardOpen(false)
     setRefDrawerOpen(false)
     setSidebarTab('past_chats')
+
+    // Always start tour in a brand-new, clean chat session
+    const newId = makeId()
+    const newSession = { title: 'Tour Demonstration', messages: [], lastReferences: [] }
+    setSessions(prev => {
+      const updated = { ...prev, [newId]: newSession }
+      if (guestUser) {
+        persistGuestSessions(updated)
+      }
+      return updated
+    })
+    setCurrentSessionId(newId)
+    setMessages([])
+    setLastReferences([])
+
     setTourActionKey('past_chats')
     setTourOpen(true)
-  }, [setSidebarTab])
+  }, [setSidebarTab, guestUser, setCurrentSessionId])
 
   const handleTourStepChange = useCallback((actionKey) => {
     setTourActionKey(actionKey)
