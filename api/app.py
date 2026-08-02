@@ -135,29 +135,35 @@ async def query_rag(request: QueryRequest):
             "exclude", "remove", "don't include", "dont include", "fresh", "new question"
         ])
 
-        target_limit = request.limit or 10
-
-        if is_exclude_explicit and user_solved_titles:
-            # ONLY when user explicitly asks to exclude/remove solved questions:
-            # Oversample candidate pool so retrieved_questions contains full target_limit UNSOLVED problems
-            candidates = retriever.retrieve(request.query, limit=target_limit * 5)
-            solved_set = set(t.strip().lower() for t in user_solved_titles)
-            retrieved_questions = [q for q in candidates if (q.get("title") or q.get("problem_title") or "").strip().lower() not in solved_set][:target_limit]
-        else:
-            # Default behavior (normal queries): return top retrieved questions (both solved and unsolved)
-            retrieved_questions = retriever.retrieve(request.query, limit=target_limit)
-
         # Format history
         history_dicts = []
         if request.history:
             history_dicts = [{"role": msg.role, "content": msg.content} for msg in request.history]
-            
+
+        target_limit = request.limit or 10
+
+        meta = retriever.retrieve_with_meta(request.query, limit=target_limit, history=history_dicts)
+        retrieved_questions = meta.get("results", [])
+        total_matching_count = meta.get("total_count", 0)
+        difficulty_breakdown = meta.get("difficulty_breakdown")
+        topic_breakdown = meta.get("topic_breakdown")
+        parsed_params = meta.get("parsed_params")
+        wants_one_by_one = parsed_params.wants_one_by_one if parsed_params else False
+
+        if is_exclude_explicit and user_solved_titles:
+            solved_set = set(t.strip().lower() for t in user_solved_titles)
+            retrieved_questions = [q for q in retrieved_questions if (q.get("title") or q.get("problem_title") or "").strip().lower() not in solved_set]
+
         # Generate LLM answer
         answer = generator.generate_response(
             query=request.query, 
             retrieved_questions=retrieved_questions, 
             chat_history=history_dicts,
-            solved_titles=user_solved_titles if is_exclude_explicit else None
+            solved_titles=user_solved_titles if is_exclude_explicit else None,
+            total_matching_count=total_matching_count,
+            difficulty_breakdown=difficulty_breakdown,
+            topic_breakdown=topic_breakdown,
+            wants_one_by_one=wants_one_by_one
         )
         
         return QueryResponse(

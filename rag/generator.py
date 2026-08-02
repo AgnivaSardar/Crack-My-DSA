@@ -51,7 +51,10 @@ class LeetCodeGenerator:
             "2. If the user asks for a list of questions, output a clean Markdown table containing EXACTLY the questions provided in the 'Retrieved Company Question Context'. Format the Markdown table with columns: | LeetCode # | Problem Title | Difficulty | Frequency Score | Topics |. In the 'LeetCode #' column, place the exact LeetCode question number (e.g. #1, #15, #22, #79, or Premium/SQL). In the 'Problem Title' column, place the problem title AND right next to it, append a YouTube solution link e.g. '[Solution](https://www.youtube.com/results?search_query=LeetCode+<Title>+<Company>+solution)'. Match the exact Titles, Company, Difficulty, Frequency, and Topics from the context. Do NOT invent, substitute, or replace questions outside of the provided context.\n"
             "3. If the user asks about a specific question or asks 'how to implement' a problem, DO NOT output code solutions immediately. First, ask the candidate which programming language they prefer (Java, Python, C, or C++). Once they specify the language in the next turn, provide the clean code implementation and complexity analysis ONLY in that selected language.\n"
             "4. At the end of every response, provide 2-3 dynamic, highly relevant recommended follow-up questions/suggestions for what they should ask next, based on their previous questions and current progress.\n"
-            "5. If a question number is not standard (e.g., SQL/Database or custom premium), represent it as 'SQL' or 'Premium'."
+            "5. If a question number is not standard (e.g., SQL/Database or custom premium), represent it as 'SQL' or 'Premium'.\n"
+            "6. ACCURATE DATABASE COUNTS & STATS: When the user asks 'how many questions do you have for [Company]', 'total count', or 'where do they ask from', ALWAYS quote the exact 'Total Matching Database Questions Count' provided in the prompt context (e.g., 261 questions for Goldman Sachs). NEVER claim or imply that the database only has 10 questions when the Total Count is larger! Clarify how many questions are shown in the current table (e.g., showing 10 or showing all N).\n"
+            "7. CONVERSATION CONTEXT: Continuously preserve conversation context from history. If the user asks follow-up queries like 'topics', 'where do they mostly ask from', or 'show all', answer specifically for the company/filters established in previous turns (e.g. Goldman Sachs).\n"
+            "8. EXPLAIN ONE BY ONE: If the user asks to 'explain one by one', 'explain each question', or 'one by one', provide an explicit, clear algorithmic breakdown, core intuition, and complexity analysis for each problem listed in context sequentially."
         )
 
     def format_retrieved_questions(self, questions: List[Dict[str, Any]]) -> str:
@@ -165,7 +168,17 @@ class LeetCodeGenerator:
         response.append("Tip: Connect this machine to the internet and input a valid API key in your .env to see full dynamic AI explanations and code dry-runs.")
         return "\n".join(response)
 
-    def generate_response(self, query: str, retrieved_questions: List[Dict[str, Any]], chat_history: Optional[List[Dict[str, str]]] = None, solved_titles: Optional[List[str]] = None) -> str:
+    def generate_response(
+        self, 
+        query: str, 
+        retrieved_questions: List[Dict[str, Any]], 
+        chat_history: Optional[List[Dict[str, str]]] = None, 
+        solved_titles: Optional[List[str]] = None,
+        total_matching_count: Optional[int] = None,
+        difficulty_breakdown: Optional[Dict[str, int]] = None,
+        topic_breakdown: Optional[Dict[str, int]] = None,
+        wants_one_by_one: bool = False
+    ) -> str:
         """Builds prompt, appends context, and generates final response. Falls back to offline templates if needed."""
         if self.is_offline_mode:
             return self.generate_offline_response(query, retrieved_questions)
@@ -187,13 +200,30 @@ class LeetCodeGenerator:
                 f"DO NOT include or recommend ANY of these already-solved problems in your recommended response or table!\n\n"
             )
             
+        if total_matching_count is not None:
+            prompt += f"Total Matching Database Questions Count: {total_matching_count}\n"
+            if difficulty_breakdown:
+                prompt += f"Difficulty Distribution in DB: {difficulty_breakdown}\n"
+            if topic_breakdown:
+                sorted_topics = sorted(topic_breakdown.items(), key=lambda x: x[1], reverse=True)[:10]
+                prompt += f"Top Topics Distribution in DB: {dict(sorted_topics)}\n"
+            prompt += f"Number of retrieved questions listed in context below: {len(retrieved_questions)}\n\n"
+
+        q_lower = query.lower()
+        if wants_one_by_one or any(w in q_lower for w in ["one by one", "explain each", "explain one by one", "step by step"]):
+            prompt += (
+                "CRITICAL DIRECTIVE: The candidate explicitly requested to EXPLAIN EACH QUESTION ONE BY ONE.\n"
+                "After outputting the summary table, provide a detailed step-by-step breakdown for EACH problem listed in the context below.\n"
+                "For every problem, explain: 1) Core Algorithmic Intuition & Strategy, 2) Key Edge Cases, and 3) Time & Space Complexity.\n\n"
+            )
+
         prompt += (
             f"Candidate Query: \"{query}\"\n\n"
             f"Retrieved Company Question Context:\n"
             f"----------------------------------------\n"
             f"{retrieved_context}\n"
             f"----------------------------------------\n\n"
-            f"Please generate the study plan, explanations, and code solutions based on the query and retrieved questions."
+            f"Please generate the response based on the query and retrieved metadata and questions."
         )
         
         try:

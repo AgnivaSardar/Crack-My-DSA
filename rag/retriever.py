@@ -51,7 +51,7 @@ class LeetCodeRetriever:
             
         return True
 
-    def retrieve_offline(self, parsed_params: QueryParameters, limit: int, wants_non_dsa: bool = False) -> List[Dict[str, Any]]:
+    def retrieve_offline(self, parsed_params: QueryParameters, limit: int, wants_non_dsa: bool = False) -> Dict[str, Any]:
         """Performs a direct keyword/metadata search on the cleaned JSON file without vector store or internet."""
         # Map company case-insensitively to database value
         if parsed_params.company:
@@ -64,14 +64,14 @@ class LeetCodeRetriever:
         
         if not cleaned_file.exists():
             print(f"[Retriever] Offline Error: Cleaned problems file not found at {cleaned_file}")
-            return []
+            return {"results": [], "total_count": 0, "difficulty_breakdown": {}, "topic_breakdown": {}}
             
         try:
             with open(cleaned_file, "r", encoding="utf-8") as f:
                 problems = json.load(f)
         except Exception as e:
             print(f"[Retriever] Error loading JSON file offline: {e}")
-            return []
+            return {"results": [], "total_count": 0, "difficulty_breakdown": {}, "topic_breakdown": {}}
             
         filtered_results = []
         
@@ -120,7 +120,6 @@ class LeetCodeRetriever:
                     continue
                     
             # 4. Rank by Keyword Similarity + Frequency
-            # Count how many query words are in the title
             title_lower = p.get("title", "").lower()
             keyword_score = 0.0
             if query_words:
@@ -129,13 +128,10 @@ class LeetCodeRetriever:
                 
             frequency = float(p.get("frequency", 0.0))
             freq_boost = (frequency / 100.0) * 0.5
-            
-            # Additional topic boost if we matched a topic
             topic_boost = 0.2 if (target_topic and topic_match) else 0.0
             
             total_score = keyword_score + freq_boost + topic_boost
             
-            # Format to return standard record structures
             topics_str = ", ".join(p.get("topics", []))
             link = p.get("link", "")
             timeframe_val = p.get("timeframe", "6+ months")
@@ -163,6 +159,17 @@ class LeetCodeRetriever:
                 "score": total_score
             })
             
+        # Compute total matching count and breakdown
+        total_matching_count = len(filtered_results)
+        diff_counts = {}
+        topic_counts = {}
+        for r in filtered_results:
+            d = r.get("difficulty", "Medium")
+            diff_counts[d] = diff_counts.get(d, 0) + 1
+            t_list = [t.strip() for t in r.get("topics", "").split(",") if t.strip()]
+            for t in t_list:
+                topic_counts[t] = topic_counts.get(t, 0) + 1
+
         # Sort by requested metric or by score descending
         if parsed_params.sort_by == "frequency":
             filtered_results.sort(key=lambda x: x["frequency"], reverse=True)
@@ -171,38 +178,41 @@ class LeetCodeRetriever:
         else:
             filtered_results.sort(key=lambda x: x["score"], reverse=True)
             
-        return filtered_results[:limit]
+        effective_limit = total_matching_count if (parsed_params.wants_all or limit >= 100) else min(limit, total_matching_count)
+        return {
+            "results": filtered_results[:effective_limit],
+            "total_count": total_matching_count,
+            "difficulty_breakdown": diff_counts,
+            "topic_breakdown": topic_counts
+        }
 
-    def retrieve(self, query: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
-        """Parses the query and retrieves matching problems using metadata filters and similarity search."""
-        # Check if we should use local offline parser
+    def retrieve_with_meta(self, query: str, limit: Optional[int] = None, history: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
+        """Parses query with history and returns retrieved matching problems + total dataset metadata."""
         is_offline = self.embedder.is_offline
         
         parsed_params = None
         if not is_offline:
             try:
-                parsed_params = self.query_parser.parse_query(query)
+                parsed_params = self.query_parser.parse_query(query, chat_history=history)
             except Exception as e:
                 print(f"[Retriever] Query parser API failed: {e}. Falling back to regex parser.")
                 is_offline = True
 
-        # Lightweight regex parser for offline/fallback mode
         if not parsed_params:
-            parsed_params = self._fallback_parse_query(query)
+            parsed_params = self._fallback_parse_query(query, history=history)
             
-        # Map company case-insensitively to database value
         if parsed_params.company:
             comp_lower = parsed_params.company.lower()
             if comp_lower in self.company_map:
                 parsed_params.company = self.company_map[comp_lower]
                 
         search_limit = limit if limit is not None else parsed_params.limit
-        
-        # Determine if query explicitly requests non-DSA questions
+        if parsed_params.wants_all:
+            search_limit = 250
+            
         q_lower = query.lower()
         wants_non_dsa = any(w in q_lower for w in ["sql", "database", "pandas", "dataframe", "javascript", "js", "db", "shell", "concurrency"])
         
-        # Check if vector DB collection is empty or unreachable
         db_count = 0
         try:
             if self.db and self.db.collection:
@@ -210,13 +220,13 @@ class LeetCodeRetriever:
         except Exception:
             db_count = 0
 
-        # If offline flag is set or vector DB has 0 items, run the direct JSON search
         if is_offline or db_count == 0:
-            return self.retrieve_offline(parsed_params, search_limit, wants_non_dsa=wants_non_dsa)
+            res_meta = self.retrieve_offline(parsed_params, search_limit, wants_non_dsa=wants_non_dsa)
+            res_meta["parsed_params"] = parsed_params
+            return res_meta
 
-        print(f"\n[Retriever] Parsed Query: {parsed_params}")
+        print(f"\n[Retriever] Parsed Query with Meta: {parsed_params}")
         
-        # Step 2: Extract filters
         filters = {}
         if parsed_params.company:
             filters["company"] = parsed_params.company
@@ -237,7 +247,6 @@ class LeetCodeRetriever:
         if target_timeframe:
             filters["timeframe"] = {"$in": valid_timeframes}
 
-        # Determine if query is a generic/structural list request
         sq_clean = parsed_params.semantic_query.lower().strip()
         for noise in ["give me", "show me", "question", "questions", "leetcode", "problem", "problems", "numbers", "number", "top", "list", "of", "on", "for"]:
             sq_clean = sq_clean.replace(noise, "")
@@ -248,99 +257,19 @@ class LeetCodeRetriever:
             and (sq_clean == "" or len(sq_clean) < 3)
         )
         
-        if is_pure_structural:
-            print(f"[Retriever] Detected pure structural query. Fetching matching records directly...")
-            try:
-                raw_records = self.db.get_all_records(filters=filters, limit=10000)
-                processed_results = []
-                target_topic = parsed_params.topic.lower() if parsed_params.topic else None
-                
-                for res in raw_records:
-                    metadata = res["metadata"]
-                    topics_str = metadata.get("topics", "")
-                    topics_list = [t.strip().lower() for t in topics_str.split(",") if t.strip()]
-                    frequency = float(metadata.get("frequency", 0.0))
-                    
-                    if target_topic:
-                        topic_match = False
-                        for t in topics_list:
-                            if target_topic in t or t in target_topic:
-                                topic_match = True
-                                break
-                        if not topic_match:
-                            continue
-                    
-                    # Exclude non-DSA if not requested
-                    if not wants_non_dsa and not self.is_dsa_problem(metadata.get("title", ""), metadata.get("slug", ""), topics_list):
-                        continue
-                        
-                    # Exclude by difficulty in python (safety)
-                    if parsed_params.difficulty:
-                        diff_list = [d.strip().lower() for d in parsed_params.difficulty.split(",") if d.strip()]
-                        if metadata.get("difficulty", "").lower() not in diff_list:
-                            continue
-                        
-                    # Extra timeframe safety check in Python
-                    if target_timeframe:
-                        p_timeframe = metadata.get("timeframe", "6+ months")
-                        if p_timeframe not in valid_timeframes:
-                            continue
-                            
-                    processed_results.append({
-                        "id": res["id"],
-                        "title": metadata.get("title", "Unknown"),
-                        "company": metadata.get("company", "Unknown"),
-                        "difficulty": metadata.get("difficulty", "Medium"),
-                        "frequency": frequency,
-                        "acceptance_rate": metadata.get("acceptance_rate", 0.0),
-                        "timeframe": metadata.get("timeframe", "6+ months"),
-                        "topics": topics_str,
-                        "link": metadata.get("link", ""),
-                        "document": res.get("document", ""),
-                        "score": frequency if parsed_params.sort_by == "frequency" else metadata.get("acceptance_rate", 0.0)
-                    })
-                
-                if parsed_params.sort_by == "frequency":
-                    processed_results.sort(key=lambda x: x["frequency"], reverse=True)
-                elif parsed_params.sort_by == "acceptance_rate":
-                    processed_results.sort(key=lambda x: x["acceptance_rate"], reverse=True)
-                    
-                final_results = processed_results[:search_limit]
-                print(f"[Retriever] Deterministically sorted and retrieved {len(final_results)} matching questions.")
-                return final_results
-            except Exception as e:
-                print(f"[Retriever] Deterministic retrieval failed: {e}. Falling back to standard pipeline...")
-
-        # Step 3: Get Query Embedding
-        semantic_query = parsed_params.semantic_query
-        if not semantic_query or semantic_query.strip() == "":
-            semantic_query = parsed_params.topic or "interview questions"
-            
-        try:
-            query_embedding = self.embedder.get_embedding(semantic_query)
-            
-            # Step 4: Run DB Query
-            fetch_limit = max(search_limit * 5, 100)
-            raw_results = self.db.search(query_embedding, filters=filters, limit=fetch_limit)
-        except Exception as e:
-            print(f"[Retriever] ChromaDB vector search failed: {e}. Falling back to offline search.")
-            return self.retrieve_offline(parsed_params, search_limit, wants_non_dsa=wants_non_dsa)
-        
-        # Step 5: Rank & Filter Results
+        # Always fetch broad candidate pool from DB to compute exact total_matching_count
+        raw_records = self.db.get_all_records(filters=filters, limit=10000)
         processed_results = []
         target_topic = parsed_params.topic.lower() if parsed_params.topic else None
         
-        for res in raw_results:
+        for res in raw_records:
             metadata = res["metadata"]
-            distance = res["distance"]
-            similarity = 1.0 - distance
-            
             topics_str = metadata.get("topics", "")
             topics_list = [t.strip().lower() for t in topics_str.split(",") if t.strip()]
             frequency = float(metadata.get("frequency", 0.0))
             
-            topic_match = False
             if target_topic:
+                topic_match = False
                 for t in topics_list:
                     if target_topic in t or t in target_topic:
                         topic_match = True
@@ -348,25 +277,19 @@ class LeetCodeRetriever:
                 if not topic_match:
                     continue
             
-            # Exclude non-DSA if not requested
-            if not wants_non_dsa and not self.is_dsa_problem(metadata.get("title", "Unknown"), metadata.get("slug", ""), topics_list):
+            if not wants_non_dsa and not self.is_dsa_problem(metadata.get("title", ""), metadata.get("slug", ""), topics_list):
                 continue
                 
-            # Exclude by difficulty in python (safety)
             if parsed_params.difficulty:
                 diff_list = [d.strip().lower() for d in parsed_params.difficulty.split(",") if d.strip()]
                 if metadata.get("difficulty", "").lower() not in diff_list:
                     continue
-            
-            # Timeframe filter safety in python
+                
             if target_timeframe:
                 p_timeframe = metadata.get("timeframe", "6+ months")
                 if p_timeframe not in valid_timeframes:
                     continue
-            
-            freq_boost = (frequency / 100.0) * 0.5
-            total_score = similarity + freq_boost
-            
+                    
             processed_results.append({
                 "id": res["id"],
                 "title": metadata.get("title", "Unknown"),
@@ -375,13 +298,22 @@ class LeetCodeRetriever:
                 "frequency": frequency,
                 "acceptance_rate": metadata.get("acceptance_rate", 0.0),
                 "timeframe": metadata.get("timeframe", "6+ months"),
-                "topics": metadata.get("topics", ""),
+                "topics": topics_str,
                 "link": metadata.get("link", ""),
-                "document": res["document"],
-                "score": total_score
+                "document": res.get("document", ""),
+                "score": frequency if parsed_params.sort_by == "frequency" else metadata.get("acceptance_rate", 0.0)
             })
-            
-        # Re-sort depending on sort_by preference
+        
+        total_matching_count = len(processed_results)
+        diff_counts = {}
+        topic_counts = {}
+        for r in processed_results:
+            d = r.get("difficulty", "Medium")
+            diff_counts[d] = diff_counts.get(d, 0) + 1
+            t_list = [t.strip() for t in r.get("topics", "").split(",") if t.strip()]
+            for t in t_list:
+                topic_counts[t] = topic_counts.get(t, 0) + 1
+
         if parsed_params.sort_by == "frequency":
             processed_results.sort(key=lambda x: x["frequency"], reverse=True)
         elif parsed_params.sort_by == "acceptance_rate":
@@ -389,68 +321,32 @@ class LeetCodeRetriever:
         else:
             processed_results.sort(key=lambda x: x["score"], reverse=True)
             
-        final_results = processed_results[:search_limit]
+        effective_limit = total_matching_count if parsed_params.wants_all else min(search_limit, total_matching_count)
+        final_results = processed_results[:effective_limit]
         
-        if not final_results and target_topic and raw_results:
-            print("[Retriever] Strict topic filter yielded zero results. Falling back to soft topic ranking...")
-            for res in raw_results:
-                metadata = res["metadata"]
-                distance = res["distance"]
-                similarity = 1.0 - distance
-                topics_str = metadata.get("topics", "")
-                topics_list = [t.strip().lower() for t in topics_str.split(",") if t.strip()]
-                frequency = float(metadata.get("frequency", 0.0))
-                
-                topic_match = any(target_topic in t or t in target_topic for t in topics_list)
-                topic_boost = 0.5 if topic_match else 0.0
-                freq_boost = (frequency / 100.0) * 0.3
-                total_score = similarity + freq_boost + topic_boost
-                
-                # Exclude non-DSA if not requested
-                if not wants_non_dsa and not self.is_dsa_problem(metadata.get("title", "Unknown"), metadata.get("slug", ""), topics_list):
-                    continue
-                    
-                # Exclude by difficulty in python (safety)
-                if parsed_params.difficulty:
-                    diff_list = [d.strip().lower() for d in parsed_params.difficulty.split(",") if d.strip()]
-                    if metadata.get("difficulty", "").lower() not in diff_list:
-                        continue
-                    
-                # Timeframe filter safety in python
-                if target_timeframe:
-                    p_timeframe = metadata.get("timeframe", "6+ months")
-                    if p_timeframe not in valid_timeframes:
-                        continue
-                
-                processed_results.append({
-                    "id": res["id"],
-                    "title": metadata.get("title", "Unknown"),
-                    "company": metadata.get("company", "Unknown"),
-                    "difficulty": metadata.get("difficulty", "Medium"),
-                    "frequency": frequency,
-                    "acceptance_rate": metadata.get("acceptance_rate", 0.0),
-                    "timeframe": metadata.get("timeframe", "6+ months"),
-                    "topics": metadata.get("topics", ""),
-                    "link": metadata.get("link", ""),
-                    "document": res["document"],
-                    "score": total_score
-                })
-            
-            if parsed_params.sort_by == "frequency":
-                processed_results.sort(key=lambda x: x["frequency"], reverse=True)
-            elif parsed_params.sort_by == "acceptance_rate":
-                processed_results.sort(key=lambda x: x["acceptance_rate"], reverse=True)
-            else:
-                processed_results.sort(key=lambda x: x["score"], reverse=True)
-                
-            final_results = processed_results[:search_limit]
-            
-        print(f"[Retriever] Retrieved {len(final_results)} matching questions.")
-        return final_results
+        print(f"[Retriever] Total matching: {total_matching_count}, returning top {len(final_results)}.")
+        return {
+            "results": final_results,
+            "total_count": total_matching_count,
+            "parsed_params": parsed_params,
+            "difficulty_breakdown": diff_counts,
+            "topic_breakdown": topic_counts
+        }
 
-    def _fallback_parse_query(self, query: str) -> QueryParameters:
+    def retrieve(self, query: str, limit: Optional[int] = None, history: Optional[List[Dict[str, str]]] = None) -> List[Dict[str, Any]]:
+        """Parses query and retrieves matching problems, returning list of results."""
+        meta = self.retrieve_with_meta(query, limit=limit, history=history)
+        return meta["results"]
+
+    def _fallback_parse_query(self, query: str, history: Optional[List[Dict[str, str]]] = None) -> QueryParameters:
         """Lightweight offline regex parser to extract filters without calling LLM."""
+        import re
         q_lower = query.lower()
+        
+        # Clean dataset/storage location phrases so "in database" does NOT trigger topic="Database"
+        clean_q = re.sub(r'\b(in|from|the|ur|your|main)\s+(database|dataset|db|system|collection)\b', '', q_lower)
+        clean_q = clean_q.strip()
+
         company = None
         difficulty = None
         topic = None
@@ -458,15 +354,26 @@ class LeetCodeRetriever:
         
         # Check against company map dynamically
         for comp_name in self.company_map.values():
-            if comp_name.lower() in q_lower:
+            if comp_name.lower() in clean_q:
                 company = comp_name
                 break
+
+        # If company missing, inherit company from recent history
+        if not company and history:
+            for msg in reversed(history[-6:]):
+                content_lower = msg.get("content", "").lower()
+                for comp_name in self.company_map.values():
+                    if comp_name.lower() in content_lower:
+                        company = comp_name
+                        break
+                if company:
+                    break
                 
-        # Parse difficulties (if all 3 or none present, difficulty is None = no filter)
+        # Parse difficulties
         found_diffs = []
-        if "easy" in q_lower: found_diffs.append("Easy")
-        if "medium" in q_lower: found_diffs.append("Medium")
-        if "hard" in q_lower: found_diffs.append("Hard")
+        if "easy" in clean_q: found_diffs.append("Easy")
+        if "medium" in clean_q: found_diffs.append("Medium")
+        if "hard" in clean_q: found_diffs.append("Hard")
         
         if len(found_diffs) > 0 and len(found_diffs) < 3:
             difficulty = ",".join(found_diffs)
@@ -499,29 +406,31 @@ class LeetCodeRetriever:
             "greedy": "Greedy"
         }
         for k, v in topics_map.items():
-            if k in q_lower:
+            if k in clean_q:
                 topic = v
                 break
                 
         # Extract timeframe
-        if "30 days" in q_lower or "last month" in q_lower:
+        if "30 days" in clean_q or "last month" in clean_q:
             timeframe = "30 days"
-        elif "3 months" in q_lower or "recent" in q_lower or "recently" in q_lower:
+        elif "3 months" in clean_q or "recent" in clean_q or "recently" in clean_q:
             timeframe = "3 months"
-        elif "6 months" in q_lower:
+        elif "6 months" in clean_q:
             timeframe = "6 months"
             
-        # Extract limit
-        limit = 10
-        import re
-        limit_match = re.search(r'\b(top|get|show)\s+(\d+)\b', q_lower)
-        if limit_match:
+        # Detect wants_all and is_count_query
+        wants_all = any(w in clean_q for w in ["retrieve all", "show all", "all questions", "all of them", "everything", "all in database", "all problems", "get all", "all"])
+        is_count_query = any(w in clean_q for w in ["how many", "total count", "count of", "number of questions", "how many questions", "how many problems"])
+
+        limit = 250 if wants_all else 10
+        limit_match = re.search(r'\b(top|get|show)\s+(\d+)\b', clean_q)
+        if limit_match and not wants_all:
             limit = int(limit_match.group(2))
             
         sort_by = None
-        if any(w in q_lower for w in ["top", "popular", "most frequent", "frequent", "frequency"]):
+        if any(w in clean_q for w in ["top", "popular", "most frequent", "frequent", "frequency"]):
             sort_by = "frequency"
-        elif any(w in q_lower for w in ["acceptance", "easiest"]):
+        elif any(w in clean_q for w in ["acceptance", "easiest"]):
             sort_by = "acceptance_rate"
             
         return QueryParameters(
@@ -531,8 +440,19 @@ class LeetCodeRetriever:
             semantic_query=query,
             limit=limit,
             sort_by=sort_by,
-            timeframe=timeframe
+            timeframe=timeframe,
+            is_count_query=is_count_query,
+            wants_all=wants_all
         )
+
+if __name__ == "__main__":
+    emb_mgr = EmbeddingManager()
+    chroma_mgr = ChromaManager()
+    retriever = LeetCodeRetriever(emb_mgr, chroma_mgr)
+    test_results = retriever.retrieve("Google Hard Graph questions")
+    for r in test_results:
+        print(f"- {r['company']} | {r['title']} ({r['difficulty']})")
+
 
 if __name__ == "__main__":
     emb_mgr = EmbeddingManager()
