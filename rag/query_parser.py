@@ -47,6 +47,14 @@ class QueryParameters(BaseModel):
         default=False,
         description="Set to true if the user explicitly asks to 'explain one by one', 'explain each', 'step by step explanation for each', 'one by one', 'explain one after another'."
     )
+    batch_start_index: Optional[int] = Field(
+        default=None,
+        description="The 1-based starting problem index when requesting batch explanations from custom memory lists (e.g. '1 to 10' -> 1, 'next 15' -> 11)."
+    )
+    batch_count: Optional[int] = Field(
+        default=None,
+        description="The number of problems requested in a batch (e.g. '10 by 10' -> 10, 'next 15' -> 15, 'next 20' -> 20)."
+    )
 
 class QueryParser:
     def __init__(self):
@@ -160,6 +168,29 @@ class QueryParser:
         if limit_match and not wants_all:
             limit = int(limit_match.group(2))
 
+        # Parse custom batch ranges & counts (e.g. "1 to 10", "next 15", "10 by 10", "11 to 25")
+        batch_start_index = None
+        batch_count = None
+
+        range_match = re.search(r'\b(?:from\s+)?(\d+)\s*(?:to|\-)\s*(\d+)\b', clean_q)
+        if range_match:
+            batch_start_index = int(range_match.group(1))
+            end_idx = int(range_match.group(2))
+            batch_count = max(1, end_idx - batch_start_index + 1)
+        elif "10 by 10" in clean_q or "first 10" in clean_q:
+            batch_start_index = 1
+            batch_count = 10
+        else:
+            num_match = re.search(r'\b(?:next|first|give|explain|show|algo)?\s*(\d+)\b', clean_q)
+            if num_match:
+                found_num = int(num_match.group(1))
+                if found_num in [5, 10, 15, 20, 25, 30, 40, 50] or "next" in clean_q or "first" in clean_q:
+                    batch_count = found_num
+                    if "next" in clean_q:
+                        batch_start_index = None
+                    else:
+                        batch_start_index = 1
+
         sort_by = None
         if any(w in clean_q for w in ["top", "popular", "most frequent", "frequent", "frequency"]):
             sort_by = "frequency"
@@ -176,7 +207,9 @@ class QueryParser:
             timeframe=timeframe,
             is_count_query=is_count_query,
             wants_all=wants_all,
-            wants_one_by_one=wants_one_by_one
+            wants_one_by_one=wants_one_by_one,
+            batch_start_index=batch_start_index,
+            batch_count=batch_count
         )
 
     def parse_query(self, user_query: str, chat_history: Optional[List[Dict[str, str]]] = None) -> QueryParameters:

@@ -225,11 +225,14 @@ class LeetCodeGenerator:
             prompt += f"Number of retrieved questions listed in context below: {len(retrieved_questions)}\n\n"
 
         q_lower = query.lower()
-        if wants_one_by_one or any(w in q_lower for w in ["one by one", "explain each", "explain one by one", "step by step"]):
+        if wants_one_by_one or any(w in q_lower for w in ["one by one", "explain each", "explain one by one", "step by step", "solution", "algo", "10 by 10", "next"]):
             prompt += (
-                "CRITICAL DIRECTIVE: The candidate explicitly requested to EXPLAIN EACH QUESTION ONE BY ONE.\n"
-                "After outputting the summary table, provide a detailed step-by-step breakdown for EACH problem listed in the context below.\n"
-                "For every problem, explain: 1) Core Algorithmic Intuition & Strategy, 2) Key Edge Cases, and 3) Time & Space Complexity.\n\n"
+                "CRITICAL DIRECTIVE: The candidate requested detailed solution algorithms, core intuition, and complexity analysis for the retrieved problems.\n"
+                "For EACH problem listed in the context below, output:\n"
+                "1) **LeetCode # & Title** (with [Solution] YouTube link)\n"
+                "2) **Core Algorithmic Intuition & Pattern** (explain the key data structures, optimal strategy, and step-by-step approach)\n"
+                "3) **Time & Space Complexity** (e.g. O(N) time, O(1) space)\n"
+                "4) **Key Edge Cases** to handle.\n\n"
             )
 
         prompt += (

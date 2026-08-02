@@ -186,6 +186,62 @@ class LeetCodeRetriever:
             "topic_breakdown": topic_counts
         }
 
+    def extract_custom_list_from_history(self, chat_history: Optional[List[Dict[str, str]]]) -> List[Dict[str, Any]]:
+        """Scans conversation history for user-provided custom problem lists or tier roadmaps."""
+        if not chat_history:
+            return []
+            
+        import re
+        if not hasattr(self, "_title_map"):
+            self._title_map = {}
+            cleaned_file = config.PROCESSED_DATA_DIR / "cleaned_problems.json"
+            if cleaned_file.exists():
+                try:
+                    with open(cleaned_file, "r", encoding="utf-8") as f:
+                        for p in json.load(f):
+                            t_clean = p.get('title', '').lower().replace(' ', '').replace('-', '')
+                            if t_clean and t_clean not in self._title_map:
+                                self._title_map[t_clean] = p
+                except Exception as e:
+                    print(f"[Retriever] Warning: Could not load title_map for custom lists: {e}")
+
+        for msg in reversed(chat_history):
+            content = msg.get('content', '')
+            role = msg.get('role', '')
+            if not content or role != 'user':
+                continue
+                
+            current_tier = 'General'
+            found_in_msg = []
+            for line in content.splitlines():
+                line_str = line.strip()
+                if not line_str: continue
+                tier_m = re.search(r'(Tier\s*\d+)', line_str, re.IGNORECASE)
+                if tier_m:
+                    current_tier = tier_m.group(1).title()
+                    continue
+                m = re.match(r'^(?:LC\s*#?|#)?(\d+)[\t\s\.\,\-]+(.+)$', line_str, re.IGNORECASE)
+                if m and m.group(2).strip().lower() != 'problem':
+                    raw_title = m.group(2).strip()
+                    t_key = raw_title.lower().replace(' ', '').replace('-', '')
+                    db_match = self._title_map.get(t_key)
+                    slug = raw_title.lower().replace(' ', '-')
+                    item = {
+                        'lc_num': int(m.group(1)),
+                        'title': db_match['title'] if db_match else raw_title,
+                        'tier': current_tier,
+                        'company': db_match.get('company', 'LeetCode') if db_match else 'LeetCode',
+                        'difficulty': db_match.get('difficulty', 'Medium') if db_match else 'Medium',
+                        'frequency': db_match.get('frequency', 50.0) if db_match else 50.0,
+                        'acceptance_rate': db_match.get('acceptance_rate', 0.5) if db_match else 0.5,
+                        'topics': ",".join(db_match.get('topics', [])) if db_match and isinstance(db_match.get('topics'), list) else (db_match.get('topics', '') if db_match else ''),
+                        'link': db_match.get('link', f'https://leetcode.com/problems/{slug}') if db_match else f'https://leetcode.com/problems/{slug}'
+                    }
+                    found_in_msg.append(item)
+            if len(found_in_msg) >= 3:
+                return found_in_msg
+        return []
+
     def retrieve_with_meta(self, query: str, limit: Optional[int] = None, history: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
         """Parses query with history and returns retrieved matching problems + total dataset metadata."""
         is_offline = self.embedder.is_offline
@@ -212,6 +268,52 @@ class LeetCodeRetriever:
             
         q_lower = query.lower()
         wants_non_dsa = any(w in q_lower for w in ["sql", "database", "pandas", "dataframe", "javascript", "js", "db", "shell", "concurrency"])
+
+        # Check if conversation history has a custom problem list stored
+        custom_list = self.extract_custom_list_from_history(history)
+        if custom_list and (parsed_params.batch_count or "solution" in q_lower or "algo" in q_lower or "one by one" in q_lower or "explain" in q_lower or "next" in q_lower or "give" in q_lower):
+            import re
+            start_idx = parsed_params.batch_start_index or 1
+            if "next" in q_lower and not parsed_params.batch_start_index:
+                last_end = 0
+                if history:
+                    for m in reversed(history):
+                        if m.get("role") == "assistant":
+                            content_text = m.get("content", "")
+                            match_range = re.search(r'(?:items?|problems?|questions?)\s+\d+\s+to\s+(\d+)', content_text, re.IGNORECASE)
+                            if match_range:
+                                last_end = int(match_range.group(1))
+                                break
+                            lc_matches = re.findall(r'LC\s*#\d+', content_text)
+                            if lc_matches:
+                                last_end = len(lc_matches)
+                                break
+                start_idx = max(1, last_end + 1)
+
+            count = parsed_params.batch_count or 10
+            end_idx = start_idx - 1 + count
+            sliced_items = custom_list[start_idx - 1 : end_idx]
+            
+            diff_counts = {}
+            topic_counts = {}
+            for r in sliced_items:
+                d = r.get("difficulty", "Medium")
+                diff_counts[d] = diff_counts.get(d, 0) + 1
+                t_list = [t.strip() for t in r.get("topics", "").split(",") if t.strip()]
+                for t in t_list:
+                    topic_counts[t] = topic_counts.get(t, 0) + 1
+
+            print(f"[Retriever] Custom memory list active: serving items {start_idx} to {start_idx - 1 + len(sliced_items)} of {len(custom_list)}.")
+            return {
+                "results": sliced_items,
+                "total_count": len(custom_list),
+                "parsed_params": parsed_params,
+                "difficulty_breakdown": diff_counts,
+                "topic_breakdown": topic_counts,
+                "is_custom_batch": True,
+                "batch_start": start_idx,
+                "batch_end": start_idx - 1 + len(sliced_items)
+            }
         
         db_count = 0
         try:
@@ -332,11 +434,44 @@ class LeetCodeRetriever:
             "difficulty_breakdown": diff_counts,
             "topic_breakdown": topic_counts
         }
+        custom_list = self.extract_custom_list_from_history(history)
+        q_lower = query.lower()
+        if custom_list and (parsed_params.batch_count or "solution" in q_lower or "algo" in q_lower or "one by one" in q_lower or "explain" in q_lower or "next" in q_lower or "give" in q_lower):
+            import re
+            start_idx = parsed_params.batch_start_index or 1
+            if "next" in q_lower and not parsed_params.batch_start_index:
+                prev_count = 0
+                if history:
+                    for m in history:
+                        if m.get("role") == "assistant":
+                            matches = re.findall(r'LC\s*#\d+', m.get("content", ""))
+                            prev_count += len(matches)
+                start_idx = max(1, prev_count + 1)
 
-    def retrieve(self, query: str, limit: Optional[int] = None, history: Optional[List[Dict[str, str]]] = None) -> List[Dict[str, Any]]:
-        """Parses query and retrieves matching problems, returning list of results."""
-        meta = self.retrieve_with_meta(query, limit=limit, history=history)
-        return meta["results"]
+            count = parsed_params.batch_count or 10
+            end_idx = start_idx - 1 + count
+            sliced_items = custom_list[start_idx - 1 : end_idx]
+            
+            diff_counts = {}
+            topic_counts = {}
+            for r in sliced_items:
+                d = r.get("difficulty", "Medium")
+                diff_counts[d] = diff_counts.get(d, 0) + 1
+                t_list = [t.strip() for t in r.get("topics", "").split(",") if t.strip()]
+                for t in t_list:
+                    topic_counts[t] = topic_counts.get(t, 0) + 1
+
+            print(f"[Retriever] Custom memory list active: serving items {start_idx} to {start_idx - 1 + len(sliced_items)} of {len(custom_list)}.")
+            return {
+                "results": sliced_items,
+                "total_count": len(custom_list),
+                "parsed_params": parsed_params,
+                "difficulty_breakdown": diff_counts,
+                "topic_breakdown": topic_counts,
+                "is_custom_batch": True,
+                "batch_start": start_idx,
+                "batch_end": start_idx - 1 + len(sliced_items)
+            }
 
     def _fallback_parse_query(self, query: str, history: Optional[List[Dict[str, str]]] = None) -> QueryParameters:
         """Lightweight offline regex parser to extract filters without calling LLM."""
