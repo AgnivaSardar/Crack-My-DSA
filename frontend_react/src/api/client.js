@@ -1,13 +1,36 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
+const PRIMARY_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
+const FALLBACK_BASES = [
+  PRIMARY_BASE,
+  'http://localhost:8000',
+  'http://127.0.0.1:8000',
+  '/api'
+].filter((v, i, a) => v && a.indexOf(v) === i)
 
 async function safeFetch(url, options = {}) {
-  try {
-    const res = await fetch(url, options)
-    if (!res.ok) return null
-    return await res.json()
-  } catch {
-    return null
+  let endpoint = url
+  if (PRIMARY_BASE && url.startsWith(PRIMARY_BASE)) {
+    endpoint = url.slice(PRIMARY_BASE.length)
   }
+  if (!endpoint.startsWith('/')) {
+    endpoint = '/' + endpoint
+  }
+
+  for (const base of FALLBACK_BASES) {
+    const cleanBase = base.replace(/\/+$/, '')
+    const fullUrl = cleanBase.startsWith('http') || cleanBase.startsWith('/')
+      ? `${cleanBase}${endpoint}`
+      : `/${cleanBase}${endpoint}`
+
+    try {
+      const res = await fetch(fullUrl, options)
+      if (res.ok) {
+        return await res.json()
+      }
+    } catch (e) {
+      // Try next candidate base URL
+    }
+  }
+  return null
 }
 
 export async function checkApiStatus() {

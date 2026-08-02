@@ -208,6 +208,16 @@ export default function ChatArea({
     }
   }, [tourActionKey, onDemoMessage])
 
+  function handleEditPrompt(queryText) {
+    setInput(queryText)
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight || 100, 150) + 'px'
+      textareaRef.current.focus()
+      textareaRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }
+
   function autoResize(e) {
     const el = e.target
     el.style.height = 'auto'
@@ -342,10 +352,56 @@ export default function ChatArea({
             <div key={i} className={`chat-msg ${msg.role}`}>
               <div className="chat-msg-header">
                 <span className="chat-msg-role">{msg.role === 'user' ? 'You' : 'Crack My DSA'}</span>
-                {isLastAssistant && !isLoading && (
-                  <button className="chat-resend-btn" onClick={onRegenerate} title="Resend / Regenerate Response">
-                    ↻ Resend Prompt
+                {msg.role === 'user' && !isLoading && (
+                  <button
+                    className="chat-edit-btn"
+                    onClick={() => handleEditPrompt(msg.content)}
+                    title="Edit Query Before Resending"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#8e8ea0',
+                      cursor: 'pointer',
+                      fontSize: '0.75rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginLeft: '8px'
+                    }}
+                  >
+                    ✏️ Edit Query
                   </button>
+                )}
+                {isLastAssistant && !isLoading && (
+                  <div style={{ display: 'inline-flex', gap: '8px', alignItems: 'center' }}>
+                    <button
+                      className="chat-edit-btn"
+                      onClick={() => {
+                        const userMsgs = messages.filter(m => m.role === 'user')
+                        if (userMsgs.length > 0) {
+                          handleEditPrompt(userMsgs[userMsgs.length - 1].content)
+                        }
+                      }}
+                      title="Edit Last Prompt Before Resending"
+                      style={{
+                        background: '#202123',
+                        border: '1px solid #444654',
+                        color: '#d1d5db',
+                        borderRadius: '4px',
+                        padding: '2px 8px',
+                        cursor: 'pointer',
+                        fontSize: '0.75rem',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      ✏️ Edit Query
+                    </button>
+                    <button className="chat-resend-btn" onClick={onRegenerate} title="Resend Prompt">
+                      ↻ Resend Prompt
+                    </button>
+                  </div>
                 )}
               </div>
               <div className="chat-msg-content">
