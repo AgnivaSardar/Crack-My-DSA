@@ -1,4 +1,5 @@
-const PRIMARY_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
+const PRIMARY_BASE = API_BASE
 const FALLBACK_BASES = [
   PRIMARY_BASE,
   'http://localhost:8000',
@@ -34,12 +35,12 @@ async function safeFetch(url, options = {}) {
 }
 
 export async function checkApiStatus() {
-  const data = await safeFetch(`${API_BASE}/stats`)
+  const data = await safeFetch('/stats')
   return data !== null
 }
 
 export async function getMetadata() {
-  const data = await safeFetch(`${API_BASE}/metadata`)
+  const data = await safeFetch('/metadata')
   if (data) return data
   return {
     companies: ['Google', 'Amazon', 'Meta', 'Microsoft', 'Netflix', 'Apple'],
@@ -54,7 +55,7 @@ export async function runQuery(query, history = [], limit = null, userEmail = nu
     ...(limit !== null && { limit }),
     ...(userEmail && { user_email: userEmail })
   }
-  const data = await safeFetch(`${API_BASE}/query`, {
+  const data = await safeFetch('/query', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
@@ -64,28 +65,24 @@ export async function runQuery(query, history = [], limit = null, userEmail = nu
 }
 
 export async function getOrCreateUser(email, password) {
-  try {
-    const res = await fetch(`${API_BASE}/users`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    })
-    const data = await res.json()
-    if (!res.ok) {
-      return { error: data.detail || 'Authentication failed.' }
-    }
+  const data = await safeFetch('/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  })
+  if (data) {
+    if (data.detail) return { error: data.detail }
     return data
-  } catch {
-    return { error: 'Failed to connect to backend server.' }
   }
+  return { error: 'Failed to connect to backend server.' }
 }
 
 export async function getUserSessions(email) {
-  return safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/sessions`) || {}
+  return (await safeFetch(`/users/${encodeURIComponent(email)}/sessions`)) || {}
 }
 
 export async function saveSession(sessionId, userEmail, title, messages, lastReferences) {
-  return safeFetch(`${API_BASE}/sessions`, {
+  return safeFetch('/sessions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -99,15 +96,15 @@ export async function saveSession(sessionId, userEmail, title, messages, lastRef
 }
 
 export async function deleteSession(sessionId) {
-  return safeFetch(`${API_BASE}/sessions/${sessionId}`, { method: 'DELETE' })
+  return safeFetch(`/sessions/${sessionId}`, { method: 'DELETE' })
 }
 
 export async function getUserSolvedProblems(email) {
-  return (await safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/solved`)) || []
+  return (await safeFetch(`/users/${encodeURIComponent(email)}/solved`)) || []
 }
 
 export async function toggleProblemSolved(email, problem, isSolved) {
-  return safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/solved`, {
+  return safeFetch(`/users/${encodeURIComponent(email)}/solved`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -118,7 +115,7 @@ export async function toggleProblemSolved(email, problem, isSolved) {
 }
 
 export async function syncLeetCodeUser(email, username) {
-  return safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/sync-leetcode`, {
+  return safeFetch(`/users/${encodeURIComponent(email)}/sync-leetcode`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username })
@@ -126,31 +123,31 @@ export async function syncLeetCodeUser(email, username) {
 }
 
 export async function autoSyncUserLeetCodeByEmail(email) {
-  return safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/auto-sync`, {
+  return safeFetch(`/users/${encodeURIComponent(email)}/auto-sync`, {
     method: 'POST'
   })
 }
 
 export async function getUserProfile(email) {
-  return safeFetch(`${API_BASE}/users/${encodeURIComponent(email)}/profile`)
+  return safeFetch(`/users/${encodeURIComponent(email)}/profile`)
 }
 
 export async function getDSATopics(userEmail = null) {
   const url = userEmail
-    ? `${API_BASE}/dsa/topics?user_email=${encodeURIComponent(userEmail)}`
-    : `${API_BASE}/dsa/topics`
+    ? `/dsa/topics?user_email=${encodeURIComponent(userEmail)}`
+    : `/dsa/topics`
   return (await safeFetch(url)) || []
 }
 
 export async function getDSATopicProblems(topicId, userEmail = null) {
   const url = userEmail
-    ? `${API_BASE}/dsa/topics/${topicId}?user_email=${encodeURIComponent(userEmail)}`
-    : `${API_BASE}/dsa/topics/${topicId}`
+    ? `/dsa/topics/${topicId}?user_email=${encodeURIComponent(userEmail)}`
+    : `/dsa/topics/${topicId}`
   return (await safeFetch(url)) || []
 }
 
 export async function toggleDSAProgress(userEmail, problemId, isCompleted) {
-  return safeFetch(`${API_BASE}/dsa/progress`, {
+  return safeFetch('/dsa/progress', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -162,7 +159,7 @@ export async function toggleDSAProgress(userEmail, problemId, isCompleted) {
 }
 
 export async function askDSADoubt(userEmail, problemId, problemTitle, codeContext, doubtText) {
-  return safeFetch(`${API_BASE}/dsa/doubt`, {
+  return safeFetch('/dsa/doubt', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -176,8 +173,7 @@ export async function askDSADoubt(userEmail, problemId, problemTitle, codeContex
 }
 
 export async function runDSACode(language, code, stdin = '', problemId = null, problemTitle = null) {
-
-  return safeFetch(`${API_BASE}/dsa/run_code`, {
+  return safeFetch('/dsa/run_code', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -191,7 +187,7 @@ export async function runDSACode(language, code, stdin = '', problemId = null, p
 }
 
 export async function submitDSACode(language, code, problemId, problemTitle, userEmail = null) {
-  return safeFetch(`${API_BASE}/dsa/submit_code`, {
+  return safeFetch('/dsa/submit_code', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -203,6 +199,3 @@ export async function submitDSACode(language, code, problemId, problemTitle, use
     })
   })
 }
-
-
-
