@@ -140,6 +140,19 @@ export default function ChatArea({
 
   const companies = metadata?.companies || COMPANIES_FALLBACK
   const topics = metadata?.topics || TOPICS_FALLBACK
+  const companyTopics = metadata?.company_topics || {}
+
+  // Derive available topics dynamically based on selected company
+  const availableTopics = (company !== 'All Companies' && companyTopics[company])
+    ? companyTopics[company]
+    : topics
+
+  // Automatically reset topic if current selection is invalid for newly selected company
+  useEffect(() => {
+    if (topic !== 'All Topics' && !availableTopics.includes(topic)) {
+      setTopic('All Topics')
+    }
+  }, [company, availableTopics, topic])
 
   useEffect(() => {
     if (chatMessagesRef.current) {
@@ -288,7 +301,7 @@ export default function ChatArea({
           </select>
           <select className="filter-select-sm" value={topic} onChange={e => setTopic(e.target.value)} title="DSA Topic">
             <option>All Topics</option>
-            {topics.map(t => <option key={t}>{t}</option>)}
+            {availableTopics.map(t => <option key={t}>{t}</option>)}
           </select>
           <select className="filter-select-sm" value={recency} onChange={e => setRecency(e.target.value)} title="Recency">
             {['All Time', 'Last 30 Days', 'Last 3 Months', 'Last 6 Months'].map(r => <option key={r}>{r}</option>)}

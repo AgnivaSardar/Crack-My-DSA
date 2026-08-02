@@ -185,13 +185,14 @@ async def get_db_stats():
 @app.get("/metadata")
 @app.get("/api/metadata")
 async def get_filter_metadata():
-    """Returns lists of all unique companies and topics available in the cleaned dataset."""
+    """Returns lists of all unique companies, topics, and company-topic mappings available in the cleaned dataset."""
     cleaned_file = config.PROCESSED_DATA_DIR / "cleaned_problems.json"
     
     if not cleaned_file.exists():
         return {
             "companies": ["Google", "Amazon", "Meta", "Microsoft", "Netflix", "Apple"],
-            "topics": ["Array", "String", "Hash Table", "Dynamic Programming", "Graph", "Tree", "Binary Search"]
+            "topics": ["Array", "String", "Hash Table", "Dynamic Programming", "Graph", "Tree", "Binary Search"],
+            "company_topics": {}
         }
         
     try:
@@ -200,15 +201,28 @@ async def get_filter_metadata():
             
         companies = sorted(list(set(p["company"] for p in problems if p.get("company"))))
         
-        # Flatten all topics lists and get unique ones
-        all_topics = []
+        company_topics = {}
+        all_topics = set()
+        
         for p in problems:
-            all_topics.extend(p.get("topics", []))
-        topics = sorted(list(set(all_topics)))
+            comp = p.get("company")
+            p_topics = p.get("topics", [])
+            if comp:
+                if comp not in company_topics:
+                    company_topics[comp] = set()
+                for t in p_topics:
+                    if t:
+                        t_clean = t.strip()
+                        company_topics[comp].add(t_clean)
+                        all_topics.add(t_clean)
+                        
+        company_topics_clean = {c: sorted(list(ts)) for c, ts in company_topics.items()}
+        topics = sorted(list(all_topics))
         
         return {
             "companies": companies,
-            "topics": topics
+            "topics": topics,
+            "company_topics": company_topics_clean
         }
     except Exception as e:
         print(f"Error building filter metadata: {e}")

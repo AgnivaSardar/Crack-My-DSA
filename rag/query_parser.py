@@ -128,21 +128,32 @@ class QueryParser:
             "priority queue": "Heap (Priority Queue)",
             "greedy": "Greedy"
         }
+        found_topics = []
         for k, v in topics_map.items():
             if k in clean_q:
-                topic = v
-                break
-
-        if "30 days" in clean_q or "last month" in clean_q:
-            timeframe = "30 days"
-        elif "3 months" in clean_q or "recent" in clean_q or "recently" in clean_q:
-            timeframe = "3 months"
-        elif "6 months" in clean_q:
-            timeframe = "6 months"
+                if v not in found_topics:
+                    found_topics.append(v)
+        
+        # If user mentions a single topic, set topic filter. If multiple topics mentioned, keep topic = None to search across all of them
+        if len(found_topics) == 1:
+            topic = found_topics[0]
+        else:
+            topic = None
 
         wants_all = any(w in clean_q for w in ["retrieve all", "show all", "all questions", "all of them", "everything", "all in database", "all problems", "get all", "all"])
         is_count_query = any(w in clean_q for w in ["how many", "total count", "count of", "number of questions", "how many questions", "how many problems"])
         wants_one_by_one = any(w in clean_q for w in ["one by one", "explain each", "explain one by one", "step by step", "each question", "each problem"])
+
+        if "30 days" in clean_q or "last month" in clean_q:
+            timeframe = "30 days"
+        elif "3 months" in clean_q or "last 3 months" in clean_q:
+            timeframe = "3 months"
+        elif "6 months" in clean_q or "last 6 months" in clean_q:
+            timeframe = "6 months"
+        elif ("recent" in clean_q or "recently" in clean_q) and not wants_all:
+            timeframe = "3 months"
+        else:
+            timeframe = None
 
         limit = 250 if wants_all else 10
         limit_match = re.search(r'\b(top|get|show)\s+(\d+)\b', clean_q)

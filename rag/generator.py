@@ -64,6 +64,21 @@ class LeetCodeGenerator:
             
         import urllib.parse
         formatted_list = []
+        
+        # If question list is large, use concise single-line format to keep prompt lean and prevent LLM API timeouts
+        if len(questions) > 25:
+            for idx, q in enumerate(questions):
+                title = q.get('title', 'Unknown')
+                company = q.get('company', '')
+                diff = q.get('difficulty', 'Medium')
+                freq = float(q.get('frequency', 0.0))
+                topics = q.get('topics', '')
+                yt_query = urllib.parse.quote_plus(f"LeetCode {title} {company} solution")
+                yt_link = f"https://www.youtube.com/results?search_query={yt_query}"
+                q_str = f"{idx + 1}. Title: {title} [Solution]({yt_link}) | Company: {company} | Difficulty: {diff} | Freq: {freq:.1f}% | Topics: {topics}"
+                formatted_list.append(q_str)
+            return "\n".join(formatted_list)
+
         for idx, q in enumerate(questions):
             title = q.get('title', 'Unknown')
             company = q.get('company', '')
