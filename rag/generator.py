@@ -249,6 +249,8 @@ class LeetCodeGenerator:
                 prompt=prompt,
                 system_instruction=self.system_instruction
             )
+            if not response_text or not response_text.strip():
+                raise ValueError("Gemini returned an empty response")
             return response_text
         except Exception as e:
             print(f"[Generator] Gemini API Call failed: {e}. Switching to offline fallback generator.")
