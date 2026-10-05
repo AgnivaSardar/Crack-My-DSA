@@ -2,9 +2,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
 const PRIMARY_BASE = API_BASE
 const FALLBACK_BASES = [
   PRIMARY_BASE,
-  'http://localhost:8000',
-  'http://127.0.0.1:8000',
-  '/api'
+  ...(import.meta.env.DEV ? ['http://localhost:8000', 'http://127.0.0.1:8000', '/api'] : [])
 ].filter((v, i, a) => v && a.indexOf(v) === i)
 
 async function safeFetch(url, options = {}) {
