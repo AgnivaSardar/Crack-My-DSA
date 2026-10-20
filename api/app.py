@@ -70,7 +70,7 @@ def startup_event():
 
 @app.get("/")
 async def root_health_check():
-    return {"status": "online", "app": "Crack My DSA API", "database": "Supabase PostgreSQL"}
+    return {"status": "online", "app": "Crack My DSA API", "version": "1.0.1", "database": "Supabase PostgreSQL"}
 
 # Pydantic schemas
 class ChatMessage(BaseModel):
