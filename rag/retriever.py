@@ -77,7 +77,13 @@ class LeetCodeRetriever:
         
         # Extract filters
         target_company = parsed_params.company.lower() if parsed_params.company else None
-        target_difficulty = parsed_params.difficulty.lower() if parsed_params.difficulty else None
+        
+        diff_list = []
+        if parsed_params.difficulty:
+            diff_list = [d.strip().lower() for d in parsed_params.difficulty.split(",") if d.strip()]
+            if len(diff_list) >= 3:
+                diff_list = []
+
         target_topic = parsed_params.topic.lower() if parsed_params.topic else None
         target_timeframe = parsed_params.timeframe
         
@@ -95,7 +101,7 @@ class LeetCodeRetriever:
                 continue
                 
             # 2. Filter by Difficulty
-            if target_difficulty and p.get("difficulty", "").lower() != target_difficulty:
+            if diff_list and p.get("difficulty", "").lower() not in diff_list:
                 continue
                 
             # 3. Filter by Topic
@@ -244,7 +250,7 @@ class LeetCodeRetriever:
 
     def retrieve_with_meta(self, query: str, limit: Optional[int] = None, history: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
         """Parses query with history and returns retrieved matching problems + total dataset metadata."""
-        is_offline = self.embedder.is_offline
+        is_offline = self.embedder.is_offline if self.embedder else True
         
         parsed_params = None
         if not is_offline:
