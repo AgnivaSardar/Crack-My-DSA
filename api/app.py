@@ -489,24 +489,29 @@ async def run_dsa_code(request: DSARunCodeRequest):
         from api.code_runner import execute_user_code, get_problem_test_cases
         exec_res = execute_user_code(request.language, request.code, request.stdin or "", request.problem_title or "")
         
-        # Run public sample test cases if problem_title supplied
-        test_suite = get_problem_test_cases(request.problem_title or "")
+        # Run public sample test cases if problem_title supplied and not a free-form playground
+        is_playground = (
+            not request.problem_title 
+            or any(k in request.problem_title.lower() for k in ["playground", "custom", "test", "practice"])
+        )
         public_results = []
         
-        for case in test_suite.get("public", []):
-            c_res = execute_user_code(request.language, request.code, case["input"], request.problem_title or "")
-            actual_out = (c_res.get("stdout") or "").strip()
-            expected_out = case["expected"].strip()
-            passed = (c_res.get("status") == "Success") and (actual_out == expected_out or expected_out in actual_out)
-            
-            public_results.append({
-                "id": case["id"],
-                "description": case["description"],
-                "input": case["input"],
-                "expected": case["expected"],
-                "actual": actual_out if c_res.get("status") == "Success" else (c_res.get("stderr") or c_res.get("status")),
-                "passed": passed
-            })
+        if not is_playground:
+            test_suite = get_problem_test_cases(request.problem_title or "")
+            for case in test_suite.get("public", []):
+                c_res = execute_user_code(request.language, request.code, case["input"], request.problem_title or "")
+                actual_out = (c_res.get("stdout") or "").strip()
+                expected_out = case["expected"].strip()
+                passed = (c_res.get("status") == "Success") and (actual_out == expected_out or expected_out in actual_out)
+                
+                public_results.append({
+                    "id": case["id"],
+                    "description": case["description"],
+                    "input": case["input"],
+                    "expected": case["expected"],
+                    "actual": actual_out if c_res.get("status") == "Success" else (c_res.get("stderr") or c_res.get("status")),
+                    "passed": passed
+                })
             
         # Format rich stdout output showing all public test cases + custom input
         stdout_sections = []
@@ -514,6 +519,8 @@ async def run_dsa_code(request: DSARunCodeRequest):
         if request.stdin and request.stdin.strip():
             custom_out = (exec_res.get("stdout") or "").strip()
             stdout_sections.append(f"=== Custom Stdin Input ===\nInput:\n{request.stdin.strip()}\nOutput:\n{custom_out}\n")
+        elif not public_results:
+            stdout_sections.append(f"=== Execution Output ===\n{(exec_res.get('stdout') or '').strip()}\n")
             
         if public_results:
             stdout_sections.append("=== Public Sample Test Cases Output ===")

@@ -902,6 +902,23 @@ class ChatDatabaseManager:
         if self.is_postgres:
             import psycopg2.extras
             with self.conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cursor:
+                # 1. Ensure user exists to satisfy foreign key constraint
+                cursor.execute("SELECT email FROM users WHERE email = %s;", (user_email,))
+                if not cursor.fetchone():
+                    cursor.execute("INSERT INTO users (email, name) VALUES (%s, %s) ON CONFLICT (email) DO NOTHING;", (user_email, user_email.split('@')[0]))
+                    self.conn.commit()
+
+                # 2. Ensure problem_id exists in dsa_roadmap_problems to satisfy foreign key constraint
+                cursor.execute("SELECT problem_id FROM dsa_roadmap_problems WHERE problem_id = %s;", (problem_id,))
+                if not cursor.fetchone():
+                    clean_title = problem_id.replace("p-", "").replace("t-", "").replace("-", " ").title()
+                    cursor.execute("""
+                        INSERT INTO dsa_roadmap_problems (problem_id, topic_id, title, filename)
+                        VALUES (%s, 1, %s, %s)
+                        ON CONFLICT (problem_id) DO NOTHING;
+                    """, (problem_id, clean_title, f"{problem_id}.cpp"))
+                    self.conn.commit()
+
                 cursor.execute("""
                 INSERT INTO user_dsa_doubts (user_email, problem_id, doubt_text, ai_response)
                 VALUES (%s, %s, %s, %s)
