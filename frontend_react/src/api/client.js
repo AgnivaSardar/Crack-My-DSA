@@ -1,8 +1,16 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
+const isProdBuild = import.meta.env.PROD || (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')
+
+// In production / remote host, always use relative '/api' proxy
+let envBase = import.meta.env.VITE_API_BASE_URL || '/api'
+if (isProdBuild && envBase.includes('localhost')) {
+  envBase = '/api'
+}
+
+const API_BASE = envBase
 const PRIMARY_BASE = API_BASE
 const FALLBACK_BASES = [
   PRIMARY_BASE,
-  ...(import.meta.env.DEV ? ['http://localhost:8000', 'http://127.0.0.1:8000', '/api'] : [])
+  ...(import.meta.env.DEV ? ['http://localhost:8000', 'http://127.0.0.1:8000', '/api'] : ['/api'])
 ].filter((v, i, a) => v && a.indexOf(v) === i)
 
 async function safeFetch(url, options = {}) {

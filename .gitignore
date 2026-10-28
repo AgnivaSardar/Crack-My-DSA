@@ -11,4 +11,6 @@ dist
 *.pem
 *.tar.gz
 *.zip
+~$*
+
 
