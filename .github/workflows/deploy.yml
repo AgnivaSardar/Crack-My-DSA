@@ -1,4 +1,4 @@
-name: Auto Deploy Backend to AWS EC2
+name: Auto Deploy to AWS EC2
 
 on:
   push:
@@ -15,10 +15,15 @@ jobs:
       - name: Deploy to AWS EC2 via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: '3.110.175.37'
+          host: '16.113.149.78'
           username: 'ubuntu'
           key: ${{ secrets.AWS_EC2_SSH_KEY }}
           script: |
-            cd ~/Crack-My-DSA
+            cd /home/ubuntu/Crack-My-DSA
             git pull origin main
+            cd frontend_react
+            npm install
+            npm run build
+            cd ..
             sudo systemctl restart crack-dsa
+            sudo systemctl restart nginx

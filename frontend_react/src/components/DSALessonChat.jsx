@@ -338,7 +338,7 @@ export default function DSALessonChat({
       setInternalViewTab('theory')
     }
     setTheoryDoubts([])
-  }, [topic, problems])
+  }, [topic?.topic_id, problems])
 
   const topicId = topic?.topic_id || topic?.id || 1
   const theoryData = dsaTheoryData[topicId] || {

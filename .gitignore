@@ -8,4 +8,7 @@ data/chroma_db
 *.db
 dist
 .DS_Store
-temp_nginx.conf
+*.pem
+*.tar.gz
+*.zip
+

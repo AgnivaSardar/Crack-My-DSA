@@ -21,6 +21,7 @@ import {
 
 const LS_GUEST = 'dsa_cracker_guest_sessions'
 const LS_GUEST_SOLVED = 'dsa_cracker_guest_solved'
+const LS_GUEST_DSA_PROGRESS = 'dsa_cracker_guest_dsa_progress'
 const LS_AUTH = 'dsa_cracker_auth'
 const LS_LANG = 'dsa_cracker_language'
 const LS_ACTIVE_TAB = 'dsa_cracker_active_tab'
@@ -30,6 +31,16 @@ const LS_SESSION_ID = 'dsa_cracker_session_id'
 
 function makeId() {
   return String(Date.now())
+}
+
+function loadGuestDSAProgress() {
+  try {
+    return JSON.parse(localStorage.getItem(LS_GUEST_DSA_PROGRESS) || '{}')
+  } catch { return {} }
+}
+
+function persistGuestDSAProgress(progressMap) {
+  try { localStorage.setItem(LS_GUEST_DSA_PROGRESS, JSON.stringify(progressMap)) } catch {}
 }
 
 function loadGuestSessions() {
@@ -204,7 +215,12 @@ export default function App() {
     if (selectedTopicId !== null && sidebarTab === 'dsa_roadmap') {
       const email = guestUser ? null : userEmail
       getDSATopicProblems(selectedTopicId, email).then(probs => {
-        setTopicProblems(probs || [])
+        let list = probs || []
+        if (guestUser) {
+          const guestProgress = loadGuestDSAProgress()
+          list = list.map(p => ({ ...p, is_completed: !!guestProgress[p.problem_id] }))
+        }
+        setTopicProblems(list)
       })
     }
   }, [selectedTopicId, sidebarTab, userEmail, guestUser])
@@ -219,15 +235,46 @@ export default function App() {
     setSidebarTab('dsa_roadmap')
     const email = guestUser ? null : userEmail
     getDSATopicProblems(tId, email).then(probs => {
-      setTopicProblems(probs || [])
+      let list = probs || []
+      if (guestUser) {
+        const guestProgress = loadGuestDSAProgress()
+        list = list.map(p => ({ ...p, is_completed: !!guestProgress[p.problem_id] }))
+      }
+      setTopicProblems(list)
     })
   }
 
   async function handleToggleDSAProgress(problemId, isCompleted) {
-    const email = guestUser ? null : userEmail
-    await toggleDSAProgress(email, problemId, isCompleted)
-    // Refresh topics list to update completed counts in sidebar
-    getDSATopics(email).then(topics => setDsaTopics(topics || []))
+    // 1. Optimistically update topicProblems so state does not revert on re-render
+    setTopicProblems(prev =>
+      prev.map(p => (p.problem_id === problemId ? { ...p, is_completed: isCompleted } : p))
+    )
+
+    if (guestUser) {
+      const guestProgress = loadGuestDSAProgress()
+      if (isCompleted) {
+        guestProgress[problemId] = true
+      } else {
+        delete guestProgress[problemId]
+      }
+      persistGuestDSAProgress(guestProgress)
+
+      // Update completed count in dsaTopics for guest sidebar
+      setDsaTopics(prev =>
+        prev.map(t => {
+          if (t.topic_id === selectedTopicId) {
+            const count = (t.completed_count || 0) + (isCompleted ? 1 : -1)
+            return { ...t, completed_count: Math.max(0, count) }
+          }
+          return t
+        })
+      )
+    } else {
+      const email = userEmail
+      await toggleDSAProgress(email, problemId, isCompleted)
+      // Refresh topics list to update completed counts in sidebar
+      getDSATopics(email).then(topics => setDsaTopics(topics || []))
+    }
   }
 
   function createNewSession(existingSessions, isGuest = guestUser) {

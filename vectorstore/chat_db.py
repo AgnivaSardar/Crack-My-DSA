@@ -871,6 +871,11 @@ class ChatDatabaseManager:
         user_email = user_email.strip().lower()
         if self.is_postgres:
             with self.conn.cursor() as cursor:
+                # 1. Ensure user exists to satisfy foreign key constraint
+                cursor.execute("SELECT email FROM users WHERE email = %s;", (user_email,))
+                if not cursor.fetchone():
+                    cursor.execute("INSERT INTO users (email, name) VALUES (%s, %s) ON CONFLICT (email) DO NOTHING;", (user_email, user_email.split('@')[0]))
+                    self.conn.commit()
                 if is_completed:
                     cursor.execute("""
                     INSERT INTO user_dsa_progress (user_email, problem_id, is_completed)
